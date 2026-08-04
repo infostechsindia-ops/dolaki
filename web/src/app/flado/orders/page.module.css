@@ -1,0 +1,51 @@
+.container {
+  padding: 40px 24px;
+}
+.messageCard {
+  text-align: center;
+  padding: 60px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 24px;
+}
+.card {
+  background: white;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.status {
+  color: var(--color-flado);
+  font-weight: 700;
+  font-size: 0.85rem;
+}
+.items {
+  color: var(--color-text-secondary);
+  margin-bottom: 16px;
+}
+.footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  font-weight: 500;
+}
+.trackBtn {
+  padding: 8px 16px;
+  background: var(--color-flado);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+}

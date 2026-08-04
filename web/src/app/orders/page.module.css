@@ -1,0 +1,90 @@
+.container {
+  padding: 40px 24px;
+}
+.container h1 {
+  margin-bottom: 24px;
+}
+.tabs {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 8px;
+}
+.tab {
+  padding: 8px 16px;
+  background: none;
+  border: none;
+  font-weight: 500;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.activeTab {
+  color: var(--color-primary);
+  border-bottom: 2px solid var(--color-primary);
+  margin-bottom: -9px;
+}
+.tableWrapper {
+  overflow-x: auto;
+  background: white;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--color-border);
+}
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table th, .table td {
+  padding: 16px;
+  text-align: left;
+  border-bottom: 1px solid var(--color-border);
+}
+.table th {
+  background: var(--color-bg-alt);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+.badge {
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  color: white;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+.viewBtn {
+  color: var(--color-primary);
+  font-weight: 500;
+  text-decoration: underline;
+}
+.emptyState {
+  text-align: center;
+  padding: 60px 20px;
+  background: white;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+.emptyIllustration {
+  font-size: 4rem;
+  margin-bottom: 16px;
+}
+.emptyState h3 {
+  margin-bottom: 8px;
+}
+.emptyState p {
+  color: var(--color-text-secondary);
+  margin-bottom: 24px;
+}
+.shopBtn {
+  display: inline-block;
+  padding: 12px 24px;
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-full);
+  font-weight: 600;
+}
+.loading {
+  text-align: center;
+  padding: 40px;
+  color: var(--color-text-muted);
+}

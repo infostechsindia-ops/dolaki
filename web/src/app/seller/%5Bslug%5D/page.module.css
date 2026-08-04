@@ -1,0 +1,293 @@
+.sellerPage {
+  min-height: 100vh;
+  background-color: #f8fafc;
+  padding-bottom: 80px;
+}
+
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 16px;
+  color: #64748b;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #e2e8f0;
+  border-top-color: #7c3aed;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.coverBanner {
+  height: 200px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding-top: 24px;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.backBtn:hover {
+  color: white;
+}
+
+.sellerHeaderCard {
+  background-color: white;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+  margin-top: -80px;
+  position: relative;
+  z-index: 10;
+  padding: 30px;
+  border: 1px solid #f1f5f9;
+  margin-bottom: 40px;
+}
+
+.headerLayout {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 24px;
+}
+
+.logoAndTitle {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.logoBox {
+  width: 100px;
+  height: 100px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 4px solid white;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background-color: white;
+}
+
+.logo {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.titles {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.nameRow h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.verifiedBadge {
+  display: inline-flex;
+  align-items: center;
+  background-color: #f0fdf4;
+  color: #16a34a;
+  font-size: 0.75rem;
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  border: 1px solid #dcfce7;
+}
+
+.metaRow {
+  display: flex;
+  gap: 16px;
+  color: #64748b;
+  font-size: 0.85rem;
+}
+
+.metaIcon {
+  margin-right: 4px;
+  vertical-align: middle;
+}
+
+.statsPanel {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.statBox {
+  background-color: #f8fafc;
+  padding: 12px 20px;
+  border-radius: 12px;
+  text-align: center;
+  min-width: 110px;
+  border: 1px solid #f1f5f9;
+}
+
+.statVal {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #0f172a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+
+.starIcon {
+  color: #eab308;
+  fill: #eab308;
+}
+
+.statLabel {
+  font-size: 0.75rem;
+  color: #64748b;
+  margin-top: 4px;
+}
+
+.sellerLayout {
+  display: grid;
+  grid-template-columns: 0.8fr 2.2fr;
+  gap: 32px;
+}
+
+@media (max-width: 900px) {
+  .sellerLayout {
+    grid-template-columns: 1fr;
+  }
+}
+
+.infoCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.card {
+  background-color: white;
+  border-radius: 16px;
+  padding: 24px;
+  border: 1px solid #e2e8f0;
+}
+
+.card h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 12px;
+}
+
+.description {
+  font-size: 0.9rem;
+  color: #475569;
+  line-height: 1.6;
+}
+
+.guaranteeItem {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.guaranteeItem:last-child {
+  margin-bottom: 0;
+}
+
+.guaranteeIcon {
+  font-size: 1.25rem;
+  color: #7c3aed;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.guaranteeItem h4 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #1e293b;
+  margin-bottom: 2px;
+}
+
+.guaranteeItem p {
+  font-size: 0.775rem;
+  color: #64748b;
+  line-height: 1.4;
+}
+
+.catalogCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.catalogHeader {
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 16px;
+}
+
+.catalogHeader h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #0f172a;
+  margin-bottom: 4px;
+}
+
+.catalogHeader p {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 24px;
+}
+
+.noProducts {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px;
+  background-color: white;
+  border-radius: 16px;
+  border: 1px dashed #cbd5e1;
+  color: #64748b;
+  text-align: center;
+  gap: 12px;
+}
+
+.noProducts p {
+  font-size: 1.1rem;
+  font-weight: 500;
+}

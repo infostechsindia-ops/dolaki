@@ -1,0 +1,298 @@
+.footer {
+  background-color: #0B0F19;
+  color: #F8FAFC;
+  margin-top: auto;
+  border-top: 1px solid #1E293B;
+  font-family: var(--font-body);
+}
+
+.trustBadges {
+  padding: 40px 0;
+  border-bottom: 1px solid #1E293B;
+  background-color: #070B13;
+}
+
+.badgesGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+.badgeItem {
+  display: flex;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.badgeIconWrapper {
+  background-color: rgba(124, 58, 237, 0.15);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  border: 1px solid rgba(124, 58, 237, 0.25);
+}
+
+.badgeIcon {
+  color: var(--color-primary);
+  font-size: 1.5rem;
+}
+
+.badgeText h4 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+  color: #FFFFFF;
+}
+
+.badgeText p {
+  font-size: 0.8rem;
+  color: #94A3B8;
+  line-height: 1.45;
+}
+
+.footerMain {
+  padding: 60px 0;
+}
+
+.linksGrid {
+  display: grid;
+  grid-template-columns: 1.5fr repeat(2, 1fr) 1.5fr;
+  gap: 40px;
+}
+
+.brandCol {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.logo {
+  font-family: var(--font-heading);
+  font-size: 2rem;
+  font-weight: 900;
+  color: #FFFFFF;
+  letter-spacing: -0.03em;
+}
+
+.logoAccent {
+  background: var(--gradient-brand);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.brandDesc {
+  font-size: 0.88rem;
+  color: #94A3B8;
+  line-height: 1.6;
+}
+
+.appStoreLinks {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.appBadge {
+  display: inline-block;
+  height: 38px;
+  transition: var(--transition-bounce);
+}
+
+.appBadge:hover {
+  transform: translateY(-2px);
+  filter: brightness(1.1);
+}
+
+.appBadge img {
+  height: 100%;
+  width: auto;
+}
+
+.linksCol h4 {
+  font-size: 1.05rem;
+  margin-bottom: 24px;
+  color: #FFFFFF;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.linksCol h4::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 32px;
+  height: 2px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+}
+
+.linksCol ul {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.linksCol ul a {
+  font-size: 0.9rem;
+  color: #94A3B8;
+  font-weight: 500;
+}
+
+.linksCol ul a:hover {
+  color: #FFFFFF;
+  padding-left: 6px;
+}
+
+.newsletterDesc {
+  font-size: 0.88rem;
+  color: #94A3B8;
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+
+.newsletterForm {
+  display: flex;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid #1E293B;
+  border-radius: var(--radius-full);
+  padding: 4px;
+  overflow: hidden;
+  margin-bottom: 20px;
+}
+
+.newsletterInput {
+  flex: 1;
+  background: transparent;
+  border: none;
+  padding: 8px 16px;
+  color: #FFFFFF;
+  font-size: 0.85rem;
+}
+
+.newsletterInput::placeholder {
+  color: #64748B;
+}
+
+.newsletterButton {
+  background: var(--gradient-brand-vivid);
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.95rem;
+  box-shadow: var(--shadow-brand);
+}
+
+.newsletterButton:hover {
+  transform: scale(1.05);
+}
+
+.subscriptionSuccess {
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  color: #34D399;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.contactDetails {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.85rem;
+  color: #94A3B8;
+  border-top: 1px solid #1E293B;
+  padding-top: 16px;
+}
+
+.contactDetails strong {
+  color: #FFFFFF;
+}
+
+.footerBottom {
+  padding: 30px 0;
+  border-top: 1px solid #1E293B;
+  font-size: 0.85rem;
+  color: #64748B;
+}
+
+.bottomInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+}
+
+.paymentMethods {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.paymentBadge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: var(--radius-xs);
+  padding: 4px 8px;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: #E2E8F0;
+}
+
+.socials {
+  display: flex;
+  gap: 20px;
+}
+
+.socials a {
+  color: #64748B;
+  font-weight: 500;
+}
+
+.socials a:hover {
+  color: #FFFFFF;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .badgesGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .linksGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .bottomInner {
+    flex-direction: column;
+    text-align: center;
+    gap: 20px;
+  }
+}
+
+@media (max-width: 640px) {
+  .badgesGrid {
+    grid-template-columns: 1fr;
+  }
+  .linksGrid {
+    grid-template-columns: 1fr;
+  }
+  .appStoreLinks {
+    justify-content: center;
+  }
+}

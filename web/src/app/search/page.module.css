@@ -1,0 +1,445 @@
+.searchPageContainer {
+  padding: 40px 0 80px 0;
+  min-height: 80vh;
+  font-family: var(--font-body);
+}
+
+.searchHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 24px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.queryTitle {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.searchIcon {
+  font-size: 2rem;
+  color: var(--color-primary);
+}
+
+.queryTitle h1 {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.queryTitle span {
+  color: var(--color-primary);
+}
+
+.headerControls {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.resultsCount {
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: var(--color-text-secondary);
+}
+
+/* Grid / List View Toggle */
+.viewToggleGroup {
+  display: flex;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background: white;
+}
+
+.toggleBtn {
+  padding: 10px 14px;
+  background: transparent;
+  border: none;
+  font-size: 1.15rem;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.toggleBtn:hover {
+  color: var(--color-primary);
+}
+
+.activeToggle {
+  background: var(--color-primary-light);
+  color: var(--color-primary) !important;
+}
+
+.searchBody {
+  display: grid;
+  grid-template-columns: 280px 1fr;
+  gap: 40px;
+  align-items: flex-start;
+}
+
+/* Sidebar styling */
+.sidebar {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: sticky;
+  top: 100px;
+}
+
+.sidebarHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 14px;
+}
+
+.sidebarHeader h3 {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.resetBtn {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.resetBtn:hover {
+  color: var(--color-primary-hover);
+}
+
+.filterGroup {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 20px;
+}
+
+.filterGroup:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.filterGroup h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin-bottom: 14px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.categoryPills {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.categoryPill {
+  text-align: left;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  background: var(--color-bg-alt);
+  border: 1.5px solid var(--color-border);
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.categoryPill:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.activePill {
+  background: var(--color-primary-light);
+  color: var(--color-primary) !important;
+  border-color: var(--color-primary);
+}
+
+/* Price Range Slider */
+.priceFilterRange {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.rangeInput {
+  width: 100%;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.priceValues {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.currentPriceValue {
+  color: var(--color-primary);
+  font-weight: 750;
+}
+
+.sortSelect {
+  width: 100%;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1.5px solid var(--color-border);
+  background: white;
+  color: var(--color-text-primary);
+  font-weight: 650;
+  cursor: pointer;
+  outline: none;
+}
+
+.sortSelect:focus {
+  border-color: var(--color-primary);
+}
+
+/* Checkboxes */
+.checkboxList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.checkboxInput {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+/* Ratings Filter */
+.ratingList {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.ratingFilterBtn {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  width: 100%;
+  text-align: left;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.ratingFilterBtn:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.activeRatingFilter {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.starRow {
+  display: flex;
+  gap: 2px;
+}
+
+.starFilled {
+  fill: var(--color-star);
+  color: var(--color-star);
+}
+
+.starEmpty {
+  color: var(--color-border-strong);
+}
+
+/* Offers Toggle */
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.toggleInput {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}
+
+.toggleText {
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: var(--color-text-primary);
+}
+
+/* Grid & List Results Layout */
+.resultsGridWrapper {
+  flex: 1;
+}
+
+.resultsGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 28px;
+}
+
+.resultsList {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.listItemWrapper {
+  width: 100%;
+}
+
+/* Custom list-card item style overriding the standard grid card format */
+.resultsList :global(.ProductCard_card__custom) {
+  flex-direction: row;
+}
+
+/* Empty State */
+.emptyState {
+  text-align: center;
+  padding: 60px 0;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.frownIcon {
+  font-size: 4rem;
+  color: var(--color-text-muted);
+  margin-bottom: 20px;
+}
+
+.emptyState h2 {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.emptyState p {
+  color: var(--color-text-secondary);
+  margin-bottom: 60px;
+  font-weight: 550;
+}
+
+.recommendations h3 {
+  font-size: 1.4rem;
+  margin-bottom: 24px;
+  font-family: var(--font-heading);
+  font-weight: 850;
+  letter-spacing: -0.02em;
+}
+
+.recGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+}
+
+/* Loading state */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 20px;
+}
+
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid var(--color-primary-light);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+@media (max-width: 1024px) {
+  .searchBody {
+    grid-template-columns: 1fr;
+    gap: 30px;
+  }
+  .sidebar {
+    position: static;
+  }
+  .resultsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .recGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 640px) {
+  .searchHeader {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .headerControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+  .resultsGrid {
+    grid-template-columns: 1fr;
+  }
+  .recGrid {
+    grid-template-columns: 1fr;
+  }
+}

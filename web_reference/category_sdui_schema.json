@@ -1,0 +1,131 @@
+{
+  "categoryId": "fashion",
+  "title": "Fashion & Lifestyle",
+  "theme": {
+    "primaryColor": "#8b5cf6",
+    "secondaryColor": "#f3e8ff",
+    "backgroundColor": "#f9fafb",
+    "fontFamily": "Inter, sans-serif"
+  },
+  "metadata": {
+    "seoTitle": "Buy Fashion Products Online | AuraMart",
+    "seoDescription": "Shop the latest trends in fashion."
+  },
+  "blocks": [
+    {
+      "id": "blk-hero-1",
+      "type": "HERO_BANNER",
+      "order": 1,
+      "data": {
+        "title": "Summer Collection '27",
+        "subtitle": "Up to 60% Off on Premium Styles",
+        "imageUrl": "https://via.placeholder.com/1200x400/8b5cf6/ffffff?text=Summer+Collection",
+        "ctaText": "Explore Now",
+        "ctaLink": "/collections/summer-27"
+      }
+    },
+    {
+      "id": "blk-brands-carousel-1",
+      "type": "BRAND_CAROUSEL",
+      "order": 2,
+      "layout": {
+        "type": "CAROUSEL",
+        "itemsVisible": {
+          "mobile": 3.5,
+          "tablet": 5.5,
+          "desktop": 8
+        },
+        "autoPlay": false
+      },
+      "data": {
+        "title": "Featured Brands",
+        "brands": [
+          { "id": "b1", "name": "Nike", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=N", "link": "/brand/nike" },
+          { "id": "b2", "name": "Puma", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=P", "link": "/brand/puma" },
+          { "id": "b3", "name": "Adidas", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=A", "link": "/brand/adidas" }
+        ]
+      }
+    },
+    {
+      "id": "blk-masonry-lookbook",
+      "type": "CONTENT_MASONRY",
+      "order": 3,
+      "layout": {
+        "type": "MASONRY",
+        "columns": {
+          "mobile": 2,
+          "tablet": 3,
+          "desktop": 4
+        },
+        "gap": "16px"
+      },
+      "data": {
+        "title": "Style Inspiration",
+        "subtitle": "Shop the look from top creators",
+        "items": [
+          {
+            "id": "look-1",
+            "imageUrl": "https://via.placeholder.com/300x400/eeeeee/333333?text=Look+1",
+            "aspectRatio": "3/4",
+            "linkedProductIds": ["p1", "p2"]
+          },
+          {
+            "id": "look-2",
+            "imageUrl": "https://via.placeholder.com/300x300/eeeeee/333333?text=Look+2",
+            "aspectRatio": "1/1",
+            "linkedProductIds": ["p3"]
+          },
+          {
+            "id": "look-3",
+            "imageUrl": "https://via.placeholder.com/300x500/eeeeee/333333?text=Look+3",
+            "aspectRatio": "3/5",
+            "linkedProductIds": ["p4", "p5"]
+          }
+        ]
+      }
+    },
+    {
+      "id": "blk-products-grid-1",
+      "type": "PRODUCT_LISTING",
+      "order": 4,
+      "layout": {
+        "type": "GRID",
+        "columns": {
+          "mobile": 2,
+          "tablet": 3,
+          "desktop": 4
+        },
+        "gap": "24px"
+      },
+      "data": {
+        "title": "Trending in Fashion",
+        "showFilters": true,
+        "showSorting": true,
+        "products": [
+          {
+            "id": "p1",
+            "name": "Oversized Cotton Tee",
+            "brand": "Zara",
+            "price": 999,
+            "originalPrice": 1999,
+            "discountPercentage": 50,
+            "rating": 4.5,
+            "reviews": 120,
+            "imageUrl": "https://via.placeholder.com/300x400/f3f4f6/333333?text=Tee"
+          },
+          {
+            "id": "p2",
+            "name": "Slim Fit Denim",
+            "brand": "Levis",
+            "price": 2499,
+            "originalPrice": 3999,
+            "discountPercentage": 37,
+            "rating": 4.8,
+            "reviews": 450,
+            "imageUrl": "https://via.placeholder.com/300x400/f3f4f6/333333?text=Denim"
+          }
+        ]
+      }
+    }
+  ]
+}

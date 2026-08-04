@@ -1,0 +1,295 @@
+.sectionContainer {
+  padding: 40px 0;
+  position: relative;
+  overflow: hidden;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin-bottom: 30px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+}
+
+.sectionHeader {
+  margin-bottom: 24px;
+  position: relative;
+  z-index: 5;
+  padding: 0 20px;
+}
+
+.sectionHeader h3 {
+  font-size: 1.6rem;
+  font-weight: 850;
+  font-family: var(--font-heading);
+  margin-bottom: 4px;
+}
+
+.sectionHeader p {
+  color: var(--color-text-muted);
+  font-size: 0.95rem;
+}
+
+/* Round Bubbles Style */
+.roundBubblesGrid {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 32px;
+  flex-wrap: wrap;
+  position: relative;
+  z-index: 5;
+  padding: 10px 20px;
+}
+
+.bubbleItem {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  cursor: pointer;
+  position: relative;
+}
+
+.bubbleImageWrapper {
+  width: 110px;
+  height: 110px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 3px solid white;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.bubbleItem:hover .bubbleImageWrapper {
+  transform: scale(1.1);
+  box-shadow: var(--shadow-md);
+}
+
+.bubbleImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.bubbleTitle {
+  font-size: 0.88rem;
+  font-weight: 750;
+  color: var(--color-text-primary);
+}
+
+/* Grids Layout Styles */
+.gridLayout {
+  display: grid;
+  gap: 20px;
+  position: relative;
+  z-index: 5;
+  padding: 0 20px;
+}
+
+.grid2 {
+  grid-template-columns: repeat(2, 1fr);
+}
+
+.grid3 {
+  grid-template-columns: repeat(3, 1fr);
+}
+
+.gridItem {
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+  aspect-ratio: 2 / 1;
+  border: 1px solid var(--color-border);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  background-color: var(--color-bg-alt);
+}
+
+.grid3 .gridItem {
+  aspect-ratio: 1.9 / 1;
+}
+
+.gridItem:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-md);
+}
+
+.gridImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.gridOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(0deg, rgba(15, 23, 42, 0.85) 0%, rgba(15, 23, 42, 0) 100%);
+  color: white;
+  z-index: 2;
+}
+
+.gridOverlay h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin-bottom: 2px;
+}
+
+.gridOverlay p {
+  font-size: 0.82rem;
+  opacity: 0.9;
+}
+
+/* Carousel Layout Styles */
+.carouselLayout {
+  position: relative;
+  z-index: 5;
+  padding: 0 20px;
+  overflow: hidden;
+}
+
+.carouselSlider {
+  display: flex;
+  transition: transform 0.5s ease-in-out;
+  width: 100%;
+}
+
+.carouselSlide {
+  flex-shrink: 0;
+  position: relative;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid var(--color-border);
+}
+
+.carousel1 .carouselSlide {
+  width: 100%;
+  aspect-ratio: 3 / 1;
+}
+
+.carousel2 .carouselSlide {
+  width: calc(50% - 10px);
+  margin-right: 20px;
+  aspect-ratio: 1.8 / 1;
+}
+
+.carouselImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.carouselNav {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 16px;
+}
+
+.carouselDot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: var(--color-border);
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.carouselActiveDot {
+  background-color: var(--color-primary);
+  transform: scale(1.25);
+}
+
+/* Festive overlay elements */
+.festiveOverlayElement {
+  position: absolute;
+  font-size: 2.4rem;
+  pointer-events: none;
+  z-index: 3;
+  animation: floatDecoration 4s ease-in-out infinite alternate;
+}
+
+@keyframes floatDecoration {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-8px) rotate(5deg); }
+}
+
+.topLeft { top: 15px; left: 20px; }
+.topRight { top: 15px; right: 20px; }
+.bottomLeft { bottom: 15px; left: 20px; }
+.bottomRight { bottom: 15px; right: 20px; }
+
+/* Drag and Drop CMS Editor Overlays */
+.dropzoneOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(124, 58, 237, 0.7);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  z-index: 10;
+  border: 3px dashed white;
+  border-radius: inherit;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.editableItem {
+  position: relative;
+}
+
+.editableItem.dragOver .dropzoneOverlay,
+.dropzoneOverlay.visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.dropzoneInfo {
+  text-align: center;
+  padding: 10px;
+}
+
+.dropzoneInfo span {
+  display: block;
+  font-weight: 850;
+  font-size: 0.88rem;
+  text-transform: uppercase;
+}
+
+.dropzoneInfo em {
+  font-size: 0.75rem;
+  opacity: 0.9;
+  font-style: normal;
+  display: block;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .grid2, .grid3 {
+    grid-template-columns: 1fr;
+  }
+  .carousel2 .carouselSlide {
+    width: 100%;
+    margin-right: 0;
+  }
+  .carousel1 .carouselSlide {
+    aspect-ratio: 2 / 1;
+  }
+  .bubbleImageWrapper {
+    width: 80px;
+    height: 80px;
+  }
+}

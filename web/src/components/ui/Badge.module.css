@@ -1,0 +1,42 @@
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  font-size: 0.7rem;
+  font-weight: 800;
+  border-radius: var(--radius-full, 9999px);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: white;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.icon {
+  font-size: 0.8rem;
+}
+
+.bestseller {
+  background: var(--gradient-gold);
+}
+
+.new {
+  background: var(--gradient-brand);
+}
+
+.trending {
+  background: var(--gradient-sunset);
+}
+
+.special {
+  background: var(--gradient-ocean);
+}
+
+.quick-delivery {
+  background: var(--gradient-flado);
+}
+
+.discount {
+  background: #EF4444;
+}

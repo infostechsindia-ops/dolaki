@@ -1,0 +1,789 @@
+.builderPage {
+  background: #f8fafc;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  font-family: var(--font-body);
+}
+
+/* ── Top Bar ────────────────────────────────────────── */
+.builderTopbar {
+  background: #0f172a;
+  color: white;
+  padding: 1rem 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.topbarLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.builderIcon {
+  font-size: 2.2rem;
+}
+
+.builderTitle {
+  font-size: 1.25rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  margin: 0;
+  letter-spacing: -0.01em;
+}
+
+.builderSub {
+  font-size: 0.8rem;
+  color: #94a3b8;
+  margin: 0;
+}
+
+.topbarActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btnReset {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #cbd5e1;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btnReset:hover {
+  background: rgba(255,255,255,0.12);
+  color: white;
+}
+
+.btnExport {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.15);
+  color: #cbd5e1;
+  padding: 0.55rem 1rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btnExport:hover {
+  background: rgba(255,255,255,0.12);
+  color: white;
+}
+
+.btnSave {
+  background: #059669;
+  color: white;
+  border: none;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  font-weight: 800;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.btnSave:hover {
+  background: #047857;
+  transform: translateY(-1px);
+}
+
+.btnPreview {
+  background: #7c3aec;
+  color: white;
+  padding: 0.55rem 1.15rem;
+  border-radius: 8px;
+  font-weight: 850;
+  font-size: 0.8rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+
+.btnPreview:hover {
+  background: #6d28d9;
+  transform: translateY(-1px);
+}
+
+/* ── Container Layout ────────────────────────────────── */
+.builderContainer {
+  display: grid;
+  grid-template-columns: 360px 1fr 380px;
+  flex: 1;
+  height: calc(100vh - 73px);
+  overflow: hidden;
+}
+
+/* ── Sidebars General ────────────────────────────────── */
+.sidebarLeft, .sidebarRight {
+  background: white;
+  border-right: 1px solid #e2e8f0;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+  overflow-y: auto;
+}
+
+.sidebarRight {
+  border-right: none;
+  border-left: 1px solid #e2e8f0;
+}
+
+.panelBlock {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.panelTitle {
+  font-size: 0.95rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: #1e293b;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  letter-spacing: 0.03em;
+  padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid #f1f5f9;
+}
+
+/* ── Inputs ─────────────────────────────────────────── */
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.formGroup label {
+  font-size: 0.76rem;
+  font-weight: 800;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.inputField, .selectInput, .textareaField {
+  padding: 0.6rem 0.85rem;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  font-size: 0.84rem;
+  background: #fff;
+  color: #1e293b;
+  width: 100%;
+}
+
+.inputField:focus, .selectInput:focus, .textareaField:focus {
+  border-color: #7c3aec;
+  box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
+.textareaField {
+  height: 64px;
+  resize: none;
+}
+
+.campaignSelectRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btnAddCampaign {
+  width: 38px;
+  height: 38px;
+  border-radius: 8px;
+  background: #7c3aec;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.btnAddCampaign:hover {
+  background: #6d28d9;
+}
+
+.campaignSettingsForm {
+  background: #f8fafc;
+  padding: 1rem;
+  border-radius: 12px;
+  border: 1px dashed #cbd5e1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.formRow {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-end;
+}
+
+.colorPicker {
+  width: 100%;
+  height: 38px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  cursor: pointer;
+  background: white;
+  padding: 2px;
+}
+
+.btnDeleteCampaign {
+  height: 38px;
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 0 1rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.btnDeleteCampaign:hover {
+  background: #fca5a5;
+}
+
+/* ── Section Cards List ────────────────────────────── */
+.sectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.sectionItemCard {
+  border: 1.5px solid #e2e8f0;
+  border-radius: 10px;
+  padding: 0.85rem;
+  background: #fff;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.sectionItemCard:hover {
+  border-color: #cbd5e1;
+  box-shadow: var(--shadow-sm);
+}
+
+.activeSectionCard {
+  border-color: #7c3aec !important;
+  box-shadow: 0 4px 12px rgba(124, 58, 237, 0.08) !important;
+}
+
+.sectionCardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.sectionBadge {
+  color: white;
+  font-size: 0.64rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+}
+
+.sectionHeaderControl {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.sectionHeaderControl button {
+  width: 24px;
+  height: 24px;
+  background: #f1f5f9;
+  color: #475569;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  cursor: pointer;
+}
+
+.sectionHeaderControl button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.sectionCardHeading {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #334155;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sectionCardActions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 0.25rem;
+  border-top: 1px solid #f1f5f9;
+  padding-top: 0.4rem;
+}
+
+.sectionCardActions button {
+  font-size: 0.72rem;
+  font-weight: 750;
+  color: #64748b;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+
+.sectionCardActions button:hover {
+  color: #1e293b;
+}
+
+.deleteText:hover {
+  color: #ef4444 !important;
+}
+
+/* Add new section panel */
+.addSectionGrid {
+  background: #f8fafc;
+  border: 1px dashed #cbd5e1;
+  padding: 1rem;
+  border-radius: 12px;
+  margin-top: 0.5rem;
+}
+
+.addSectionTitle {
+  font-size: 0.76rem;
+  font-weight: 850;
+  text-transform: uppercase;
+  color: #64748b;
+  margin-bottom: 0.75rem;
+}
+
+.addBtnsRow {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.5rem;
+}
+
+.btnAddSectionType {
+  background: white;
+  border: 1.5px solid #cbd5e1;
+  color: #334155;
+  padding: 0.5rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.btnAddSectionType:hover {
+  background: #f1f5f9;
+  border-color: #94a3b8;
+  transform: translateX(2px);
+}
+
+/* ── Middle Visual Preview Panel ────────────────────── */
+.previewPanel {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #f1f5f9;
+  position: relative;
+  overflow: hidden;
+}
+
+.previewHeaderBar {
+  background: white;
+  border-bottom: 1px solid #e2e8f0;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 50;
+}
+
+.previewBadge {
+  font-size: 0.8rem;
+  font-weight: 850;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.deviceToggles {
+  display: flex;
+  background: #f1f5f9;
+  padding: 3px;
+  border-radius: 8px;
+}
+
+.deviceBtn {
+  padding: 0.35rem 0.85rem;
+  font-size: 0.74rem;
+  font-weight: 800;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: #64748b;
+}
+
+.deviceActive {
+  background: white;
+  color: #1e293b;
+  box-shadow: var(--shadow-sm);
+}
+
+.previewViewport {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.viewportMobile {
+  padding: 2rem 0;
+}
+
+.viewportMobile .previewContent {
+  width: 375px;
+  min-height: 600px;
+  border: 12px solid #0f172a;
+  border-radius: 36px;
+  background: white;
+  box-shadow: var(--shadow-xl);
+  overflow-x: hidden;
+}
+
+.previewContent {
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 1000px;
+  min-height: 100%;
+  box-shadow: var(--shadow-sm);
+  padding: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.promoHeaderMock {
+  text-align: center;
+  margin-bottom: 1.5rem;
+}
+
+.promoHeaderMock h1 {
+  font-size: 1.8rem;
+  font-weight: 900;
+  margin-bottom: 4px;
+}
+
+.promoHeaderMock p {
+  color: #64748b;
+  font-size: 0.88rem;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+.sectionWrapperMock {
+  position: relative;
+  cursor: pointer;
+  border-radius: 14px;
+  transition: all 0.2s ease;
+}
+
+.wrapperActiveHighlight {
+  box-shadow: 0 0 0 3px #7c3aec;
+}
+
+.selectedOverlay {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #7c3aec;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  z-index: 200;
+  letter-spacing: 0.05em;
+}
+
+.emptySectionsPlaceholder {
+  padding: 4rem 1rem;
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.9rem;
+  border: 2px dashed #cbd5e1;
+  border-radius: 12px;
+}
+
+.emptyState {
+  padding: 6rem 1rem;
+  text-align: center;
+  color: #64748b;
+  font-size: 1rem;
+  font-weight: 750;
+  background: white;
+  border-radius: 16px;
+  width: 100%;
+  max-width: 600px;
+}
+
+/* ── Right Sidebar Blocks ────────────────────────────── */
+.sectionSettingsForm {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.sectionItemsHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1.5px solid #f1f5f9;
+  padding-top: 1rem;
+}
+
+.itemsSubTitle {
+  font-size: 0.88rem;
+  font-weight: 850;
+  color: #1e293b;
+  margin: 0;
+}
+
+.btnNewItemSlot {
+  background: #e0f2fe;
+  color: #0369a1;
+  border: 1px solid #bae6fd;
+  border-radius: 6px;
+  font-size: 0.72rem;
+  font-weight: 800;
+  padding: 0.35rem 0.75rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.btnNewItemSlot:hover {
+  background: #bae6fd;
+}
+
+.itemsScrollList {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 2rem;
+}
+
+.itemEditCard {
+  background: #f8fafc;
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.itemCardTop {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  color: #475569;
+}
+
+.btnRemoveItem {
+  color: #ef4444;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+}
+
+.btnRemoveItem:hover {
+  transform: scale(1.15);
+}
+
+.resolutionLabel {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+}
+
+.resHighlight {
+  color: #7c3aec;
+  font-weight: 900;
+}
+
+.imageSelectorRow {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.fileInputLabel {
+  background: #f1f5f9;
+  border: 1.5px solid #cbd5e1;
+  color: #475569;
+  border-radius: 8px;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 750;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  flex-shrink: 0;
+  height: 36px;
+}
+
+.fileInputLabel:hover {
+  background: #e2e8f0;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.builderDropzoneLabel {
+  font-size: 0.65rem;
+  color: #94a3b8;
+  margin-top: 1px;
+}
+
+.emptyRightPanel {
+  padding: 3rem 1rem;
+  text-align: center;
+  font-size: 0.82rem;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+/* ── Modal ─────────────────────────────────────────── */
+.modalTitle {
+  font-size: 1.2rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  margin-bottom: 0.5rem;
+}
+
+.modalDesc {
+  font-size: 0.82rem;
+  color: #64748b;
+  margin-bottom: 1rem;
+}
+
+.textareaExport {
+  width: 100%;
+  height: 280px;
+  font-family: monospace;
+  font-size: 0.76rem;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1.5px solid #e2e8f0;
+  background: #f8fafc;
+  color: #334155;
+  resize: vertical;
+  margin-bottom: 1.25rem;
+}
+
+.modalActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+.btnAction {
+  background: #7c3aec;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.btnAction:hover {
+  background: #6d28d9;
+}
+
+.btnActionSecondary {
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+  color: #475569;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.btnActionSecondary:hover {
+  background: #f1f5f9;
+}
+
+@media (max-width: 1200px) {
+  .builderContainer {
+    grid-template-columns: 320px 1fr;
+  }
+  .sidebarRight {
+    display: none;
+  }
+}
+
+@media (max-width: 900px) {
+  .builderContainer {
+    grid-template-columns: 1fr;
+    height: auto;
+  }
+  .sidebarLeft {
+    height: auto;
+    border-right: none;
+    border-bottom: 1px solid #e2e8f0;
+  }
+  .previewPanel {
+    height: 600px;
+  }
+}

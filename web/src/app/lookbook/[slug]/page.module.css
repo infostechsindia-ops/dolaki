@@ -1,0 +1,575 @@
+.page { background: #f8fafc; min-height: 100vh; padding-bottom: 4rem; }
+
+/* ── Container ─────────────────────────────────────── */
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+}
+
+/* ── Header ─────────────────────────────────────────── */
+.pageHeader {
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  padding: 3rem 0 2.5rem;
+  margin-bottom: 2rem;
+}
+
+.headerContent { max-width: 700px; }
+
+.taglineRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.75rem;
+}
+
+.taglineIcon {
+  color: var(--accent, #f59e0b);
+  font-size: 1rem;
+}
+
+.tagline {
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent, #f59e0b);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.title {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 900;
+  color: #fff;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  margin-bottom: 0.75rem;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: #94a3b8;
+  line-height: 1.65;
+  max-width: 560px;
+  margin-bottom: 1.25rem;
+}
+
+.headerMeta {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.metaBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: #94a3b8;
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 0.3rem 0.9rem;
+  border-radius: 100px;
+}
+
+/* ── Lookbook Layout ────────────────────────────────── */
+.lookbookLayout {
+  display: grid;
+  grid-template-columns: 80px 1fr 300px;
+  gap: 1.5rem;
+  align-items: start;
+}
+
+/* ── Slide Rail ─────────────────────────────────────── */
+.slideRail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  position: sticky;
+  top: 90px;
+}
+
+.railThumb {
+  position: relative;
+  width: 72px;
+  height: 96px;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 2.5px solid transparent;
+  cursor: pointer;
+  padding: 0;
+  transition: border-color 0.25s, transform 0.2s;
+  background: transparent;
+}
+
+.railThumb:hover { transform: scale(1.04); border-color: #c4b5fd; }
+.railThumbActive { border-color: var(--accent, #f59e0b) !important; }
+
+.railThumbImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.railThumbNum {
+  position: absolute;
+  bottom: 4px;
+  right: 5px;
+  background: rgba(0,0,0,0.65);
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ── Main Image ─────────────────────────────────────── */
+.mainImageWrap {
+  position: relative;
+  border-radius: 16px;
+  overflow: hidden;
+  max-height: 720px;
+}
+
+.mainImage {
+  width: 100%;
+  height: 720px;
+  object-fit: cover;
+  display: block;
+  transition: opacity 0.3s ease;
+}
+
+.slideTitle {
+  position: absolute;
+  bottom: 0;
+  left: 0; right: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0) 100%);
+  color: #fff;
+  padding: 2rem 1.5rem 1.25rem;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.slidePill {
+  font-size: 0.75rem;
+  font-weight: 600;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(4px);
+  padding: 0.3rem 0.7rem;
+  border-radius: 100px;
+}
+
+/* ── Hotspot ─────────────────────────────────────────── */
+.hotspot {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 10;
+}
+
+.pin {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2.5px solid #fff;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: background 0.2s, transform 0.2s;
+  line-height: 1;
+  padding: 0;
+}
+
+.pin:hover { transform: scale(1.15); }
+.pinOpen { transform: scale(1.15) rotate(45deg); background: var(--accent, #f59e0b); }
+
+.pinRipple {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.4);
+  animation: ripple 2s ease-in-out infinite;
+}
+
+@keyframes ripple {
+  0% { transform: scale(0.9); opacity: 1; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.pinLabel {
+  position: absolute;
+  top: -2.25rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,0.8);
+  backdrop-filter: blur(4px);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 700;
+  white-space: nowrap;
+  padding: 0.25rem 0.6rem;
+  border-radius: 6px;
+}
+
+/* ── Popover ─────────────────────────────────────────── */
+.popover {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  margin-top: 0.6rem;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+  width: 230px;
+  overflow: hidden;
+  z-index: 100;
+  animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+  from { opacity: 0; transform: translateX(-50%) scale(0.92) translateY(-6px); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1) translateY(0); }
+}
+
+.popoverImg {
+  width: 100%;
+  height: 130px;
+  object-fit: cover;
+}
+
+.popoverInfo { padding: 0.85rem; }
+
+.popoverBrand {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.popoverName {
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1e293b;
+  line-height: 1.3;
+  margin: 0 0 0.5rem;
+}
+
+.popoverPriceRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+
+.popoverPrice { font-size: 1rem; font-weight: 800; color: #0f172a; }
+.popoverOriginal { font-size: 0.8rem; color: #94a3b8; text-decoration: line-through; }
+
+.popoverStars {
+  font-size: 0.75rem;
+  color: #f59e0b;
+  margin-bottom: 0.75rem;
+}
+
+.popoverStars span { color: #94a3b8; }
+
+.popoverActions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.popoverShopBtn {
+  flex: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  background: #8b5cf6;
+  color: #fff;
+  text-decoration: none;
+  padding: 0.55rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  transition: background 0.2s;
+}
+
+.popoverShopBtn:hover { background: #7c3aed; }
+
+.popoverWishBtn {
+  width: 36px;
+  height: 36px;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 8px;
+  background: #fff;
+  color: #94a3b8;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.popoverWishBtn:hover { border-color: #ef4444; color: #ef4444; }
+.popoverWishActive { background: #ef4444; border-color: #ef4444; color: #fff; }
+
+/* ── Slide Arrows ─────────────────────────────────── */
+.slideArrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1.5px solid rgba(255,255,255,0.3);
+  color: #fff;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background 0.2s;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.slideArrow:disabled { opacity: 0.3; cursor: default; }
+.slideArrow:not(:disabled):hover { background: rgba(255,255,255,0.3); }
+.slideArrowPrev { left: 1rem; }
+.slideArrowNext { right: 1rem; }
+
+/* ── Sidebar ─────────────────────────────────────── */
+.sidebar {
+  position: sticky;
+  top: 90px;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.sidebarTitle {
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #1e293b;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  margin: 0;
+  background: #f8fafc;
+}
+
+.sidebarProducts {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.sidebarProduct {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.15s;
+}
+
+.sidebarProduct:hover { background: #f8fafc; }
+.sidebarProduct:last-child { border-bottom: none; }
+
+.sidebarProductImg {
+  width: 60px;
+  height: 70px;
+  border-radius: 8px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.sidebarProductInfo { flex: 1; min-width: 0; }
+
+.sidebarProductBrand {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  text-transform: uppercase;
+  display: block;
+  margin-bottom: 0.2rem;
+}
+
+.sidebarProductName {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e293b;
+  text-decoration: none;
+  line-height: 1.3;
+  display: block;
+  margin-bottom: 0.3rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebarProductPrice {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 800;
+  color: #0f172a;
+  margin-bottom: 0.5rem;
+}
+
+.sidebarShopBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #8b5cf6;
+  text-decoration: none;
+  transition: gap 0.2s;
+}
+
+.sidebarShopBtn:hover { gap: 0.5rem; }
+
+.sidebarEmpty {
+  padding: 1.5rem;
+  font-size: 0.85rem;
+  color: #94a3b8;
+  text-align: center;
+}
+
+/* ── Tips Section ─────────────────────────────────── */
+.tipsSection {
+  padding: 4rem 0;
+  background: #0f172a;
+  margin-top: 3rem;
+}
+
+.tipsTitle {
+  font-size: clamp(1.3rem, 3vw, 1.8rem);
+  font-weight: 800;
+  color: #f8fafc;
+  margin-bottom: 2rem;
+}
+
+.tipsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.tipCard {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: transform 0.25s, border-color 0.25s;
+}
+
+.tipCard:hover { transform: translateY(-5px); border-color: rgba(255,255,255,0.15); }
+
+.tipEmoji { font-size: 2rem; display: block; margin-bottom: 0.75rem; }
+.tipCard h4 { font-size: 0.95rem; font-weight: 700; color: #e2e8f0; margin: 0 0 0.4rem; }
+.tipCard p { font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.55; }
+
+/* ── More Section ─────────────────────────────────── */
+.moreSection { padding: 3rem 0 4rem; background: #f8fafc; }
+
+.moreTitle {
+  font-size: clamp(1.2rem, 2.5vw, 1.6rem);
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1.5rem;
+}
+
+.moreGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.25rem;
+}
+
+.moreCard {
+  position: relative;
+  aspect-ratio: 3/4;
+  border-radius: 14px;
+  overflow: hidden;
+  display: block;
+  text-decoration: none;
+}
+
+.moreCardImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.moreCard:hover .moreCardImg { transform: scale(1.06); }
+
+.moreCardOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(0deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.1) 60%);
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 1.5rem;
+  gap: 0.25rem;
+}
+
+.moreCardTagline {
+  font-size: 0.72rem;
+  color: #f59e0b;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.moreCardOverlay strong { font-size: 1rem; font-weight: 800; line-height: 1.3; }
+
+.moreCardArrow {
+  position: absolute;
+  bottom: 1.25rem;
+  right: 1.25rem;
+  width: 32px;
+  height: 32px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  transition: background 0.2s, transform 0.2s;
+}
+
+.moreCard:hover .moreCardArrow { background: rgba(255,255,255,0.3); transform: translateX(3px); }
+
+@media (max-width: 1024px) {
+  .lookbookLayout { grid-template-columns: 70px 1fr; }
+  .sidebar { display: none; }
+}
+
+@media (max-width: 640px) {
+  .lookbookLayout { grid-template-columns: 1fr; }
+  .slideRail { flex-direction: row; overflow-x: auto; position: static; }
+  .railThumb { width: 56px; height: 72px; flex-shrink: 0; }
+  .mainImage { height: 480px; }
+}

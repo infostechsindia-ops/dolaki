@@ -1,0 +1,230 @@
+.returnsPage {
+  padding-bottom: 80px;
+  background-color: var(--color-bg);
+  min-height: 85vh;
+  font-family: var(--font-body);
+}
+
+.topHeader {
+  background-color: white;
+  border-bottom: 1.5px solid var(--color-border);
+  padding: 24px 0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.backBtn:hover {
+  color: var(--color-primary);
+}
+
+.titleSec h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-family: var(--font-heading);
+}
+
+.titleSec p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.returnsGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+@media (max-width: 968px) {
+  .returnsGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.formCol {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.returnForm {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 30px;
+  box-shadow: var(--shadow-sm);
+}
+
+.returnForm h2 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-family: var(--font-heading);
+}
+
+.returnForm p {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.formGroup label {
+  font-size: 0.82rem;
+  font-weight: 750;
+}
+
+.formInput {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-size: 0.88rem;
+}
+
+.formTextarea {
+  padding: 10px 14px;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  outline: none;
+  font-size: 0.88rem;
+  height: 80px;
+  resize: vertical;
+}
+
+.submitReturnBtn {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--color-text-primary);
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 800;
+  font-size: 0.88rem;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.historySection h2 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+  margin-bottom: 16px;
+  font-family: var(--font-heading);
+}
+
+.historyList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.returnHistoryCard {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.statusBadge {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #059669;
+  background-color: #ECFDF5;
+  padding: 2px 10px;
+  border-radius: var(--radius-sm);
+}
+
+.itemName {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.cardFooter {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.82rem;
+  color: var(--color-text-muted);
+}
+
+.sidebarCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.policyCard {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.policyCard h3 {
+  font-size: 1.05rem;
+  font-weight: 850;
+  margin-top: 0;
+  margin-bottom: 20px;
+  font-family: var(--font-heading);
+}
+
+.policyItem {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.policyItem:last-child {
+  margin-bottom: 0;
+}
+
+.policyIcon {
+  font-size: 1.25rem;
+  color: var(--color-primary);
+  margin-top: 2px;
+}
+
+.policyItem h4 {
+  font-size: 0.88rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 4px;
+}
+
+.policyItem p {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+}

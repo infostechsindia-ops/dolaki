@@ -1,0 +1,346 @@
+.page { background: #f8fafc; min-height: 100vh; padding-bottom: 5rem; }
+
+.container {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 0 clamp(1rem, 4vw, 2.5rem);
+}
+
+/* ── Banner ─────────────────────────────────────────── */
+.banner {
+  height: 260px;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.bannerOverlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, rgba(0,0,0,0.82) 0%, rgba(0,0,0,0.4) 100%);
+}
+
+.bannerContent {
+  position: relative;
+  z-index: 2;
+  padding: 0 clamp(1.5rem, 5vw, 5rem);
+  color: #fff;
+}
+
+.bannerEmoji { font-size: 2.5rem; display: block; margin-bottom: 0.5rem; }
+.bannerTitle {
+  font-size: clamp(1.5rem, 3.5vw, 2.5rem);
+  font-weight: 900;
+  line-height: 1.15;
+  margin-bottom: 0.5rem;
+  letter-spacing: -0.02em;
+}
+
+.bannerSubtitle { font-size: 1rem; color: rgba(255,255,255,0.7); }
+
+/* ── Description ─────────────────────────────────────── */
+.descSection {
+  padding: 2.5rem 0 0;
+}
+
+.description {
+  font-size: 0.95rem;
+  color: #475569;
+  line-height: 1.7;
+  margin-bottom: 1.25rem;
+  max-width: 760px;
+}
+
+.noteBox {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  background: #fff;
+  border-left: 4px solid var(--accent, #3b82f6);
+  border-radius: 0 10px 10px 0;
+  padding: 1rem 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  margin-bottom: 0.5rem;
+}
+
+.noteBox svg { font-size: 1.1rem; flex-shrink: 0; margin-top: 2px; }
+.noteBox p { font-size: 0.88rem; color: #475569; margin: 0; line-height: 1.6; }
+
+/* ── Chart Tabs ──────────────────────────────────────── */
+.chartTabs {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  margin: 2rem 0 0;
+}
+
+.chartTab {
+  padding: 0.5rem 1.15rem;
+  border-radius: 100px;
+  border: 1.5px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  font-size: 0.84rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.chartTab:hover { border-color: #94a3b8; color: #1e293b; }
+.chartTabActive { color: #fff; }
+
+/* ── Table Section ──────────────────────────────────── */
+.tableSection {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+  margin: 1.5rem 0 2.5rem;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+
+.tableHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #f1f5f9;
+  background: #f8fafc;
+}
+
+.tableTitle {
+  font-size: 1rem;
+  font-weight: 800;
+  color: #1e293b;
+  margin: 0;
+}
+
+.expandBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #64748b;
+  background: transparent;
+  border: 1.5px solid #e2e8f0;
+  padding: 0.35rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.expandBtn:hover { border-color: #94a3b8; color: #1e293b; }
+
+.tableScroll { overflow-x: auto; }
+
+.sizeTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.sizeTable thead tr {
+  background: #f1f5f9;
+}
+
+.sizeTable th {
+  padding: 0.85rem 1.1rem;
+  text-align: left;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #64748b;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.sizeTable td {
+  padding: 0.8rem 1.1rem;
+  font-size: 0.88rem;
+  color: #334155;
+  white-space: nowrap;
+  border-bottom: 1px solid #f8fafc;
+}
+
+.rowEven { background: #fff; }
+.rowOdd  { background: #fafbfd; }
+
+.sizeTable tbody tr:hover { background: #f0f4ff; transition: background 0.15s; }
+.sizeTable tbody tr:last-child td { border-bottom: none; }
+
+/* ── How To Measure ──────────────────────────────────── */
+.howToSection { margin-bottom: 3rem; }
+
+.howToTitle {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+}
+
+.howToGrid { display: flex; flex-direction: column; gap: 0.75rem; }
+
+.howToCard {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.howToCard:hover { border-color: #94a3b8; box-shadow: 0 2px 12px rgba(0,0,0,0.06); }
+.howToCardOpen { border-color: var(--accent, #3b82f6) !important; }
+
+.howToCardHeader {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 1rem 1.25rem;
+}
+
+.howToStep {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: var(--accent, #3b82f6);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.howToCardHeader h3 {
+  flex: 1;
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1e293b;
+  margin: 0;
+}
+
+.howToToggle {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: #64748b;
+  font-size: 1.1rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.howToCardBody { padding: 0 1.25rem 1.25rem 1.25rem; animation: slideDown 0.2s ease; }
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.howToInstruction {
+  font-size: 0.88rem;
+  color: #475569;
+  line-height: 1.7;
+  margin-bottom: 0.75rem;
+  padding-left: 3rem;
+}
+
+.howToTip {
+  background: #fffbeb;
+  border: 1px solid #fde68a;
+  border-radius: 8px;
+  padding: 0.65rem 1rem;
+  font-size: 0.82rem;
+  color: #92400e;
+  line-height: 1.6;
+  margin-left: 3rem;
+}
+
+.howToTip strong { display: inline; }
+
+/* ── Fit Tips ─────────────────────────────────────────── */
+.fitTipsSection { margin-bottom: 3rem; }
+
+.fitTipsTitle {
+  font-size: clamp(1.1rem, 2.5vw, 1.4rem);
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1.25rem;
+}
+
+.fitTipsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+  gap: 1.25rem;
+}
+
+.fitTipCard {
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 14px;
+  padding: 1.5rem;
+  transition: transform 0.2s, border-color 0.2s;
+}
+
+.fitTipCard:hover { transform: translateY(-4px); border-color: var(--accent, #3b82f6); }
+
+.fitTipEmoji { font-size: 1.75rem; display: block; margin-bottom: 0.75rem; }
+.fitTipCard h4 { font-size: 0.95rem; font-weight: 700; color: #1e293b; margin-bottom: 0.4rem; }
+.fitTipCard p { font-size: 0.82rem; color: #64748b; margin: 0; line-height: 1.6; }
+
+/* ── Related ─────────────────────────────────────────── */
+.relatedSection { margin-bottom: 2rem; }
+
+.relatedTitle {
+  font-size: clamp(1rem, 2vw, 1.2rem);
+  font-weight: 800;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.relatedGrid {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.relatedCard {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: #fff;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 100px;
+  padding: 0.6rem 1.25rem;
+  text-decoration: none;
+  color: #334155;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.relatedCard:hover {
+  border-color: var(--accent, #3b82f6);
+  color: var(--accent, #3b82f6);
+  transform: translateY(-2px);
+}
+
+.relatedEmoji { font-size: 1.1rem; }
+.relatedArrow { font-size: 0.85rem; opacity: 0.5; }
+
+@media (max-width: 640px) {
+  .banner { height: 200px; }
+  .fitTipsGrid { grid-template-columns: 1fr; }
+}

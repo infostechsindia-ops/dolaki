@@ -1,0 +1,331 @@
+.storesPage {
+  padding-bottom: 80px;
+  background-color: var(--color-bg);
+  min-height: 85vh;
+  font-family: var(--font-body);
+}
+
+.topHeader {
+  background-color: white;
+  border-bottom: 1.5px solid var(--color-border);
+  padding: 24px 0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.backBtn:hover {
+  color: #059669;
+}
+
+.titleSec h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-family: var(--font-heading);
+}
+
+.titleSec p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.workspaceGrid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 32px;
+  align-items: flex-start;
+}
+
+@media (max-width: 968px) {
+  .workspaceGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.storesPanel {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.storesPanel h3 {
+  font-size: 1.1rem;
+  font-weight: 850;
+  margin-top: 0;
+  margin-bottom: 18px;
+  font-family: var(--font-heading);
+}
+
+.storesList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.storeCard {
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.storeCard:hover {
+  border-color: #059669;
+}
+
+.activeStoreCard {
+  border-color: #059669 !important;
+  background-color: #ECFDF5;
+}
+
+.cardHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.nameRow {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.pinIcon {
+  color: #059669;
+  font-size: 1rem;
+}
+
+.nameRow h4 {
+  font-size: 0.92rem;
+  font-weight: 800;
+  margin: 0;
+}
+
+.statusBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+}
+
+.statusOpen {
+  background-color: #D1FAE5;
+  color: #065F46;
+}
+
+.statusClosed {
+  background-color: #FEE2E2;
+  color: #991B1B;
+}
+
+.storeAddress {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.metaRow {
+  display: flex;
+  gap: 16px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.metaItem {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Map visual layout */
+.mapPanel {
+  flex: 1;
+}
+
+.mapPlaceholder {
+  height: 520px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+}
+
+.simulatedMapBg {
+  width: 100%;
+  height: 100%;
+  background-color: #E2E8F0;
+  background-image: radial-gradient(#CBD5E1 15%, transparent 16%),
+                    radial-gradient(#CBD5E1 15%, transparent 16%);
+  background-size: 30px 30px;
+  background-position: 0 0, 15px 15px;
+  position: relative;
+}
+
+.mapMarker {
+  position: absolute;
+  background-color: #EF4444;
+  color: white;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-full);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+  cursor: pointer;
+  z-index: 10;
+  border: 2px solid white;
+}
+
+.activeMarker {
+  background-color: #059669 !important;
+  transform: scale(1.1);
+  box-shadow: 0 0 0 4px rgba(5, 150, 105, 0.2);
+}
+
+.markerIcon {
+  font-size: 0.85rem;
+}
+
+.markerLabel {
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.userLocationMarker {
+  position: absolute;
+  top: 50%;
+  left: 48%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  z-index: 5;
+}
+
+.userDot {
+  width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  background-color: #2563EB;
+  border: 3px solid white;
+  box-shadow: 0 0 0 6px rgba(37, 99, 235, 0.2);
+}
+
+.userLabel {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background-color: white;
+  color: #1E293B;
+  padding: 2px 6px;
+  border-radius: var(--radius-sm);
+  margin-top: 4px;
+  border: 1px solid var(--color-border);
+}
+
+.mapOverlayDetails {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 20px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+  z-index: 20;
+}
+
+.mapOverlayDetails h4 {
+  font-size: 0.68rem;
+  font-weight: 850;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 0;
+  margin-bottom: 6px;
+}
+
+.mapOverlayDetails h5 {
+  font-size: 1.05rem;
+  font-weight: 850;
+  margin-top: 0;
+  margin-bottom: 4px;
+  font-family: var(--font-heading);
+}
+
+.mapOverlayDetails p {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.overlayDetailsRow {
+  display: flex;
+  gap: 20px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 14px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 12px;
+}
+
+.selectStoreBtn {
+  width: 100%;
+  padding: 12px;
+  background-color: #059669;
+  color: white;
+  border: none;
+  border-radius: var(--radius-md);
+  font-weight: 750;
+  font-size: 0.88rem;
+  cursor: pointer;
+  box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);
+}
+
+.selectStoreBtn:hover {
+  background-color: #047857;
+}
+
+/* Loading container */
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 20px;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #F1F5F9;
+  border-top-color: #059669;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

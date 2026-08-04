@@ -1,0 +1,130 @@
+.claimContainer {
+  padding: 100px 0;
+  min-height: 85vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg);
+  font-family: var(--font-body);
+}
+
+.claimCard {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 580px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.giftIconWrapper {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: #FFFBEB;
+  border: 1.5px solid #FCD34D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.giftIcon {
+  color: var(--color-star);
+  font-size: 2.5rem;
+}
+
+.inviteBadge {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: var(--color-star);
+  background: #FEF3C7;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-weight: 550;
+}
+
+.claimBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 16px 36px;
+  background: var(--gradient-brand-vivid);
+  color: white;
+  font-weight: 850;
+  font-size: 1.05rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-brand);
+  cursor: pointer;
+  transition: var(--transition-bounce);
+  border: none;
+}
+
+.claimBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-brand-hover);
+}
+
+.successReveal {
+  width: 100%;
+  background: #ECFDF5;
+  border: 1px dashed #A7F3D0;
+  border-radius: var(--radius-md);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  animation: pop-in 0.4s ease-out forwards;
+}
+
+.successIcon {
+  font-size: 2.2rem;
+  color: var(--color-success);
+}
+
+.successReveal h4 {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: #065F46;
+}
+
+.successReveal p {
+  font-size: 0.85rem;
+  color: #047857;
+}
+
+.trustFooter {
+  margin-top: 16px;
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+@keyframes pop-in {
+  from { transform: scale(0.9); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

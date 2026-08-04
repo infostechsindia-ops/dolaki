@@ -1,0 +1,171 @@
+.confPage {
+  padding: 80px 0;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  background-color: var(--color-bg);
+  font-family: var(--font-body);
+}
+
+.confCard {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.successIconWrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #ECFDF5;
+  border: 1.5px solid #A7F3D0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.successIcon {
+  color: var(--color-success);
+  font-size: 2.5rem;
+}
+
+.successBadge {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: var(--color-flado-dark);
+  background: var(--color-flado-light);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.confTitle {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.confSubtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-weight: 550;
+}
+
+.orderIdBox {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  padding: 16px 32px;
+  border-radius: var(--radius-md);
+  gap: 4px;
+}
+
+.orderIdLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.orderIdVal {
+  font-size: 1.35rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  letter-spacing: 0.02em;
+}
+
+.logisticsNotice {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #F8FAFC;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border);
+  text-align: left;
+}
+
+.infoIcon {
+  font-size: 1.35rem;
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.logisticsNotice p {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.45;
+  font-weight: 550;
+}
+
+.actionButtons {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  margin-top: 10px;
+}
+
+.trackBtn {
+  flex: 1.2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 14px 24px;
+  background: var(--gradient-brand-vivid);
+  color: white;
+  font-weight: 800;
+  font-size: 0.92rem;
+  border-radius: var(--radius-full);
+  box-shadow: var(--shadow-brand);
+}
+
+.trackBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-brand-hover);
+}
+
+.continueBtn {
+  flex: 0.8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  background: white;
+  color: var(--color-text-primary);
+  border: 1.5px solid var(--color-border-strong);
+  font-weight: 700;
+  font-size: 0.92rem;
+  border-radius: var(--radius-full);
+  transition: var(--transition-bounce);
+}
+
+.continueBtn:hover {
+  background: var(--color-bg-alt);
+  border-color: var(--color-text-primary);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 500px) {
+  .actionButtons {
+    flex-direction: column;
+  }
+  .trackBtn, .continueBtn {
+    width: 100%;
+  }
+}

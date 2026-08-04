@@ -1,0 +1,211 @@
+.inviteContainer {
+  padding: 80px 0;
+  min-height: 85vh;
+  background-color: var(--color-bg);
+  font-family: var(--font-body);
+}
+
+.inviteCard {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 60px 40px;
+  text-align: center;
+  max-width: 640px;
+  margin: 0 auto 40px auto;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.giftIconWrapper {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: #EEF2FF;
+  border: 1.5px solid #C7D2FE;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.giftIcon {
+  color: var(--color-primary);
+  font-size: 2.2rem;
+}
+
+.promoTag {
+  font-size: 0.72rem;
+  font-weight: 850;
+  color: var(--color-primary);
+  background: var(--color-primary-light);
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.title {
+  font-size: 2.2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  font-weight: 550;
+}
+
+.shareBox {
+  width: 100%;
+  text-align: left;
+  background: var(--color-bg-alt);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.codeLabel {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.linkRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.linkText {
+  font-size: 0.92rem;
+  font-weight: 700;
+  color: var(--color-text-primary);
+  word-break: break-all;
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 20px;
+  background: var(--color-text-primary);
+  color: white;
+  border-radius: var(--radius-sm);
+  font-weight: 750;
+  font-size: 0.85rem;
+  cursor: pointer;
+  flex-shrink: 0;
+  border: none;
+}
+
+.copyBtnSuccess {
+  background: var(--color-success);
+}
+
+.shareButtons {
+  width: 100%;
+}
+
+.shareLink {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.92rem;
+  cursor: pointer;
+}
+
+.waShare {
+  background-color: #25D366;
+  color: white;
+  box-shadow: 0 4px 15px rgba(37, 211, 102, 0.25);
+}
+
+.waShare:hover {
+  transform: translateY(-2px);
+  background-color: #20BA5A;
+}
+
+/* Referred lists styles */
+.referralsListCard {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px;
+  max-width: 640px;
+  margin: 0 auto;
+  box-shadow: var(--shadow-sm);
+}
+
+.listTitle {
+  font-size: 1.15rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+  margin-bottom: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.referralsList {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.referralRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.refName {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 750;
+  color: var(--color-text-primary);
+}
+
+.refDate {
+  display: block;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+}
+
+.refStatus {
+  font-size: 0.75rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+}
+
+.statusClaimed {
+  background-color: #ECFDF5;
+  color: var(--color-success);
+}
+
+.statusWait {
+  background-color: var(--color-bg-alt);
+  color: var(--color-text-muted);
+  border: 1px solid var(--color-border);
+}

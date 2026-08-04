@@ -1,0 +1,268 @@
+.offersPage {
+  padding-bottom: 80px;
+  background-color: var(--color-bg);
+  min-height: 85vh;
+  font-family: var(--font-body);
+}
+
+.topHeader {
+  background-color: white;
+  border-bottom: 1.5px solid var(--color-border);
+  padding: 24px 0;
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  margin-bottom: 16px;
+}
+
+.backBtn:hover {
+  color: #059669;
+}
+
+.titleSec h1 {
+  font-size: 2rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  margin-top: 0;
+  margin-bottom: 6px;
+  font-family: var(--font-heading);
+}
+
+.titleSec p {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.tabsRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 30px;
+  border-bottom: 1.5px solid var(--color-border);
+  padding-bottom: 8px;
+  overflow-x: auto;
+}
+
+.tabBtn {
+  padding: 8px 18px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.tabBtn:hover {
+  color: #059669;
+}
+
+.activeTabBtn {
+  color: #059669 !important;
+  border-bottom-color: #059669 !important;
+}
+
+.couponsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 24px;
+  margin-bottom: 50px;
+}
+
+.couponCard {
+  background-color: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  position: relative;
+  box-shadow: var(--shadow-sm);
+  display: flex;
+}
+
+.cardAccent {
+  width: 6px;
+  background-color: #059669;
+  flex-shrink: 0;
+}
+
+.cardBody {
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.badgeRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.discountBadge {
+  font-size: 0.8rem;
+  font-weight: 850;
+  color: #047857;
+  background-color: #ECFDF5;
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid #A7F3D0;
+}
+
+.minOrderText {
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+  font-weight: 600;
+}
+
+.couponCode {
+  font-size: 1.25rem;
+  font-weight: 900;
+  color: var(--color-text-primary);
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.couponDesc {
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+  line-height: 1.4;
+  margin: 0;
+  min-height: 40px;
+}
+
+.actionRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 8px;
+  border-top: 1px solid var(--color-border);
+  padding-top: 14px;
+  gap: 12px;
+}
+
+.copyBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: var(--color-text-secondary);
+  background-color: #F3F4F6;
+  border: 1px solid var(--color-border);
+  padding: 8px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  flex: 1;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.copyBtn:hover {
+  background-color: #E5E7EB;
+}
+
+.copied {
+  background-color: #D1FAE5 !important;
+  color: #065F46 !important;
+  border-color: #A7F3D0 !important;
+}
+
+.shopBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: white;
+  background-color: #059669;
+  border: none;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  justify-content: center;
+}
+
+.shopBtn:hover {
+  background-color: #047857;
+}
+
+/* Featured Banners Section */
+.promoBannersSection {
+  border-top: 1px solid var(--color-border);
+  padding-top: 40px;
+}
+
+.promoBannersSection h3 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+  margin-bottom: 20px;
+  font-family: var(--font-heading);
+}
+
+.bannersGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+
+@media (max-width: 768px) {
+  .bannersGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.promoBanner {
+  background-size: cover;
+  background-position: center;
+  color: white;
+  border-radius: var(--radius-lg);
+  padding: 35px 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.promoBanner h4 {
+  font-size: 1.35rem;
+  font-weight: 900;
+  margin: 0;
+  font-family: var(--font-heading);
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.promoBanner p {
+  font-size: 0.9rem;
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.5;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+}
+
+.bannerLink {
+  font-size: 0.8rem;
+  font-weight: 800;
+  background-color: white;
+  color: #1F2937;
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  margin-top: 6px;
+  box-shadow: var(--shadow-sm);
+}
+
+.bannerLink:hover {
+  background-color: #F9FAFB;
+}

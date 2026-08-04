@@ -1,0 +1,500 @@
+.fladoContainer {
+  padding-bottom: 100px;
+  background-color: #FAFDFB;
+  min-height: 90vh;
+  font-family: var(--font-body);
+}
+
+/* 1. STICKY GREEN ETA BANNER */
+.stickyEtaBanner {
+  background-color: #059669;
+  color: white;
+  padding: 10px 0;
+  font-size: 0.85rem;
+  font-weight: 750;
+  box-shadow: 0 4px 10px rgba(5, 150, 105, 0.15);
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+.etaFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.etaLeft {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.etaLeft p {
+  margin: 0;
+}
+
+.zapPill {
+  background-color: #D1FAE5;
+  color: #047857;
+  padding: 2px 10px;
+  border-radius: var(--radius-full);
+  font-weight: 850;
+  font-size: 0.72rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.etaRight {
+  display: flex;
+  align-items: center;
+}
+
+.activeRiders {
+  background-color: rgba(255, 255, 255, 0.15);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: 0.75rem;
+}
+
+.heroSection {
+  padding: 40px 0;
+}
+
+.heroBanner {
+  background: linear-gradient(135deg, #059669 0%, #064E3B 100%);
+  color: white;
+  border-radius: var(--radius-xl);
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  overflow: hidden;
+  gap: 40px;
+}
+
+.heroText {
+  flex: 1.2;
+}
+
+.instantTag {
+  font-size: 0.72rem;
+  font-weight: 850;
+  background-color: #D1FAE5;
+  color: #047857;
+  padding: 4px 14px;
+  border-radius: var(--radius-full);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-block;
+  margin-bottom: 16px;
+}
+
+.heroText h1 {
+  font-size: 2.2rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  margin-bottom: 12px;
+}
+
+.heroText p {
+  font-size: 0.95rem;
+  color: #A7F3D0;
+  line-height: 1.5;
+  margin-bottom: 24px;
+  font-weight: 550;
+}
+
+.promises {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.promise {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+.checkIcon {
+  color: #D1FAE5;
+}
+
+.heroPromoImage {
+  flex: 0.8;
+  height: 200px;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.heroImg {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+/* 2. 4X2 CATEGORIES GRID */
+.categoryGridSection {
+  padding: 20px 0;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.headerIcon {
+  color: #059669;
+  font-size: 1.2rem;
+}
+
+.sectionHeader h2 {
+  font-size: 1.25rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+}
+
+.categoryTile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 20px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border);
+  text-decoration: none;
+  transition: var(--transition-bounce);
+}
+
+.categoryTile:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-sm);
+}
+
+.tileEmoji {
+  font-size: 2.2rem;
+}
+
+.tileLabel {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+/* 3. ORDER AGAIN SECTION */
+.orderAgainSection {
+  padding: 30px 0;
+}
+
+.headerEmoji {
+  font-size: 1.2rem;
+}
+
+.orderAgainScroll {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.reorderCard {
+  background: white;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  min-width: 280px;
+  position: relative;
+}
+
+.reorderImg {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+}
+
+.reorderMeta {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  flex: 1;
+}
+
+.reorderMeta h4 {
+  font-size: 0.82rem;
+  font-weight: 750;
+  color: var(--color-text-primary);
+}
+
+.reorderPrice {
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+/* Hides custom ProductCard overlay buttons except the add-to-cart row */
+.reorderCard :global(.card) {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  z-index: 10;
+}
+
+/* 4. SUBCATEGORY HORIZONTAL ROWS */
+.subcategoryRowSection {
+  padding: 40px 0;
+  border-top: 1px solid var(--color-border);
+}
+
+.subHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.subTitleBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.subEmoji {
+  font-size: 1.25rem;
+}
+
+.subTitleBox h2 {
+  font-size: 1.3rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+}
+
+.subCount {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-muted);
+}
+
+.horizontalProductsGrid {
+  display: flex;
+  gap: 20px;
+  overflow-x: auto;
+  padding: 10px 0;
+}
+
+.horizontalProductsGrid > div {
+  min-width: 230px;
+  flex-shrink: 0;
+}
+
+/* Sticky Bottom Cart Drawer */
+.stickyDrawer {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background-color: #059669;
+  color: white;
+  padding: 14px 0;
+  box-shadow: 0 -4px 15px rgba(5, 150, 105, 0.25);
+  z-index: 99;
+}
+
+.drawerInner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.drawerMeta {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.basketIconWrapper {
+  position: relative;
+  font-size: 1.35rem;
+}
+
+.itemCountBadge {
+  position: absolute;
+  top: -8px;
+  right: -8px;
+  background-color: #EF4444;
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 850;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.priceMeta {
+  display: flex;
+  flex-direction: column;
+}
+
+.itemCount {
+  font-size: 0.72rem;
+  color: #A7F3D0;
+  font-weight: 600;
+}
+
+.totalVal {
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.drawerCta {
+  background-color: white;
+  color: #047857;
+  padding: 10px 20px;
+  border-radius: var(--radius-md);
+  font-weight: 850;
+  font-size: 0.85rem;
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+@media (max-width: 768px) {
+  .heroBanner {
+    flex-direction: column;
+    padding: 24px;
+  }
+  .gridContainer {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+  color: #047857;
+  font-weight: 700;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid #D1FAE5;
+  border-top: 4px solid #059669;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Flado Sub-header Express Links */
+.subHeaderLinks {
+  background-color: #ECFDF5;
+  border-bottom: 1.5px solid #A7F3D0;
+  padding: 8px 0;
+}
+
+.linksInner {
+  display: flex;
+  justify-content: flex-start;
+  gap: 24px;
+}
+
+.expressLink {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: #047857;
+  text-decoration: none;
+}
+
+.expressLink:hover {
+  text-decoration: underline;
+}
+
+/* Category header additions */
+.sectionHeaderFlex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.shopAllCategoriesBtn {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: #059669;
+  text-decoration: none;
+  border: 1.5px solid #059669;
+  padding: 6px 16px;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+}
+
+.shopAllCategoriesBtn:hover {
+  background-color: #ECFDF5;
+}
+
+.rowGrid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+}
+
+@media (max-width: 1024px) {
+  .rowGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .rowGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .rowGrid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+}
+

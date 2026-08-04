@@ -1,0 +1,664 @@
+.layoutContainer {
+  display: flex;
+  min-height: 100vh;
+  width: 100vw;
+  background-color: var(--bg-color);
+}
+
+/* Sidebar styling */
+.sidebar {
+  width: var(--sidebar-width);
+  background: linear-gradient(180deg, #022c22 0%, #064e3b 100%);
+  color: #e6f4ea;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(16, 185, 129, 0.1);
+  flex-shrink: 0;
+  z-index: 100;
+  transition: transform var(--transition-normal);
+}
+
+.sidebarHeader {
+  height: var(--header-height);
+  display: flex;
+  align-items: center;
+  padding: 0 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.brand {
+  font-weight: 800;
+  font-size: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.brandDot {
+  color: var(--primary-green);
+}
+
+.sellerBadge {
+  font-size: 0.65rem;
+  background-color: rgba(16, 185, 129, 0.2);
+  color: var(--primary-green);
+  border: 1px solid rgba(16, 185, 129, 0.3);
+  padding: 2px 6px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.navMenu {
+  padding: 1.5rem 0.75rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  flex-grow: 1;
+}
+
+.navLink {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #a7f3d0;
+  transition: all var(--transition-fast);
+}
+
+.navLink:hover {
+  background-color: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.navLinkActive {
+  background-color: var(--primary-green);
+  color: white;
+  font-weight: 600;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.25);
+}
+
+.navLinkActive:hover {
+  background-color: var(--primary-green-hover);
+}
+
+.sidebarFooter {
+  padding: 1rem 0.75rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.logoutBtn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #fca5a5;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+.logoutBtn:hover {
+  background-color: rgba(239, 68, 68, 0.1);
+  color: #fee2e2;
+}
+
+/* Main content layout */
+.mainContainer {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  min-width: 0;
+  overflow-y: auto;
+  height: 100vh;
+}
+
+.topHeader {
+  height: var(--header-height);
+  background-color: var(--card-bg);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 2rem;
+  flex-shrink: 0;
+}
+
+.pageTitle {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.headerMeta {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.storeIndicator {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.storeName {
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.storeGstin {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.fladoLiveBadge {
+  background-color: rgba(16, 185, 129, 0.1);
+  color: var(--primary-green);
+  border: 1px solid var(--accent-green-border);
+  padding: 2px 8px;
+  border-radius: 100px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* Inner pages spacing */
+.contentArea {
+  padding: 2rem;
+  flex-grow: 1;
+}
+
+/* Responsive sidebar overlay */
+.mobileMenuBtn {
+  display: none;
+  background: transparent;
+  border: none;
+  color: var(--text-primary);
+  cursor: pointer;
+  margin-right: 1rem;
+}
+
+@media (max-width: 768px) {
+  .mobileMenuBtn {
+    display: block;
+  }
+
+  .sidebar {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    transform: translateX(-100%);
+  }
+
+  .sidebarOpen {
+    transform: translateX(0);
+  }
+
+  .topHeader {
+    padding: 0 1rem;
+  }
+  
+  .contentArea {
+    padding: 1.25rem;
+  }
+}
+
+/* Reusable dashboard grids and components */
+.statsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.statCard {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  box-shadow: var(--shadow-sm);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.statCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.statLabel {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+
+.statValue {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.statTrend {
+  margin-top: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.trendUp {
+  color: var(--primary-green);
+}
+
+.trendDown {
+  color: #ef4444;
+}
+
+/* Charts and grids */
+.dashboardMainGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+@media (max-width: 1024px) {
+  .dashboardMainGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.dashboardBlock {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-sm);
+  padding: 1.5rem;
+}
+
+.blockTitle {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+/* Pure CSS Bar Chart */
+.chartContainer {
+  height: 240px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.chartBarWrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  height: 100%;
+  justify-content: flex-end;
+}
+
+.chartBar {
+  width: 100%;
+  max-width: 40px;
+  background: linear-gradient(180deg, var(--primary-green) 0%, rgba(16, 185, 129, 0.4) 100%);
+  border-radius: 4px 4px 0 0;
+  position: relative;
+  transition: height 0.5s ease-out;
+  cursor: pointer;
+}
+
+.chartBar:hover {
+  background: var(--primary-green-hover);
+}
+
+.chartBarTooltip {
+  position: absolute;
+  top: -30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: var(--text-primary);
+  color: var(--card-bg);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-fast);
+  white-space: nowrap;
+}
+
+.chartBar:hover .chartBarTooltip {
+  opacity: 1;
+}
+
+.chartBarLabel {
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 8px;
+}
+
+/* Custom layout elements */
+.actionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.searchFilterRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  width: 100%;
+  max-width: 600px;
+  flex-wrap: wrap;
+}
+
+.searchBox {
+  position: relative;
+  flex-grow: 1;
+  min-width: 200px;
+}
+
+.searchIcon {
+  position: absolute;
+  left: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  padding: 0.6rem 1rem 0.6rem 2.25rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  outline: none;
+  transition: all var(--transition-fast);
+}
+
+.searchInput:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+}
+
+.filterSelect {
+  padding: 0.6rem 1rem;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  font-size: 0.875rem;
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+}
+
+.primaryBtn {
+  background-color: var(--primary-green);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background-color var(--transition-fast);
+}
+
+.primaryBtn:hover {
+  background-color: var(--primary-green-hover);
+}
+
+.secondaryBtn {
+  background-color: var(--card-bg);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 0.625rem 1.25rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: background var(--transition-fast);
+}
+
+.secondaryBtn:hover {
+  background-color: var(--bg-color);
+}
+
+/* Tables style */
+.tableContainer {
+  overflow-x: auto;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius-md);
+  background-color: var(--card-bg);
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 0.875rem;
+}
+
+.table th {
+  background-color: var(--bg-color);
+  padding: 1rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.table td {
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+.table tr:last-child td {
+  border-bottom: none;
+}
+
+.table tr:hover td {
+  background-color: rgba(244, 246, 248, 0.4);
+}
+
+/* Toggle Switch */
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 44px;
+  height: 22px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: .3s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 16px;
+  width: 16px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: .3s;
+  border-radius: 50%;
+}
+
+.switch input:checked + .slider {
+  background-color: var(--primary-green);
+}
+
+.switch input:focus + .slider {
+  box-shadow: 0 0 1px var(--primary-green);
+}
+
+.switch input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Modal styling */
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(15, 23, 42, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(4px);
+  padding: 1.5rem;
+}
+
+.modalContent {
+  background-color: var(--card-bg);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: fadeIn 0.2s ease-out;
+  border: 1px solid var(--border-color);
+}
+
+.modalHeader {
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.modalTitle {
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.closeBtn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+}
+
+.closeBtn:hover {
+  background-color: var(--bg-color);
+  color: var(--text-primary);
+}
+
+.modalBody {
+  padding: 1.5rem;
+}
+
+.modalFooter {
+  padding: 1.25rem 1.5rem;
+  border-top: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+}
+
+/* Flado Special Toggle Style */
+.fladoPromoCard {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.08) 0%, rgba(6, 78, 59, 0.03) 100%);
+  border: 1px solid var(--accent-green-border);
+  border-radius: var(--radius-md);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.fladoPromoInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.fladoPromoTitle {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--primary-dark-green);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.fladoPromoDesc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}

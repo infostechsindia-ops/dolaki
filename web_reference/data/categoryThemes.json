@@ -1,0 +1,215 @@
+[
+  {
+    "categoryId": "fashion",
+    "title": "Fashion & Lifestyle",
+    "theme": {
+      "primaryColor": "#8b5cf6",
+      "secondaryColor": "#f3e8ff",
+      "backgroundColor": "#f9fafb",
+      "fontFamily": "Inter, sans-serif"
+    },
+    "blocks": [
+      {
+        "id": "blk-hero-fashion",
+        "type": "HERO_BANNER",
+        "order": 1,
+        "data": {
+          "title": "Summer Collection '27",
+          "subtitle": "Up to 60% Off on Premium Styles",
+          "imageUrl": "https://via.placeholder.com/1200x400/8b5cf6/ffffff?text=Summer+Collection",
+          "ctaText": "Explore Now",
+          "ctaLink": "/collections/summer-27",
+          "banners": [
+            {
+              "title": "Summer Collection '27",
+              "subtitle": "Up to 60% Off on Premium Styles",
+              "imageUrl": "https://via.placeholder.com/1200x400/8b5cf6/ffffff?text=Summer+Collection",
+              "ctaText": "Explore Now"
+            },
+            {
+              "title": "New Arrivals",
+              "subtitle": "Fresh fits for the season",
+              "imageUrl": "https://via.placeholder.com/1200x400/6366f1/ffffff?text=New+Arrivals",
+              "ctaText": "Shop New"
+            }
+          ]
+        }
+      },
+      {
+        "id": "blk-brands-fashion",
+        "type": "BRAND_CAROUSEL",
+        "order": 2,
+        "layout": {
+          "type": "carousel",
+          "itemsVisible": {
+            "mobile": 3.5,
+            "tablet": 5.5,
+            "desktop": 8
+          },
+          "autoPlay": false
+        },
+        "data": {
+          "title": "Featured Brands",
+          "brands": [
+            { "id": "b1", "name": "Nike", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=N", "link": "/brand/nike" },
+            { "id": "b2", "name": "Puma", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=P", "link": "/brand/puma" },
+            { "id": "b3", "name": "Adidas", "logoUrl": "https://via.placeholder.com/100/000000/ffffff?text=A", "link": "/brand/adidas" }
+          ]
+        }
+      },
+      {
+        "id": "blk-masonry-lookbook",
+        "type": "CONTENT_MASONRY",
+        "order": 3,
+        "layout": {
+          "type": "masonry",
+          "columns": {
+            "mobile": 2,
+            "tablet": 3,
+            "desktop": 4
+          },
+          "gap": "16px"
+        },
+        "data": {
+          "title": "Style Inspiration",
+          "items": [
+            { "id": "look-1", "imageUrl": "https://via.placeholder.com/300x400/eeeeee/333333?text=Look+1" },
+            { "id": "look-2", "imageUrl": "https://via.placeholder.com/300x300/eeeeee/333333?text=Look+2" },
+            { "id": "look-3", "imageUrl": "https://via.placeholder.com/300x500/eeeeee/333333?text=Look+3" }
+          ]
+        }
+      },
+      {
+        "id": "blk-products-fashion",
+        "type": "PRODUCT_LISTING",
+        "order": 4,
+        "layout": {
+          "type": "grid",
+          "columns": {
+            "mobile": 2,
+            "tablet": 3,
+            "desktop": 4
+          },
+          "gap": "24px"
+        },
+        "data": {
+          "title": "Trending in Fashion",
+          "products": [
+            { "id": "p1", "name": "Oversized Cotton Tee", "price": 999 },
+            { "id": "p2", "name": "Slim Fit Denim", "price": 2499 }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "categoryId": "electronics",
+    "title": "Electronics & Gadgets",
+    "theme": {
+      "primaryColor": "#2563eb",
+      "secondaryColor": "#eff6ff",
+      "backgroundColor": "#ffffff",
+      "fontFamily": "Roboto, sans-serif"
+    },
+    "blocks": [
+      {
+        "id": "blk-hero-promo",
+        "type": "HERO_BANNER",
+        "order": 1,
+        "sponsorship": {
+          "isSponsored": true,
+          "sponsorName": "Samsung",
+          "sponsorLogoUrl": "https://via.placeholder.com/100x40?text=Samsung",
+          "trackingId": "samsung-summer-promo"
+        },
+        "data": {
+          "title": "Galaxy Unpacked Event",
+          "subtitle": "Discover the new Galaxy S27 Series",
+          "imageUrl": "https://via.placeholder.com/1200x400/2563eb/ffffff?text=Galaxy+S27",
+          "ctaText": "Pre-order Now",
+          "ctaLink": "/brand/samsung/s27"
+        }
+      },
+      {
+        "id": "blk-promotional-flash",
+        "type": "PROMOTIONAL_BANNER",
+        "order": 2,
+        "data": {
+          "title": "Midnight Tech Deal",
+          "subtitle": "Flat 30% Off on Laptops",
+          "imageUrl": "https://via.placeholder.com/1200x200/dc2626/ffffff?text=Laptop+Sale",
+          "bgColor": "#dc2626",
+          "timerEnd": "2026-12-31T23:59:59Z",
+          "ctaText": "Shop Laptops"
+        }
+      },
+      {
+        "id": "blk-trending-gadgets",
+        "type": "PRODUCT_LISTING",
+        "order": 3,
+        "layout": {
+          "type": "carousel",
+          "itemsVisible": {
+            "mobile": 2.5,
+            "tablet": 3.5,
+            "desktop": 5.5
+          },
+          "gap": "16px"
+        },
+        "data": {
+          "title": "Trending Gadgets",
+          "products": [
+            { "id": "e1", "name": "Noise Cancelling Headphones", "price": 14999 },
+            { "id": "e2", "name": "Smart Home Hub", "price": 4999 },
+            { "id": "e3", "name": "Wireless Charging Pad", "price": 1299 }
+          ]
+        }
+      }
+    ]
+  },
+  {
+    "categoryId": "grocery",
+    "title": "Daily Grocery",
+    "theme": {
+      "primaryColor": "#16a34a",
+      "secondaryColor": "#dcfce7",
+      "backgroundColor": "#f8fafc",
+      "fontFamily": "Inter, sans-serif"
+    },
+    "blocks": [
+      {
+        "id": "blk-hero-grocery",
+        "type": "HERO_BANNER",
+        "order": 1,
+        "data": {
+          "title": "Fresh Arrivals Daily",
+          "subtitle": "Get farm-fresh vegetables in 30 mins",
+          "imageUrl": "https://via.placeholder.com/1200x400/16a34a/ffffff?text=Fresh+Produce",
+          "ctaText": "Order Now"
+        }
+      },
+      {
+        "id": "blk-grocery-staples",
+        "type": "PRODUCT_LISTING",
+        "order": 2,
+        "layout": {
+          "type": "grid",
+          "columns": {
+            "mobile": 3,
+            "tablet": 4,
+            "desktop": 6
+          },
+          "gap": "12px"
+        },
+        "data": {
+          "title": "Daily Staples",
+          "products": [
+            { "id": "g1", "name": "Organic Whole Wheat Atta 5kg", "price": 299 },
+            { "id": "g2", "name": "Premium Basmati Rice 1kg", "price": 149 },
+            { "id": "g3", "name": "Refined Sunflower Oil 1L", "price": 129 }
+          ]
+        }
+      }
+    ]
+  }
+]

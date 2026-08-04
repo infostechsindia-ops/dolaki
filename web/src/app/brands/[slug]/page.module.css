@@ -1,0 +1,324 @@
+.brandStorePage {
+  padding-bottom: 80px;
+  background-color: var(--color-bg);
+  min-height: 85vh;
+  font-family: var(--font-body);
+  color: var(--color-text-primary);
+}
+
+.brandHero {
+  background-size: cover;
+  background-position: center;
+  color: white;
+  padding: 60px 0;
+  position: relative;
+  border-bottom: 1px solid var(--color-border);
+}
+
+.backBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #E2E8F0;
+  text-decoration: none;
+  margin-bottom: 25px;
+  background-color: rgba(15, 23, 42, 0.7);
+  padding: 6px 14px;
+  border-radius: var(--radius-full);
+  transition: all 0.2s ease;
+  backdrop-filter: blur(4px);
+}
+
+.backBtn:hover {
+  color: white;
+  transform: translateX(-2px);
+}
+
+.brandInfoBlock {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+}
+
+.brandLogoBox {
+  width: 110px;
+  height: 110px;
+  background-color: white;
+  border: 4px solid var(--brand-primary, #ffffff);
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  flex-shrink: 0;
+}
+
+.brandLogo {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+}
+
+.brandTitles {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.officialBadge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  color: white;
+  padding: 3px 12px;
+  border-radius: var(--radius-sm);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  display: inline-flex;
+  align-items: center;
+}
+
+.brandTitles h1 {
+  font-size: 2.5rem;
+  font-weight: 900;
+  font-family: var(--font-heading);
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+}
+
+.tagline {
+  font-size: 1.05rem;
+  color: #CBD5E1;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.4;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+.gridContainer {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 32px;
+}
+
+@media (max-width: 968px) {
+  .gridContainer {
+    grid-template-columns: 1fr;
+  }
+}
+
+.catalogCol {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.storyCard {
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.storyCard h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: var(--color-text-primary);
+  font-family: var(--font-heading);
+}
+
+.storyCard p {
+  font-size: 0.95rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  margin: 0;
+}
+
+.carouselSection {
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.sectionTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-family: var(--font-heading);
+}
+
+.bestsellersList {
+  display: flex;
+  gap: 16px;
+  overflow-x: auto;
+  padding-bottom: 12px;
+}
+
+.bestsellerCardWrapper {
+  min-width: 200px;
+  flex: 0 0 200px;
+}
+
+.catalogHeader {
+  margin-bottom: 8px;
+}
+
+.catalogHeader h2 {
+  font-size: 1.35rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+  margin-bottom: 4px;
+  font-family: var(--font-heading);
+}
+
+.catalogHeader p {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.productsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.noProducts {
+  text-align: center;
+  padding: 60px 20px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.sidebarCol {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.promoWidget {
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.promoWidget h4 {
+  font-size: 1.05rem;
+  font-weight: 800;
+  margin: 0;
+  color: var(--color-text-primary);
+}
+
+.promoWidget p {
+  font-size: 0.88rem;
+  color: var(--color-text-secondary);
+  line-height: 1.5;
+  margin: 0;
+}
+
+.couponTag {
+  font-size: 0.85rem;
+  padding: 8px 12px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--brand-primary);
+  color: var(--color-text-primary);
+  display: inline-block;
+}
+
+.relatedBrandsWidget {
+  background-color: var(--color-surface, #ffffff);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+}
+
+.relatedBrandsWidget h3 {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-top: 0;
+  margin-bottom: 16px;
+  font-family: var(--font-heading);
+}
+
+.brandsListCompact {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.brandRowItem {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.2s ease;
+}
+
+.brandRowItem:hover {
+  transform: translateX(4px);
+}
+
+.brandRowItem img {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--radius-md);
+  object-fit: cover;
+  border: 1px solid var(--color-border);
+}
+
+.brandRowItem h5 {
+  font-size: 0.92rem;
+  font-weight: 750;
+  margin: 0 0 2px 0;
+}
+
+.brandRowItem span {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  display: block;
+}
+
+.loadingWrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 50vh;
+  gap: 16px;
+  color: var(--brand-primary, var(--color-primary));
+  font-weight: 700;
+}
+
+.spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--color-border);
+  border-top: 4px solid var(--brand-primary, var(--color-primary));
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+

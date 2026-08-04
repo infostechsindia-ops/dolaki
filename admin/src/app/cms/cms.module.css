@@ -1,0 +1,485 @@
+.cmsContainer {
+  padding: 24px;
+  background-color: #F8FAFC;
+  min-height: 90vh;
+  font-family: inherit;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 24px;
+  border-bottom: 1px solid #E2E8F0;
+  padding-bottom: 20px;
+}
+
+.title {
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: #0F172A;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: 0.88rem;
+  color: #64748B;
+  margin-top: 4px;
+}
+
+.actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.metaInfo {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #64748B;
+  gap: 2px;
+}
+
+.publishBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  background-color: #7C3AED;
+  color: white;
+  font-weight: 700;
+  font-size: 0.88rem;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(124, 58, 237, 0.15);
+  transition: all 0.2s ease;
+}
+
+.publishBtn:hover {
+  background-color: #6D28D9;
+  transform: translateY(-1px);
+}
+
+.publishBtn:disabled {
+  background-color: #C084FC;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.statusAlert {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  border-radius: 8px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  margin-bottom: 24px;
+}
+
+.successAlert {
+  background-color: #ECFDF5;
+  color: #065F46;
+  border: 1px solid #A7F3D0;
+}
+
+.errorAlert {
+  background-color: #FEF2F2;
+  color: #991B1B;
+  border: 1px solid #FCA5A5;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+/* Left Column list */
+.sectionsPanel {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
+.panelTitle {
+  font-size: 0.95rem;
+  font-weight: 750;
+  color: #0F172A;
+  margin-bottom: 16px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #F1F5F9;
+  padding-bottom: 10px;
+}
+
+.sectionsList {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sectionItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 8px;
+  cursor: pointer;
+  background-color: #F8FAFC;
+  transition: all 0.2s ease;
+}
+
+.sectionItem:hover {
+  border-color: #7C3AED;
+  background-color: #FAF5FF;
+}
+
+.sectionItemActive {
+  border-color: #7C3AED;
+  background-color: #F5F3FF;
+  box-shadow: 0 2px 6px rgba(124,58,237,0.05);
+}
+
+.sectionItemHidden {
+  opacity: 0.55;
+  background-color: #F1F5F9;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionLabel {
+  display: block;
+  font-size: 0.88rem;
+  font-weight: 700;
+  color: #1E293B;
+}
+
+.sectionId {
+  display: block;
+  font-size: 0.72rem;
+  color: #94A3B8;
+  font-family: monospace;
+}
+
+.sectionActions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.visibilityBtn, .orderBtn {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #E2E8F0;
+  background-color: white;
+  color: #64748B;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.visibilityBtn:hover, .orderBtn:hover {
+  background-color: #F1F5F9;
+  color: #0F172A;
+}
+
+.visActive {
+  color: #7C3AED;
+  border-color: #DDD6FE;
+  background-color: #F5F3FF;
+}
+
+.orderBtn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Right editor panel */
+.editorPanel {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  min-height: 500px;
+}
+
+.editorCard {
+  padding: 24px;
+}
+
+.editorHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1.5px solid #F1F5F9;
+  padding-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.badgeType {
+  font-size: 0.68rem;
+  font-weight: 800;
+  background-color: #E2E8F0;
+  color: #475569;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 6px;
+  display: inline-block;
+}
+
+.editorTitle {
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #0F172A;
+}
+
+.toggleLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.88rem;
+  font-weight: 650;
+  color: #334155;
+  cursor: pointer;
+}
+
+.editorBody {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.subHeaderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.subHeaderRow label {
+  font-weight: 750;
+  font-size: 0.9rem;
+  color: #1E293B;
+}
+
+.addButton {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background-color: #ECFDF5;
+  color: #059669;
+  border: 1px solid #A7F3D0;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 0.78rem;
+  cursor: pointer;
+}
+
+.addButton:hover {
+  background-color: #D1FAE5;
+}
+
+.itemsList {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.itemRow {
+  border: 1px solid #E2E8F0;
+  border-radius: 8px;
+  background-color: #F8FAFC;
+  overflow: hidden;
+}
+
+.itemRowHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  background-color: #F1F5F9;
+  border-bottom: 1px solid #E2E8F0;
+  font-size: 0.8rem;
+  font-weight: 750;
+  color: #475569;
+}
+
+.deleteBtn {
+  color: #EF4444;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.deleteBtn:hover {
+  color: #DC2626;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 14px;
+  padding: 16px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.field label, .formGroup label {
+  font-size: 0.78rem;
+  font-weight: 750;
+  color: #475569;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.input, .textarea {
+  padding: 10px 12px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  outline: none;
+  background-color: white;
+}
+
+.input:focus, .textarea:focus {
+  border-color: #7C3AED;
+}
+
+.fieldRow {
+  display: grid;
+  grid-template-columns: 1.2fr 0.8fr;
+  gap: 12px;
+}
+
+.fieldRow label {
+  font-size: 0.75rem;
+  font-weight: 750;
+  color: #475569;
+}
+
+.colorInputCompact {
+  width: 100%;
+  height: 38px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 2px;
+  background: white;
+  cursor: pointer;
+}
+
+.itemRowCompact {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border: 1px solid #E2E8F0;
+  border-radius: 6px;
+  background-color: #F8FAFC;
+}
+
+.emojiInput {
+  width: 46px;
+  text-align: center;
+  padding: 8px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 6px;
+  font-size: 1rem;
+}
+
+.deleteIconBtn {
+  color: #EF4444;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  padding: 4px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 16px;
+}
+
+.colorInput {
+  width: 80px;
+  height: 38px;
+  border: 1.5px solid #E2E8F0;
+  border-radius: 6px;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.emptyEditor {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 40px;
+  color: #94A3B8;
+  gap: 16px;
+  text-align: center;
+}
+
+.emptyIcon {
+  color: #CBD5E1;
+}
+
+.emptyEditor p {
+  font-size: 0.88rem;
+  max-width: 280px;
+  line-height: 1.45;
+  font-weight: 600;
+}
+
+.loadingContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 60vh;
+  gap: 12px;
+  color: #64748B;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.spinner {
+  animation: spin 1.2s linear infinite;
+}
+
+.spinnerIcon {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}

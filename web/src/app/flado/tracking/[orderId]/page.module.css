@@ -1,0 +1,153 @@
+.trackingPage {
+  min-height: 90vh;
+  background-color: var(--color-bg);
+  padding: 32px 0 100px 0;
+  font-family: var(--font-body);
+}
+
+.trackingLayoutGrid {
+  display: grid;
+  grid-template-columns: 1.4fr 1fr;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 968px) {
+  .trackingLayoutGrid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.mapCard {
+  background-color: white;
+  border-radius: var(--radius-xl);
+  border: 1.5px solid var(--color-border);
+  overflow: hidden;
+  box-shadow: var(--shadow-sm);
+}
+
+.statusColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.etaHeaderCard {
+  background-color: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.timelineCard {
+  background-color: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.stepperList {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  position: relative;
+}
+
+.stepperList::before {
+  content: '';
+  position: absolute;
+  left: 11px;
+  top: 10px;
+  bottom: 10px;
+  width: 2px;
+  background-color: var(--color-border);
+  z-index: 1;
+}
+
+.stepRow {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+  position: relative;
+  z-index: 2;
+}
+
+.stepCheckIcon {
+  font-size: 1.4rem;
+  color: var(--color-text-muted);
+  background-color: white;
+  border-radius: 50%;
+  padding: 2px;
+}
+
+.completedStep .stepCheckIcon {
+  color: #10B981;
+}
+
+.activeStep .stepCheckIcon {
+  color: #3B82F6;
+  animation: pulse-step 2s infinite;
+}
+
+@keyframes pulse-step {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.stepRow div {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.stepRow strong {
+  font-size: 0.88rem;
+  font-weight: 850;
+  color: var(--color-text-primary);
+}
+
+.stepRow span {
+  font-size: 0.76rem;
+  color: var(--color-text-secondary);
+  font-weight: 600;
+}
+
+.riderCard {
+  background-color: white;
+  border: 1.5px solid var(--color-border);
+  border-radius: var(--radius-xl);
+  padding: 20px;
+  box-shadow: var(--shadow-sm);
+}
+
+.riderAvatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 25px;
+  object-fit: cover;
+  border: 2px solid var(--color-border);
+}
+
+.callRiderBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background-color: #ECFDF5;
+  color: #047857;
+  padding: 10px 16px;
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  font-weight: 850;
+  text-decoration: none;
+  border: 1.5px solid #A7F3D0;
+  transition: all 0.2s;
+}
+
+.callRiderBtn:hover {
+  background-color: #059669;
+  color: white;
+  border-color: #059669;
+}
