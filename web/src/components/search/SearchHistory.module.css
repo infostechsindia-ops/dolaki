@@ -1,0 +1,112 @@
+.historyContainer {
+  width: 100%;
+  margin-top: var(--space-4);
+  text-align: left;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.clearAllBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  padding: 0;
+}
+
+.clearAllBtn:focus-visible {
+  text-decoration: underline;
+  color: var(--color-primary);
+}
+
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-2) 0;
+  border-bottom: 1px solid var(--color-disabled-bg);
+}
+
+.selectBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  background: none;
+  border: none;
+  flex: 1;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+  padding: var(--space-1) 0;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+}
+
+.selectBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  border-radius: var(--radius-sm);
+}
+
+.clockIcon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+.text {
+  flex: 1;
+}
+
+.removeBtn {
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  border-radius: var(--radius-full);
+  outline: none;
+  transition: color 0.2s ease, background-color 0.2s ease;
+}
+
+.removeBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.removeBtn:hover {
+  color: var(--color-error, #EF4444);
+  background-color: var(--color-disabled-bg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .removeBtn {
+    transition: none !important;
+  }
+}

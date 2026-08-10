@@ -3,10 +3,13 @@ import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 export default function AddressesPage() {
   const router = useRouter();
   const [addresses, setAddresses] = useState<any[]>([]);
   const [showModal, setShowModal] = useState(false);
+  const [error, setError] = useState('');
   const [formData, setFormData] = useState({ label: 'Home', name: '', phone: '', line1: '', line2: '', city: '', state: '', pincode: '', isDefault: false });
 
   useEffect(() => {
@@ -19,38 +22,46 @@ export default function AddressesPage() {
   }, [router]);
 
   const fetchAddresses = async () => {
+    setError('');
     try {
-      const res = await fetch('http://localhost:3000/users/addresses');
+      const token = localStorage.getItem('aura_token');
+      const res = await fetch(`${API_BASE_URL}/api/users/addresses`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
       if (res.ok) {
         setAddresses(await res.json());
       } else {
-        mockAddresses();
+        setError(`Unable to load addresses (Server status: ${res.status}).`);
       }
     } catch {
-      mockAddresses();
+      setError('Connection error: Unable to load addresses. Please verify if backend is running.');
     }
   };
 
-  const mockAddresses = () => {
-    setAddresses([
-      { id: 1, label: 'Home', name: 'Arif Al Nukhbah', phone: '+91 98765 43210', address: 'Apt 402, Sea Green Apartments, Carter Road, Bandra West, Mumbai, Maharashtra, 400050', isDefault: true },
-      { id: 2, label: 'Work', name: 'Arif Al Nukhbah', phone: '+91 98765 43210', address: 'Level 12, Maker Chambers VI, Nariman Point, Mumbai, Maharashtra, 400021', isDefault: false }
-    ]);
-  };
-
   const handleDelete = async (id: number) => {
+    setError('');
     if (confirm('Are you sure you want to delete this address?')) {
       try {
-        await fetch(`http://localhost:3000/users/addresses/${id}`, { method: 'DELETE' });
-      } catch {}
-      setAddresses(addresses.filter(a => a.id !== id));
+        const token = localStorage.getItem('aura_token');
+        const res = await fetch(`${API_BASE_URL}/api/users/addresses/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (res.ok) {
+          setAddresses(addresses.filter(a => a.id !== id));
+        } else {
+          setError(`Failed to delete address (Server status: ${res.status}).`);
+        }
+      } catch {
+        setError('Connection error: Failed to delete address.');
+      }
     }
   };
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     const newAddr = {
-      id: Date.now(),
       label: formData.label,
       name: formData.name,
       phone: formData.phone,
@@ -58,19 +69,34 @@ export default function AddressesPage() {
       isDefault: formData.isDefault
     };
     try {
-      await fetch('http://localhost:3000/users/addresses', { method: 'POST', body: JSON.stringify(newAddr) });
-    } catch {}
-    
-    if (newAddr.isDefault) {
-      setAddresses([newAddr, ...addresses.map(a => ({...a, isDefault: false}))]);
-    } else {
-      setAddresses([...addresses, newAddr]);
+      const token = localStorage.getItem('aura_token');
+      const res = await fetch(`${API_BASE_URL}/api/users/addresses`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(newAddr)
+      });
+      if (res.ok) {
+        const saved = await res.json();
+        if (saved.isDefault) {
+          setAddresses([saved, ...addresses.map(a => ({...a, isDefault: false}))]);
+        } else {
+          setAddresses([...addresses, saved]);
+        }
+        setShowModal(false);
+      } else {
+        setError(`Failed to save address (Server status: ${res.status}).`);
+      }
+    } catch {
+      setError('Connection error: Failed to save address.');
     }
-    setShowModal(false);
   };
 
   return (
     <div className={styles.container}>
+      {error && <div style={{ backgroundColor: '#FEF2F2', color: '#B91C1C', padding: '10px 15px', borderRadius: '4px', marginBottom: '15px', borderLeft: '4px solid #EF4444' }}>{error}</div>}
       <div className={styles.header}>
         <h2>Saved Addresses</h2>
         <button onClick={() => setShowModal(true)} className={styles.addBtn}>+ Add New Address</button>

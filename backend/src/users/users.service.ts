@@ -31,7 +31,7 @@ export class UsersService {
   async create(data: Partial<User>): Promise<User> {
     const user = this.userRepository.create(data);
     const savedUser = await this.userRepository.save(user);
-    
+
     // Auto-create user wallet with 500 Aura Cash trial balance
     const wallet = this.walletRepository.create({
       userId: savedUser.id,
@@ -52,7 +52,11 @@ export class UsersService {
     return wallet;
   }
 
-  async updateWallet(userId: string, balance: number, rewardPoints: number): Promise<UserWallet> {
+  async updateWallet(
+    userId: string,
+    balance: number,
+    rewardPoints: number,
+  ): Promise<UserWallet> {
     const wallet = await this.getWallet(userId);
     wallet.balance = balance;
     wallet.rewardPoints = rewardPoints;
@@ -60,10 +64,7 @@ export class UsersService {
   }
 
   async getWalletTransactions(userId: string) {
-    return [
-      { id: 'tx-1', type: 'EARN', amount: 50, description: 'Order reward', createdAt: new Date() },
-      { id: 'tx-2', type: 'SPEND', amount: 20, description: 'Burned at checkout', createdAt: new Date() },
-    ];
+    return [];
   }
 
   // Wishlist APIs
@@ -71,8 +72,13 @@ export class UsersService {
     return this.wishlistRepository.find({ where: { userId } });
   }
 
-  async addToWishlist(userId: string, productId: string): Promise<WishlistItem> {
-    const existing = await this.wishlistRepository.findOne({ where: { userId, productId } });
+  async addToWishlist(
+    userId: string,
+    productId: string,
+  ): Promise<WishlistItem> {
+    const existing = await this.wishlistRepository.findOne({
+      where: { userId, productId },
+    });
     if (existing) return existing;
     const item = this.wishlistRepository.create({ userId, productId });
     return this.wishlistRepository.save(item);
@@ -84,7 +90,10 @@ export class UsersService {
 
   // Address Book APIs
   async getAddresses(userId: string): Promise<Address[]> {
-    return this.addressRepository.find({ where: { userId }, order: { isDefault: 'DESC' } });
+    return this.addressRepository.find({
+      where: { userId },
+      order: { isDefault: 'DESC' },
+    });
   }
 
   async addAddress(userId: string, data: Partial<Address>): Promise<Address> {
@@ -97,6 +106,36 @@ export class UsersService {
 
   async deleteAddress(userId: string, addressId: string): Promise<void> {
     await this.addressRepository.delete({ id: addressId, userId });
+  }
+
+  async updateAddress(
+    userId: string,
+    addressId: string,
+    data: Partial<Address>,
+  ): Promise<Address> {
+    const existing = await this.addressRepository.findOne({
+      where: { id: addressId, userId },
+    });
+    if (!existing) {
+      throw new NotFoundException('Address not found');
+    }
+    if (data.isDefault) {
+      await this.addressRepository.update({ userId }, { isDefault: false });
+    }
+    Object.assign(existing, data);
+    return this.addressRepository.save(existing);
+  }
+
+  async setDefaultAddress(userId: string, addressId: string): Promise<Address> {
+    const existing = await this.addressRepository.findOne({
+      where: { id: addressId, userId },
+    });
+    if (!existing) {
+      throw new NotFoundException('Address not found');
+    }
+    await this.addressRepository.update({ userId }, { isDefault: false });
+    existing.isDefault = true;
+    return this.addressRepository.save(existing);
   }
 
   async findAll(): Promise<User[]> {

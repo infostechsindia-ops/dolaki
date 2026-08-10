@@ -5,6 +5,8 @@ import Link from 'next/link';
 import { FiChevronLeft, FiMapPin, FiClock, FiActivity } from 'react-icons/fi';
 import styles from './page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 declare const L: any;
 
 interface Store {
@@ -13,36 +15,47 @@ interface Store {
   address: string;
   city: string;
   eta: string;
-  status: 'Open' | 'Closed';
+  status: string;
   riders: number;
   lat: number;
   lng: number;
 }
 
 const mockStores: Store[] = [
-  { id: 'ds-1', name: 'Flado Darkstore Bandra West', address: 'Plot 42, Waterfield Road, Bandra West', city: 'Mumbai', eta: '8-12 mins', status: 'Open', riders: 18, lat: 19.0583, lng: 72.8300 },
-  { id: 'ds-2', name: 'Flado Darkstore Khar Link', address: 'Level 1, Pearl Residency, Khar Link Road', city: 'Mumbai', eta: '10-15 mins', status: 'Open', riders: 12, lat: 19.0683, lng: 72.8400 },
+  { id: 'ds-1', name: 'Flado Darkstore Muzaffarpur', address: 'Zero Mile Chowk near flyover, Muzaffarpur', city: 'Muzaffarpur', eta: '8-12 mins', status: 'Open', riders: 12, lat: 26.1209, lng: 85.3647 },
+  { id: 'ds-2', name: 'Flado Darkstore Maunath Bhanjan', address: 'Mohalla Sadar Bazar, Mau Road', city: 'Maunath Bhanjan', eta: '10-15 mins', status: 'Open', riders: 7, lat: 25.9500, lng: 83.5620 },
   { id: 'ds-3', name: 'Flado Darkstore Nariman Point', address: 'Express Towers basement, Nariman Point', city: 'Mumbai', eta: '6-9 mins', status: 'Open', riders: 24, lat: 18.9283, lng: 72.8200 },
   { id: 'ds-4', name: 'Flado Darkstore Juhu Scheme', address: 'Ground Floor, Tulip Enclave, Juhu Tara Road', city: 'Mumbai', eta: '12-18 mins', status: 'Open', riders: 9, lat: 19.1023, lng: 72.8258 }
 ];
 
 export default function FladoStoresPage() {
-  const [stores, setStores] = useState<Store[]>(mockStores);
+  const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+  const [stores, setStores] = useState<Store[]>(isDemo ? mockStores : []);
   const [loading, setLoading] = useState(true);
   const [selectedStoreId, setSelectedStoreId] = useState('ds-1');
   const [mapLoaded, setMapLoaded] = useState(false);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<Record<string, any>>({});
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const fetchStores = async () => {
+      setError('');
       try {
-        const res = await fetch('http://localhost:5000/api/flado/darkstores');
+        const res = await fetch(`${API_BASE_URL}/api/flado/darkstores`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) setStores(data);
+        } else {
+          if (!isDemo) {
+            setError(`Unable to load darkstores (Server status: ${res.status}).`);
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        if (!isDemo) {
+          setError('Connection error: Failed to connect to darkstores service.');
+        }
+      }
       setLoading(false);
     };
     fetchStores();
@@ -136,6 +149,7 @@ export default function FladoStoresPage() {
 
   return (
     <div className={styles.storesPage}>
+      {error && <div style={{ backgroundColor: '#FEF2F2', color: '#B91C1C', padding: '10px 15px', borderRadius: '4px', margin: '15px auto', maxWidth: '1200px', borderLeft: '4px solid #EF4444' }}>{error}</div>}
       {/* Top Header */}
       <div className={styles.topHeader}>
         <div className="container">

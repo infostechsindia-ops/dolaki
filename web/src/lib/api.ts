@@ -13,9 +13,10 @@ import { products as localProducts, Product } from '@/data/products';
 import { fladoProductsData as localFladoProducts } from '@/data/fladoProducts';
 import { brandsData as localBrands, Brand } from '@/data/brands';
 import { promoPagesRegistry, PromoPageConfig } from '@/data/promoLayouts';
+import { API_BASE_URL } from '@/lib/config';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
-const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? '';
+const BASE_URL = API_BASE_URL;
 const DEFAULT_TIMEOUT_MS = 8000;
 
 // ─── Request Cache (in-memory, TTL-based) ────────────────────────────────────
@@ -36,7 +37,7 @@ function setCached<T>(key: string, data: T): void {
 
 // ─── Core Fetch Wrapper ───────────────────────────────────────────────────────
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
-  const url = `${BASE_URL}/api${path}`;
+  const url = `${BASE_URL}/api/v1${path}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), DEFAULT_TIMEOUT_MS);
 
@@ -55,6 +56,9 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
     }
 
     const json = await res.json();
+    if (json && typeof json === 'object' && 'data' in json) {
+      return json.data as T;
+    }
     return json as T;
   } finally {
     clearTimeout(timeout);
@@ -212,20 +216,100 @@ export const productsApi = {
 };
 
 // ─── Brands API ───────────────────────────────────────────────────────────────
-export const brandsApi = {
-  getAll: () =>
-    query(
-      'brands:all',
-      () => apiFetch<Brand[]>('/brands'),
-      () => localBrands,
-    ),
+export interface BrandApiDto {
+  id: string;
+  name: string;
+  slug: string;
+  logoUrl: string | null;
+  description: string | null;
+  isActive: boolean;
+  productCount: number;
+  createdAt: string;
+  updatedAt: string;
+}
 
+export const brandsApi = {
+  /**
+   * Fetch all active brands from dedicated /brands endpoint.
+   * Supports optional search query and pagination.
+   */
+  getAll: (opts: { search?: string; page?: number; pageSize?: number } = {}) => {
+    const params = new URLSearchParams();
+    if (opts.search) params.set('search', opts.search);
+    if (opts.page) params.set('page', String(opts.page));
+    if (opts.pageSize) params.set('pageSize', String(opts.pageSize));
+    const qs = params.toString();
+    return query(
+      `brands:all:${qs}`,
+      () => apiFetch<{ data: BrandApiDto[]; meta: any }>(`/brands${qs ? `?${qs}` : ''}`).then(r => {
+        // Server wraps response in { data, meta }
+        if (r && typeof r === 'object' && 'data' in r) return r as { data: BrandApiDto[]; meta: any };
+        return { data: r as unknown as BrandApiDto[], meta: { total: 0, page: 1, pageSize: 50, hasNextPage: false } };
+      }),
+      () => ({ data: localBrands.map(b => ({
+        id: b.slug,
+        name: b.name,
+        slug: b.slug,
+        logoUrl: b.logo || null,
+        description: b.story || null,
+        isActive: true,
+        productCount: b.featuredProductIds?.length ?? 0,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      })), meta: { total: localBrands.length, page: 1, pageSize: 50, hasNextPage: false } }),
+    );
+  },
+
+  /**
+   * Fetch a single brand by slug from /brands/:slug.
+   * Returns null if not found (falls back to local data).
+   */
   getBySlug: (slug: string) =>
     query(
       `brand:${slug}`,
-      () => apiFetch<Brand>(`/brands/${slug}`),
-      () => localBrands.find((b: Brand) => b.slug === slug) ?? null,
+      () => apiFetch<BrandApiDto>(`/brands/${slug}`),
+      () => {
+        const b = localBrands.find((b: Brand) => b.slug === slug);
+        if (!b) return null;
+        return {
+          id: b.slug,
+          name: b.name,
+          slug: b.slug,
+          logoUrl: b.logo || null,
+          description: b.story || null,
+          isActive: true,
+          productCount: b.featuredProductIds?.length ?? 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        } as BrandApiDto;
+      },
     ),
+
+  /**
+   * Fetch paginated products for a brand by slug.
+   * Server returns products filtered by brand+optional category.
+   */
+  getProductsByBrand: (slug: string, opts: { category?: string; page?: number; pageSize?: number } = {}) => {
+    const params = new URLSearchParams({ brand: slug });
+    if (opts.category) params.set('category', opts.category);
+    if (opts.page) params.set('page', String(opts.page));
+    if (opts.pageSize) params.set('pageSize', String(opts.pageSize ?? 20));
+    const qs = params.toString();
+    return query(
+      `brand-products:${slug}:${qs}`,
+      () => apiFetch<{ data: Product[]; meta: any }>(`/products?${qs}`).then(r => {
+        if (r && typeof r === 'object' && 'data' in r) return r as { data: Product[]; meta: any };
+        return { data: r as unknown as Product[], meta: { total: 0, page: 1, pageSize: 20, hasNextPage: false } };
+      }),
+      () => {
+        const filtered = localProducts.filter(p => p.brand?.toLowerCase() === slug.toLowerCase());
+        const page = opts.page ?? 1;
+        const pageSize = opts.pageSize ?? 20;
+        const sliced = filtered.slice((page - 1) * pageSize, page * pageSize);
+        return { data: sliced, meta: { total: filtered.length, page, pageSize, hasNextPage: page * pageSize < filtered.length } };
+      },
+    );
+  },
 };
 
 // ─── Flado Products API ───────────────────────────────────────────────────────

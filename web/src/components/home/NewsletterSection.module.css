@@ -1,0 +1,145 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+}
+
+.newsletterCard {
+  background-color: var(--color-disabled-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-8) var(--space-12);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-8);
+}
+
+.content {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-2) 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin: 0;
+  max-width: 460px;
+}
+
+.actionCol {
+  flex: 0.8;
+  width: 100%;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.newsletterForm {
+  display: flex;
+  width: 100%;
+  max-width: 360px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+  transition: border-color 0.2s ease;
+}
+
+.newsletterForm:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.section.quickCommerce .newsletterForm:focus-within {
+  border-color: var(--color-flado);
+}
+
+.newsletterInput {
+  flex: 1;
+  border: none;
+  padding: 0 var(--space-4);
+  height: var(--control-height-md, 44px);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  background: transparent;
+  outline: none;
+  min-width: 0;
+}
+
+.newsletterBtn {
+  width: var(--control-height-md, 44px);
+  height: var(--control-height-md, 44px);
+  border: none;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.section.quickCommerce .newsletterBtn {
+  background-color: var(--color-flado-light);
+  color: var(--color-flado);
+}
+
+.newsletterBtn:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.section.quickCommerce .newsletterBtn:hover {
+  background-color: var(--color-flado);
+  color: white;
+}
+
+.successMsg {
+  font-size: var(--font-size-sm);
+  color: var(--color-success, #10B981);
+  font-weight: 700;
+  text-align: right;
+  width: 100%;
+  display: block;
+}
+
+/* Responsive grid layouts */
+@media (max-width: 767px) {
+  .newsletterCard {
+    flex-direction: column;
+    padding: var(--space-6) var(--space-8);
+    gap: var(--space-6);
+  }
+
+  .content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .actionCol {
+    justify-content: center;
+  }
+
+  .successMsg {
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .newsletterForm, .newsletterBtn {
+    transition: none !important;
+  }
+}

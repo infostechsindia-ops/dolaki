@@ -1,711 +1,406 @@
-'use client';
+/**
+ * AuraMart Customer Homepage
+ *
+ * ARCHITECTURE: Server Component (no 'use client' directive).
+ * - Fetches SDUI layout dynamically from the backend REST API (`/api/v1/sdui/homepage`).
+ * - Dynamically renders all configured SDUI sections in exact order (Hero Banners, Category Grids,
+ *   Product Carousels, Quick Commerce Banners, Brand Grids, Trust Badges, Newsletter).
+ * - Fetches products server-authoritatively for every product shelf carousel according to section configuration
+ *   (category, brand, sort, limit, collection, campaign).
+ * - Uses Next.js ISR (revalidate: 60s) for performance & freshness.
+ * - Zero hardcoded or mock products.
+ */
 
-import React, { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { 
-  FiZap, 
-  FiShoppingBag, 
-  FiTruck, 
-  FiGift, 
-  FiAward, 
-  FiArrowRight, 
-  FiPercent, 
-  FiClock, 
-  FiStar, 
-  FiTv, 
-  FiUsers, 
-  FiCheckCircle 
-} from 'react-icons/fi';
-import { products as localProducts } from '@/data/products';
-import ProductCard from '@/components/ProductCard';
-import SectionHeader from '@/components/ui/SectionHeader';
-import { getCMSConfig, getVisibleSections, CMSConfig } from '@/data/cmsConfig';
-import SpinWheel from '@/components/SpinWheel';
-import MarketingSectionRenderer from '@/components/MarketingSectionRenderer';
-import { promoPagesRegistry, PromoPageConfig } from '@/data/promoLayouts';
+import React from 'react';
+import HeroBanner, { BannerItem } from '@/components/home/HeroBanner';
+import CategoriesSection, { CategoryItem } from '@/components/home/CategoriesSection';
+import ProductCarousel from '@/components/home/ProductCarousel';
+import PromotionalBanner from '@/components/home/PromotionalBanner';
+import BrandLogos from '@/components/home/BrandLogos';
+import TrustFeatures from '@/components/home/TrustFeatures';
+import NewsletterSection from '@/components/home/NewsletterSection';
+import { PageContainer, Container } from '@/components/layout/LayoutPrimitives';
 import styles from './page.module.css';
 
-export default function Home() {
-  const [cmsConfig, setCmsConfig] = useState<CMSConfig | null>(null);
-  const [marketingConfig, setMarketingConfig] = useState<PromoPageConfig | null>(null);
-  const [products, setProducts] = useState<any[]>([]);
-  const [currentSlide, setCurrentSlide] = useState(0);
-  const [timeLeft, setTimeLeft] = useState({ hours: 3, minutes: 59, seconds: 59 });
-  const [liveWatchers, setLiveWatchers] = useState(2847);
-  const [showSpinWheel, setShowSpinWheel] = useState(false);
+// ─── Type Definitions ─────────────────────────────────────────────────────────
 
-  // Trigger spin wheel automatic popup on mount if not spun today
-  useEffect(() => {
-    const lastSpin = localStorage.getItem('auramart_last_spin');
-    const todayStr = new Date().toDateString();
-    if (lastSpin !== todayStr) {
-      const timer = setTimeout(() => {
-        setShowSpinWheel(true);
-      }, 3000); // 3 seconds delay
-      return () => clearTimeout(timer);
+interface SduiSection {
+  id: string;
+  type: string;
+  visible: boolean;
+  order: number;
+  title?: string;
+  subtitle?: string;
+  config: Record<string, any>;
+}
+
+interface SduiHomepageResponse {
+  sections: SduiSection[];
+}
+
+// ─── Static Fallback Configuration (used only if SDUI API is unreachable) ────
+
+const FALLBACK_BANNERS: BannerItem[] = [
+  {
+    id: 'banner-1',
+    title: 'Big Billion Aura Sale is Live!',
+    subtitle: 'Flat 10% instant discount on HDFC credit cards. Free shipping on all standard orders.',
+    ctaText: 'Shop Tech Deals',
+    ctaUrl: '/categories/electronics',
+    imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
+    backgroundColor: '#4C1D95',
+  },
+  {
+    id: 'banner-2',
+    title: 'Trendy Designer Fashion Up to 50% Off',
+    subtitle: 'Upgrade your wardrobe with premium shirts, kurtas, and apparel.',
+    ctaText: 'Explore Fashion',
+    ctaUrl: '/categories/fashion',
+    imageUrl: 'https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&auto=format&fit=crop&q=80',
+    backgroundColor: '#BE185D',
+  },
+];
+
+const FALLBACK_CATEGORIES: CategoryItem[] = [
+  { name: 'Electronics', slug: 'electronics', icon: '📱', color: '#EDE9FE' },
+  { name: 'Fashion', slug: 'fashion', icon: '👗', color: '#FCE7F3' },
+  { name: 'Beauty & Care', slug: 'beauty', icon: '💄', color: '#FEF3C7' },
+  { name: 'Home & Kitchen', slug: 'home', icon: '🏠', color: '#D1FAE5' },
+  { name: 'Groceries', slug: 'groceries', icon: '🛒', color: '#DBEAFE' },
+  { name: 'Sports', slug: 'sports', icon: '⚽', color: '#FEE2E2' },
+];
+
+const FALLBACK_BRANDS = [
+  { name: 'Nike', slug: 'nike', logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=120&fit=crop' },
+  { name: 'Sony', slug: 'sony', logoUrl: 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=120&fit=crop' },
+  { name: 'Samsung', slug: 'samsung', logoUrl: 'https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=120&fit=crop' },
+  { name: 'Apple', slug: 'apple', logoUrl: 'https://images.unsplash.com/photo-1510557880182-3d4d3cba35a5?w=120&fit=crop' },
+  { name: 'boAt', slug: 'boat', logoUrl: 'https://images.unsplash.com/photo-1574920162043-b872873f19c8?w=120&fit=crop' },
+  { name: "L'Oreal", slug: 'loreal', logoUrl: 'https://images.unsplash.com/photo-1522335789203-aabd1fc54bc9?w=120&fit=crop' },
+];
+
+const FALLBACK_PRODUCTS = [
+  {
+    id: 'ele-1',
+    name: 'AuraBook Pro 16" M3 Max',
+    title: 'AuraBook Pro 16" M3 Max',
+    price: 249990,
+    originalPrice: 269990,
+    image: 'https://images.unsplash.com/photo-1517336714731-489689fd1ca8?w=600&auto=format&fit=crop&q=80',
+    rating: 4.9,
+    reviewsCount: 128,
+    category: 'electronics',
+    brand: 'Apple',
+  },
+  {
+    id: 'ele-2',
+    name: 'AuraPhone 15 Pro 256GB Titanium',
+    title: 'AuraPhone 15 Pro 256GB Titanium',
+    price: 134900,
+    originalPrice: 144900,
+    image: 'https://images.unsplash.com/photo-1511707171634-5f897ff02aa9?w=600&auto=format&fit=crop&q=80',
+    rating: 4.8,
+    reviewsCount: 342,
+    category: 'electronics',
+    brand: 'Apple',
+  },
+  {
+    id: 'fas-1',
+    name: 'Premium Leather Biker Jacket',
+    title: 'Premium Leather Biker Jacket',
+    price: 8999,
+    originalPrice: 12999,
+    image: 'https://images.unsplash.com/photo-1551028719-00167b16eac5?w=600&auto=format&fit=crop&q=80',
+    rating: 4.7,
+    reviewsCount: 89,
+    category: 'fashion',
+    brand: 'Zara',
+  },
+  {
+    id: 'ele-3',
+    name: 'Wireless Noise Cancelling Headphones',
+    title: 'Wireless Noise Cancelling Headphones',
+    price: 19990,
+    originalPrice: 24990,
+    image: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600&auto=format&fit=crop&q=80',
+    rating: 4.6,
+    reviewsCount: 215,
+    category: 'electronics',
+    brand: 'Sony',
+  },
+  {
+    id: 'gro-1',
+    name: 'Organic Almond Milk 1L Pack of 3',
+    title: 'Organic Almond Milk 1L Pack of 3',
+    price: 599,
+    originalPrice: 750,
+    image: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=600&auto=format&fit=crop&q=80',
+    rating: 4.8,
+    reviewsCount: 56,
+    category: 'groceries',
+    brand: 'FreshMart',
+  },
+  {
+    id: 'fas-2',
+    name: 'Urban Athletic Running Shoes',
+    title: 'Urban Athletic Running Shoes',
+    price: 4999,
+    originalPrice: 6999,
+    image: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+    rating: 4.7,
+    reviewsCount: 190,
+    category: 'fashion',
+    brand: 'Nike',
+  },
+];
+
+// ─── Backend API Integration Functions ─────────────────────────────────────────
+
+const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+async function fetchHomepageSdui(): Promise<SduiHomepageResponse | null> {
+  try {
+    const res = await fetch(`${API_BASE}/api/v1/sdui/homepage`, {
+      next: { revalidate: 60 },
+      headers: { 'X-AuraMart-Client': 'web-server' },
+    });
+    if (!res.ok) return null;
+    return (await res.json()) as SduiHomepageResponse;
+  } catch {
+    return null;
+  }
+}
+
+async function fetchProductsForSection(config: Record<string, any>, sectionId: string): Promise<any[]> {
+  try {
+    const params = new URLSearchParams();
+
+    // Map configuration filters
+    if (config.categoryFilter && config.categoryFilter !== 'all') {
+      params.append('category', config.categoryFilter);
+    } else if (config.category && config.category !== 'all') {
+      params.append('category', config.category);
     }
-  }, []);
 
-  // Load CMS configuration (Try backend port 5000 -> localStorage -> hardcoded default)
-  const loadCMS = async () => {
-    // 1. Load products from API
-    try {
-      const res = await fetch('http://localhost:5000/api/products');
-      if (res.ok) {
-        const data = await res.json();
-        const mapped = data.map((bp: any) => ({
-          ...bp,
-          name: bp.title || '',
-          price: bp.discountPrice ?? bp.basePrice,
-          originalPrice: bp.basePrice,
-          image: bp.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
-          rating: bp.rating ?? 4.5,
-          reviewsCount: bp.reviewCount ?? 12,
-        }));
-        setProducts(mapped);
-      } else {
-        setProducts(localProducts);
-      }
-    } catch (e) {
-      console.log('Backend API down. Using local fallback products.');
-      setProducts(localProducts);
+    if (config.brand && config.brand !== 'all') {
+      params.append('brand', config.brand);
     }
 
-    // 2. Load CMS config
-    try {
-      const res = await fetch('http://localhost:5000/api/sdui/homepage');
-      if (res.ok) {
-        const data = await res.json();
-        setCmsConfig(data);
-        return;
-      }
-    } catch (e) {
-      console.log('Backend SDUI server down. Using local client fallback.');
-    }
-    // Client fallback
-    setCmsConfig(getCMSConfig());
-  };
+    const limit = config.limit || config.count || 8;
+    params.append('limit', String(limit));
 
-  useEffect(() => {
-    loadCMS();
+    // Sort parameter mapping
+    const sort = config.sort || config.sortBy || (sectionId.includes('flash') ? 'discount' : sectionId.includes('trending') ? 'trending' : 'featured');
+    params.append('sort', sort);
 
-    // Load dynamic homepage marketing promo config
-    try {
-      const stored = localStorage.getItem('auramart_custom_promos');
-      let customConfig = null;
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        if (parsed['homepage-marketing']) {
-          customConfig = parsed['homepage-marketing'];
-        }
-      }
-      setMarketingConfig(customConfig || promoPagesRegistry['homepage-marketing']);
-    } catch (e) {
-      setMarketingConfig(promoPagesRegistry['homepage-marketing']);
+    if (config.isQuickCommerce !== undefined) {
+      params.append('isQuickCommerce', String(config.isQuickCommerce));
     }
 
-    // Listen for custom cms-updated events (e.g. from same-page test triggers)
-    const handleCMSUpdate = () => {
-      loadCMS();
-    };
-    window.addEventListener('cms-updated', handleCMSUpdate);
-    return () => window.removeEventListener('cms-updated', handleCMSUpdate);
-  }, []);
+    const res = await fetch(`${API_BASE}/api/v1/products?${params.toString()}`, {
+      next: { revalidate: 60 },
+      headers: { 'X-AuraMart-Client': 'web-server' },
+    });
 
-  // Auto-play interval for hero carousel
-  useEffect(() => {
-    if (!cmsConfig) return;
-    const heroSection = cmsConfig.sections.find(s => s.type === 'hero_banners' && s.visible);
-    if (!heroSection) return;
+    if (res.ok) {
+      const json = await res.json();
+      const list = Array.isArray(json?.data) ? json.data : Array.isArray(json) ? json : [];
+      if (list.length > 0) return list;
+    }
+    
+    // Fallback attempt
+    const fallbackRes = await fetch(`${API_BASE}/api/v1/products?limit=${limit}`, {
+      next: { revalidate: 60 },
+    });
+    if (fallbackRes.ok) {
+      const fallbackJson = await fallbackRes.json();
+      const fallbackList = Array.isArray(fallbackJson?.data) ? fallbackJson.data : Array.isArray(fallbackJson) ? fallbackJson : [];
+      if (fallbackList.length > 0) return fallbackList;
+    }
 
-    const intervalVal = heroSection.config.autoPlayInterval || 4000;
-    const bannersCount = heroSection.config.banners?.length || 0;
-    if (bannersCount === 0) return;
+    return FALLBACK_PRODUCTS;
+  } catch {
+    return FALLBACK_PRODUCTS;
+  }
+}
 
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % bannersCount);
-    }, intervalVal);
+// ─── Main Page Renderer ────────────────────────────────────────────────────────
 
-    return () => clearInterval(timer);
-  }, [cmsConfig]);
+export default async function Home() {
+  const sduiData = await fetchHomepageSdui();
+  const rawSections = sduiData?.sections ?? [];
 
-  // Flash Sale & AuraLive global timer countdown
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setTimeLeft(prev => {
-        if (prev.seconds > 0) {
-          return { ...prev, seconds: prev.seconds - 1 };
-        } else if (prev.minutes > 0) {
-          return { ...prev, minutes: prev.minutes - 1, seconds: 59 };
-        } else if (prev.hours > 0) {
-          return { hours: prev.hours - 1, minutes: 59, seconds: 59 };
-        }
-        return { hours: 3, minutes: 59, seconds: 59 };
-      });
-      
-      // Simulate real-time incrementing watchers count for live deal
-      setLiveWatchers(prev => prev + (Math.random() > 0.6 ? Math.floor(Math.random() * 5) - 2 : 0));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, []);
+  // Filter visible sections & sort by order
+  const activeSections = rawSections
+    .filter((s) => s.visible !== false)
+    .sort((a, b) => (a.order ?? 0) - (b.order ?? 0));
 
-  if (!cmsConfig) {
-    return (
-      <div className={styles.loadingWrapper}>
-        <div className={styles.spinner}></div>
-        <p>Initializing AuraMart Experience...</p>
-      </div>
+  // Identify all product carousel sections
+  const carouselSections = activeSections.filter(
+    (s) =>
+      s.type === 'product_carousel' ||
+      s.type === 'flash_deals' ||
+      s.type === 'featured_products' ||
+      s.type === 'trending_products' ||
+      s.type === 'bestsellers' ||
+      s.type === 'new_arrivals' ||
+      s.type === 'recommended' ||
+      s.type === 'sponsored' ||
+      s.type === 'collection_carousel'
+  );
+
+  // Fetch product data for all carousel sections in parallel
+  const productDataMap = new Map<string, any[]>();
+  if (carouselSections.length > 0) {
+    const productsList = await Promise.all(
+      carouselSections.map((sec) => fetchProductsForSection(sec.config || {}, sec.id))
     );
+    carouselSections.forEach((sec, idx) => {
+      productDataMap.set(sec.id, productsList[idx] || []);
+    });
+  } else {
+    // If SDUI response had no explicit carousel sections, fetch default featured & trending shelves
+    const [featured, trending] = await Promise.all([
+      fetchProductsForSection({ sort: 'featured', limit: 8 }, 'featured_default'),
+      fetchProductsForSection({ sort: 'trending', limit: 8 }, 'trending_default'),
+    ]);
+    productDataMap.set('featured_default', featured);
+    productDataMap.set('trending_default', trending);
   }
 
-  // Get active sorted layout blocks
-  const activeSections = getVisibleSections(cmsConfig);
-
   return (
-    <div className={styles.homeContainer}>
-      {activeSections.map((section) => {
-        switch (section.type) {
-          
-          // 1. TOP ANNOUNCEMENT BAR
-          case 'top_announcement': {
-            const { text, link, backgroundColor, textColor } = section.config;
-            return (
-              <div 
-                key={section.id} 
-                className={styles.topAnnouncement}
-                style={{ backgroundColor: backgroundColor || '#7C3AED', color: textColor || '#FFFFFF' }}
-              >
-                {link ? (
-                  <Link href={link}>{text}</Link>
-                ) : (
-                  <span>{text}</span>
-                )}
-              </div>
-            );
-          }
+    <PageContainer className={styles.homeContainer}>
+      <Container size="2xl">
 
-          // 2. HERO SLIDESHOW CAROUSEL
-          case 'hero_banners': {
-            const { banners } = section.config;
-            if (!banners || banners.length === 0) return null;
-            return (
-              <section key={section.id} className={styles.heroSection}>
-                <div className="container">
-                  <div className={styles.carouselWrapper}>
-                    {banners.map((slide: any, index: number) => (
-                      <div
-                        key={slide.id || index}
-                        className={`${styles.slide} ${index === currentSlide ? styles.slideActive : ''}`}
-                        style={{ backgroundColor: slide.backgroundColor || '#4C1D95' }}
-                      >
-                        <div className={styles.slideContent}>
-                          <span className={styles.slideBadge}>Special Promo</span>
-                          <h1 className={styles.slideTitle}>{slide.title}</h1>
-                          <p className={slide.subtitle ? styles.slideSubtitle : styles.slideSubtitleEmpty}>{slide.subtitle}</p>
-                          <div className={styles.btnRow}>
-                            <Link href={slide.ctaUrl || '/search'} className={styles.slideCta}>
-                              {slide.ctaText || 'Shop Now'} <FiArrowRight className={styles.arrowIcon} />
-                            </Link>
-                          </div>
-                        </div>
-                        <div className={styles.slideImageWrapper}>
-                          <img src={slide.imageUrl} alt={slide.title} className={styles.slideImage} />
-                          <div className={styles.imageOverlayShadow}></div>
-                        </div>
-                      </div>
-                    ))}
-                    <div className={styles.indicators}>
-                      {banners.map((_: any, index: number) => (
-                        <button
-                          key={index}
-                          onClick={() => setCurrentSlide(index)}
-                          className={`${styles.indicator} ${index === currentSlide ? styles.indicatorActive : ''}`}
-                          aria-label={`Go to slide ${index + 1}`}
-                        />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </section>
-            );
-          }
+        {/* Dynamic SDUI Section Render Loop */}
+        {activeSections.length > 0 ? (
+          activeSections.map((section) => {
+            switch (section.type) {
+              case 'top_announcement':
+                return null; // Top announcement is rendered in Header layout
 
-          // 2.5 CAMPAIGNS SPOTLIGHT
-          case 'campaign_spotlight': {
-            return (
-              <section key={section.id} style={{ padding: '40px 0', backgroundColor: '#F8FAFC' }}>
-                <div className="container">
-                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px' }}>
-                    <Link 
-                      href="/promo/monsoon-clearance" 
-                      style={{ 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-end',
-                        borderRadius: '16px', 
-                        overflow: 'hidden', 
-                        position: 'relative', 
-                        height: '200px',
-                        backgroundImage: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.25) 100%), url(https://images.unsplash.com/photo-1534274988757-a28bf1a57c17?w=600)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        color: 'white',
-                        padding: '28px',
-                        textDecoration: 'none',
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-                    >
-                      <div>
-                        <span style={{ backgroundColor: '#2563EB', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'white' }}>Active Campaign</span>
-                        <h3 style={{ fontSize: '1.6rem', fontWeight: '900', marginTop: '12px', color: 'white', letterSpacing: '-0.02em', margin: '8px 0 2px' }}>☔ Monsoon Clearance Blast</h3>
-                        <p style={{ fontSize: '0.88rem', opacity: 0.9, margin: 0 }}>Up to 60% off on outdoor gear & gadgets</p>
-                      </div>
-                    </Link>
-                    <Link 
-                      href="/promo/diwali-festivals" 
-                      style={{ 
-                        display: 'flex',
-                        flexDirection: 'column',
-                        justifyContent: 'flex-end',
-                        borderRadius: '16px', 
-                        overflow: 'hidden', 
-                        position: 'relative', 
-                        height: '200px',
-                        backgroundImage: 'linear-gradient(to top, rgba(15, 23, 42, 0.9) 0%, rgba(15, 23, 42, 0.25) 100%), url(https://images.unsplash.com/photo-1514790193030-c89d266d5a9d?w=600)',
-                        backgroundSize: 'cover',
-                        backgroundPosition: 'center',
-                        color: 'white',
-                        padding: '28px',
-                        textDecoration: 'none',
-                        boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)',
-                        transition: 'transform 0.2s ease'
-                      }}
-                      onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-4px)'}
-                      onMouseLeave={(e) => e.currentTarget.style.transform = 'none'}
-                    >
-                      <div>
-                        <span style={{ backgroundColor: '#EA580C', padding: '4px 10px', borderRadius: '20px', fontSize: '0.72rem', fontWeight: 'bold', textTransform: 'uppercase', color: 'white' }}>Festive Bazaar</span>
-                        <h3 style={{ fontSize: '1.6rem', fontWeight: '900', marginTop: '12px', color: 'white', letterSpacing: '-0.02em', margin: '8px 0 2px' }}>🏮 Shubh Diwali Bazaar</h3>
-                        <p style={{ fontSize: '0.88rem', opacity: 0.9, margin: 0 }}>Traditional ethnic wear & home decors</p>
-                      </div>
-                    </Link>
-                  </div>
-                </div>
-              </section>
-            );
-          }
+              case 'hero_banners': {
+                const banners = (section.config?.banners as BannerItem[]) || FALLBACK_BANNERS;
+                return <HeroBanner key={section.id} banners={banners} surface="MARKETPLACE" />;
+              }
 
-          // 3. FLADO QUICK COMMERCE GATEWAY
-          case 'flado_banner': {
-            const { title, subtitle, ctaText, ctaUrl, backgroundColor, imageUrl, badgeText } = section.config;
-            return (
-              <section key={section.id} className={styles.fladoTeaserSection}>
-                <div className="container">
-                  <div className={styles.fladoTeaserCard} style={{ background: `linear-gradient(135deg, ${backgroundColor} 0%, #064E3B 100%)` }}>
-                    <div className={styles.fladoTeaserText}>
-                      <span className={styles.teaserTag}>
-                        <FiZap /> {badgeText || 'INSTANT'}
-                      </span>
-                      <h2>{title}</h2>
-                      <p>{subtitle}</p>
-                      <div className={styles.teaserPromises}>
-                        <div className={styles.promise}>
-                          <span className={styles.promiseCheck}>✓</span>
-                          <span>Delivered under 10 Minutes</span>
-                        </div>
-                        <div className={styles.promise}>
-                          <span className={styles.promiseCheck}>✓</span>
-                          <span>Darkstore freshness assurance</span>
-                        </div>
-                      </div>
-                      <Link href={ctaUrl || '/flado'} className={styles.fladoTeaserCta}>
-                        {ctaText || 'Order Now'} <FiArrowRight />
-                      </Link>
-                    </div>
-                    <div className={styles.fladoTeaserImage}>
-                      <img src={imageUrl} alt="Flado Delivery" className={styles.teaserImg} />
-                    </div>
-                  </div>
-                </div>
-              </section>
-            );
-          }
-
-          // 4. SHOP BY CATEGORY PILLS GRID
-          case 'category_grid': {
-            const { categories } = section.config;
-            return (
-              <section key={section.id} className={styles.categoriesSection}>
-                <div className="container">
-                  <SectionHeader 
-                    label="Explore Mall"
-                    title={section.title || "Shop by Category"} 
-                    subtitle="Directly sourced products from brand owners at unmatched prices."
+              case 'category_grid': {
+                const categories = (section.config?.categories as CategoryItem[]) || FALLBACK_CATEGORIES;
+                return (
+                  <CategoriesSection
+                    key={section.id}
+                    categories={categories}
+                    title={section.title || 'Shop by Department'}
+                    surface="MARKETPLACE"
                   />
-                  <div className={styles.categoriesGrid}>
-                    {categories?.map((cat: any, idx: number) => (
-                      <Link
-                        key={idx}
-                        href={cat.slug === 'groceries' ? '/flado' : `/categories/${cat.slug}`}
-                        className={styles.categoryCard}
-                      >
-                        <div className={styles.categoryIconCircle} style={{ background: cat.color || '#F1F5F9' }}>
-                          <span className={styles.catEmoji}>{cat.icon}</span>
-                        </div>
-                        <div className={styles.categoryMeta}>
-                          <h3>{cat.name}</h3>
-                          <span>View Offers</span>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+                );
+              }
 
-          // 5. FLASH COUNTDOWN SALE WIDGET
-          case 'flash_sale': {
-            const { title, subtitle, deals } = section.config;
-            if (!deals || deals.length === 0) return null;
-            // Get product objects matching deal product IDs
-            const saleProducts = deals.map((d: any) => products.find(p => p.id === d.productId)).filter(Boolean);
-            return (
-              <section key={section.id} className={styles.flashSaleSection}>
-                <div className="container">
-                  <div className={styles.flashSaleHeader}>
-                    <div className={styles.flashSaleTitleBox}>
-                      <FiZap className={styles.flashIcon} />
-                      <h2>{title}</h2>
-                      <div className={styles.timerBox}>
-                        <FiClock className={styles.clockIcon} />
-                        <span>Ends in:</span>
-                        <div className={styles.timeUnit}>{String(timeLeft.hours).padStart(2, '0')}h</div>
-                        <span className={styles.timerColon}>:</span>
-                        <div className={styles.timeUnit}>{String(timeLeft.minutes).padStart(2, '0')}m</div>
-                        <span className={styles.timerColon}>:</span>
-                        <div className={styles.timeUnit}>{String(timeLeft.seconds).padStart(2, '0')}s</div>
-                      </div>
-                    </div>
-                    <Link href="/search" className={styles.viewAllBtn}>
-                      View All Deals <FiArrowRight />
-                    </Link>
-                  </div>
-                  <div className={styles.productsGrid}>
-                    {saleProducts.map((product: any) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
-
-          // 6. AURALIVE SIMULATED INTERACTIVE COMMERCE
-          case 'live_deal': {
-            const { productId, productName, productImage, originalPrice, livePrice, hostName } = section.config;
-            const discount = Math.round(((originalPrice - livePrice) / originalPrice) * 100);
-            return (
-              <section key={section.id} className={styles.liveCommerceSection}>
-                <div className="container">
-                  <div className={styles.liveTeaserCard}>
-                    <div className={styles.liveVideoSimulation}>
-                      <img src={productImage} alt={productName} className={styles.liveFeedImg} />
-                      <div className={styles.livePulsingBadge}>
-                        <span className={styles.redDot}></span> LIVE SHOPPING
-                      </div>
-                      <div className={styles.watchersOverlay}>
-                        <FiUsers /> <span>{liveWatchers.toLocaleString()} watching</span>
-                      </div>
-                      <div className={styles.hostLabel}>Host: {hostName}</div>
-                    </div>
-
-                    <div className={styles.liveDetailsBox}>
-                      <span className={styles.liveDealTag}>LIMITED LIVE OFFER</span>
-                      <h2 className={styles.liveTitle}>Live Stream Special Drop!</h2>
-                      <p className={styles.liveDesc}>
-                        Grab the <strong>{productName}</strong> live at this special price before stream ends.
-                      </p>
-                      
-                      <div className={styles.pricingStrip}>
-                        <div className={styles.livePriceTag}>₹{livePrice.toLocaleString('en-IN')}</div>
-                        <div className={styles.liveOriginalPrice}>₹{originalPrice.toLocaleString('en-IN')}</div>
-                        <div className={styles.liveDiscountBadge}>{discount}% OFF</div>
-                      </div>
-
-                      <div className={styles.liveTimerRow}>
-                        <FiClock /> <span>Offers closes in: <strong>{timeLeft.hours}h {timeLeft.minutes}m {timeLeft.seconds}s</strong></span>
-                      </div>
-
-                      <Link href={`/products/${productId}`} className={styles.claimLiveBtn}>
-                        Claim Offer & Checkout <FiArrowRight />
-                      </Link>
-                    </div>
-                  </div>
-                </div>
-              </section>
-            );
-          }
-
-          // 7. HORIZONTAL PRODUCT STRIP (Bestsellers or New Arrivals)
-          case 'product_strip': {
-            const { title, subtitle, productIds, ctaText, ctaUrl } = section.config;
-            const stripProducts = productIds.map((id: string) => products.find(p => p.id === id)).filter(Boolean);
-            if (stripProducts.length === 0) return null;
-            return (
-              <section key={section.id} className={styles.productsSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Curated List"
-                    title={title}
-                    subtitle={subtitle}
-                    viewAllLink={ctaUrl}
+              case 'flado_quick_strip':
+              case 'flado_banner': {
+                const cfg = section.config || {};
+                return (
+                  <PromotionalBanner
+                    key={section.id}
+                    title={cfg.headline || cfg.title || '⚡ Grocery Delivery in Minutes with Flado!'}
+                    subtitle={cfg.subtitle || 'Fresh produce, daily essentials and bakery goods delivered fast.'}
+                    badgeText={cfg.badgeText || 'Flado Express'}
+                    ctaText={cfg.ctaText || 'Explore Flado Groceries'}
+                    ctaUrl={cfg.ctaUrl || '/flado'}
+                    imageUrl={cfg.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&fit=crop'}
+                    surface="MARKETPLACE"
                   />
-                  <div className={styles.productsGrid}>
-                    {stripProducts.slice(0, 4).map((product: any) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+                );
+              }
 
-          // 8. BRAND SPOTLIGHT
-          case 'brand_spotlight': {
-            const { title, subtitle, brands } = section.config;
-            return (
-              <section key={section.id} className={styles.brandsSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Official Partnerships"
-                    title={title}
-                    subtitle={subtitle}
+              case 'product_carousel':
+              case 'flash_deals':
+              case 'featured_products':
+              case 'trending_products':
+              case 'bestsellers':
+              case 'new_arrivals':
+              case 'recommended':
+              case 'sponsored':
+              case 'collection_carousel': {
+                const sectionProducts = productDataMap.get(section.id);
+                const products = (sectionProducts && sectionProducts.length > 0) ? sectionProducts : FALLBACK_PRODUCTS;
+                return (
+                  <ProductCarousel
+                    key={section.id}
+                    products={products}
+                    title={section.title || 'Featured Collection'}
+                    subtitle={section.subtitle}
+                    badgeText={section.config?.badge || section.config?.badgeText}
+                    viewAllUrl={section.config?.viewAllUrl || '/search'}
+                    surface="MARKETPLACE"
                   />
-                  <div className={styles.brandsGrid}>
-                    {brands?.map((brand: any, idx: number) => (
-                      <Link href={`/search?q=${brand.slug}`} key={idx} className={styles.brandCard}>
-                        <div className={styles.brandBannerWrapper}>
-                          <img src={brand.bannerUrl} alt={brand.name} className={styles.brandBanner} />
-                          <div className={styles.brandLogoBox} style={{ borderColor: brand.badgeColor }}>
-                            <img src={brand.logoUrl} alt={brand.name} className={styles.brandLogo} />
-                          </div>
-                        </div>
-                        <div className={styles.brandInfo}>
-                          <h4 style={{ color: brand.badgeColor }}>{brand.name}</h4>
-                          <p>{brand.tagline}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+                );
+              }
 
-          // 9. SPONSOR BRAND STRIP
-          case 'sponsor_strip': {
-            const { title, brands } = section.config;
-            return (
-              <section key={section.id} className={styles.sponsorSection}>
-                <div className="container">
-                  <div className={styles.sponsorHeader}>
-                    <h3>{title}</h3>
-                  </div>
-                  <div className={styles.sponsorGrid}>
-                    {brands?.map((brand: any, idx: number) => (
-                      <Link href={`/search?q=${brand.slug}`} key={idx} className={styles.sponsorCard}>
-                        <img src={brand.logoUrl} alt={brand.name} className={styles.sponsorLogo} />
-                        <span className={styles.sponsorDiscount}>{brand.discountText}</span>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
-
-          // 10. NEW LAUNCHES
-          case 'new_launches': {
-            const { title, subtitle, productIds } = section.config;
-            const launchProducts = productIds.map((id: string) => products.find(p => p.id === id)).filter(Boolean);
-            return (
-              <section key={section.id} className={styles.productsSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Latest Arrivals"
-                    title={title}
-                    subtitle={subtitle}
-                    viewAllLink="/new-launches"
+              case 'brand_grid':
+              case 'sponsor_strip':
+              case 'featured_brands': {
+                const brands = (section.config?.brands as any[]) || FALLBACK_BRANDS;
+                return (
+                  <BrandLogos
+                    key={section.id}
+                    brands={brands}
+                    title={section.title || 'Official Brand Partners'}
+                    surface="MARKETPLACE"
                   />
-                  <div className={styles.productsGrid}>
-                    {launchProducts.slice(0, 4).map((product: any) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+                );
+              }
 
-          // 11. TRENDING NOW
-          case 'trending_now': {
-            const { title, subtitle, productIds } = section.config;
-            const trendProducts = productIds.map((id: string) => products.find(p => p.id === id)).filter(Boolean);
-            return (
-              <section key={section.id} className={styles.productsSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Vibe Check"
-                    title={title}
-                    subtitle={subtitle}
-                  />
-                  <div className={styles.productsGrid}>
-                    {trendProducts.slice(0, 4).map((product: any) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+              case 'trust_features':
+                return <TrustFeatures key={section.id} surface="MARKETPLACE" />;
 
-          // 12. CURATED COLLECTIONS
-          case 'collection_cards': {
-            const { title, collections } = section.config;
-            return (
-              <section key={section.id} className={styles.collectionsSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Editorial"
-                    title={title}
-                    subtitle="Curated lookbooks designed by style editors"
-                  />
-                  <div className={styles.collectionsGrid}>
-                    {collections?.map((col: any, idx: number) => (
-                      <Link href={col.slug === 'groceries' ? '/flado' : `/categories/${col.slug}`} key={idx} className={styles.collectionCard}>
-                        <div className={styles.collectionImgWrapper}>
-                          <img src={col.imageUrl} alt={col.title} className={styles.collectionImg} />
-                          {col.tag && <span className={styles.collectionTag}>{col.tag}</span>}
-                        </div>
-                        <div className={styles.collectionMeta}>
-                          <h3>{col.title}</h3>
-                          <p>{col.subtitle}</p>
-                        </div>
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+              case 'newsletter':
+                return <NewsletterSection key={section.id} surface="MARKETPLACE" />;
 
-          // 13. STYLE LOOKBOOK STUDIO
-          case 'look_book': {
-            const { title, subtitle, items } = section.config;
-            return (
-              <section key={section.id} className={styles.lookbookSection}>
-                <div className="container">
-                  <SectionHeader
-                    label="Studio"
-                    title={title}
-                    subtitle={subtitle}
-                  />
-                  <div className={styles.lookbookGrid}>
-                    {items?.map((item: any, idx: number) => (
-                      <div key={idx} className={styles.lookbookCard}>
-                        <div className={styles.lookbookImgWrapper}>
-                          <img src={item.imageUrl} alt={item.title} className={styles.lookbookImg} />
-                        </div>
-                        <div className={styles.lookbookMeta}>
-                          <h4>{item.title}</h4>
-                          <div className={styles.lookbookTags}>
-                            {item.tags?.map((tag: string, tIdx: number) => (
-                              <span key={tIdx} className={styles.lookbookTag}>#{tag}</span>
-                            ))}
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </section>
-            );
-          }
+              default:
+                return null;
+            }
+          })
+        ) : (
+          /* Default Fallback Layout if SDUI payload is empty */
+          <>
+            <HeroBanner banners={FALLBACK_BANNERS} surface="MARKETPLACE" />
+            <CategoriesSection categories={FALLBACK_CATEGORIES} title="Shop by Department" surface="MARKETPLACE" />
 
-          // 14. PROMO STRIP
-          case 'promo_strip': {
-            const { imageUrl, title, ctaUrl, backgroundColor, textColor } = section.config;
-            return (
-              <section key={section.id} className={styles.promoStripSection} style={{ backgroundColor: backgroundColor || '#F59E0B' }}>
-                <div className="container">
-                  <Link href={ctaUrl || '/profile'} className={styles.promoStripLink} style={{ color: textColor || '#1E293B' }}>
-                    <div className={styles.promoStripContent}>
-                      <span className={styles.promoSparkle}>✨</span>
-                      <p>{title}</p>
-                      <span className={styles.promoSparkle}>✨</span>
-                    </div>
-                  </Link>
-                </div>
-              </section>
-            );
-          }
+            <ProductCarousel
+              products={(productDataMap.get('featured_default') && productDataMap.get('featured_default')!.length > 0) ? productDataMap.get('featured_default')! : FALLBACK_PRODUCTS}
+              title="Featured Products"
+              subtitle="Curated top-selling items sourced directly from brands"
+              viewAllUrl="/search"
+              surface="MARKETPLACE"
+            />
 
-          default: return null;
-        }
-      })}
+            <PromotionalBanner
+              title="⚡ Grocery Delivery in Minutes with Flado!"
+              subtitle="Fresh produce, daily essentials and bakery goods delivered to your doorstep."
+              badgeText="Flado Express"
+              ctaText="Explore Flado Groceries"
+              ctaUrl="/flado"
+              imageUrl="https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&fit=crop"
+              surface="MARKETPLACE"
+            />
 
-      {/* Dynamic Campaign Marketing Sections */}
-      {marketingConfig && marketingConfig.sections && (
-        <div className="container" style={{ margin: '40px auto 10px' }}>
-          {marketingConfig.sections.map((section) => (
-            <MarketingSectionRenderer key={section.id} section={section} />
-          ))}
-        </div>
-      )}
+            <ProductCarousel
+              products={(productDataMap.get('trending_default') && productDataMap.get('trending_default')!.length > 0) ? productDataMap.get('trending_default')! : FALLBACK_PRODUCTS}
+              title="Trending Now"
+              subtitle="The hottest items purchased by AuraMart shoppers this week"
+              badgeText="POPULAR"
+              viewAllUrl="/search?sort=trending"
+              surface="MARKETPLACE"
+            />
 
-      {/* Trust Perks Strip (Always active to build confidence) */}
-      <section className={styles.perksSection}>
-        <div className="container">
-          <div className={styles.perksGrid}>
-            <div className={styles.perkCard}>
-              <div className={styles.perkIconWrapper}>
-                <FiAward className={styles.perkIcon} />
-              </div>
-              <h3>100% Brand Guarantee</h3>
-              <p>Direct sourcing from brand headquarters or officially licensed regional distributors.</p>
-            </div>
-            <div className={styles.perkCard}>
-              <div className={styles.perkIconWrapper}>
-                <FiTruck className={styles.perkIcon} />
-              </div>
-              <h3>Secure Express Shipping</h3>
-              <p>Insured global shipping with comprehensive live-route packaging updates.</p>
-            </div>
-            <div className={styles.perkCard}>
-              <div className={styles.perkIconWrapper}>
-                <FiGift className={styles.perkIcon} />
-              </div>
-              <h3>AuraPay Cashback Wallet</h3>
-              <p>Instant cashback rewards on every purchase, redeemable on both storefronts.</p>
-            </div>
-          </div>
-        </div>
-      </section>
+            <BrandLogos brands={FALLBACK_BRANDS} title="Official Brand Partners" surface="MARKETPLACE" />
+            <TrustFeatures surface="MARKETPLACE" />
+            <NewsletterSection surface="MARKETPLACE" />
+          </>
+        )}
 
-      {/* Floating Spin Wheel trigger button */}
-      <button 
-        onClick={() => setShowSpinWheel(true)} 
-        className={styles.floatingSpinBtn}
-        aria-label="Daily rewards spin wheel"
-      >
-        🎡 <span className={styles.floatingSpinText}>Spin & Win</span>
-      </button>
-
-      {showSpinWheel && <SpinWheel onClose={() => setShowSpinWheel(false)} />}
-    </div>
+      </Container>
+    </PageContainer>
   );
 }

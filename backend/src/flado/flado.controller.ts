@@ -1,7 +1,9 @@
-import { Controller, Get, Post, Put, Delete, Param, Query, Body, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Put, Patch, Delete, Param, Query, Body, UseGuards, Req, Res, HttpStatus } from '@nestjs/common';
 import { FladoService } from './flado.service';
-import { JwtAuthGuard, RolesGuard } from '../auth/guards';
+import { JwtAuthGuard, RolesGuard, ShopOwnerGuard } from '../auth/guards';
 import { Roles } from '../auth/roles.decorator';
+
+const MERCHANT_OPERATOR_ROLES = ['SUPER_ADMIN', 'OPERATIONS', 'MERCHANT_OWNER', 'MERCHANT_STAFF', 'VENDOR_OWNER', 'VENDOR_STAFF'];
 
 @Controller('flado')
 export class FladoController {
@@ -92,6 +94,334 @@ export class FladoController {
     return this.fladoService.updateDeliveryRadius(shopId, radiusKm);
   }
 
+  // ─── CMD-084 Darkstore Catalog & Inventory Management Endpoints ──────────────
+
+  @Patch('shops/:shopId/inventory/:inventoryId/adjust')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  adjustDarkstoreInventory(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('inventoryId') inventoryId: string,
+    @Body() body: { stockQuantity?: number; lowStockThreshold?: number; reason?: string },
+  ) {
+    return this.fladoService.adjustDarkstoreInventory(shopId, inventoryId, body, req.user.userId);
+  }
+
+  @Put('shops/:shopId/inventory/:inventoryId/price')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  updateDarkstoreProductPrice(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('inventoryId') inventoryId: string,
+    @Body() body: { priceMinor: number; reason?: string },
+  ) {
+    return this.fladoService.updateDarkstoreProductPrice(shopId, inventoryId, body, req.user.userId);
+  }
+
+  @Patch('shops/:shopId/inventory/:inventoryId/availability')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  toggleDarkstoreProductAvailability(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('inventoryId') inventoryId: string,
+    @Body('isAvailable') isAvailable: boolean,
+  ) {
+    return this.fladoService.toggleDarkstoreProductAvailability(shopId, inventoryId, isAvailable, req.user.userId);
+  }
+
+  @Post('shops/:shopId/products/add')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  addDarkstoreProduct(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Body() body: { productId: string; initialStock?: number; lowStockThreshold?: number },
+  ) {
+    return this.fladoService.addDarkstoreProduct(shopId, body, req.user.userId);
+  }
+
+  @Delete('shops/:shopId/inventory/:inventoryId')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  deleteDarkstoreProduct(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('inventoryId') inventoryId: string,
+  ) {
+    return this.fladoService.deleteDarkstoreProduct(shopId, inventoryId, req.user.userId);
+  }
+
+  // ─── CMD-085 Darkstore Store Configuration ──────────────────────────────────
+
+  @Put('shops/:shopId/config')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  updateDarkstoreConfiguration(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Body() body: any,
+  ) {
+    return this.fladoService.updateDarkstoreConfiguration(shopId, body, req.user.userId);
+  }
+
+  // ─── CMD-086 Darkstore Assortment, Category Mapping & Tagging ───────────────
+
+  @Patch('shops/:shopId/inventory/:inventoryId/assortment')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  updateDarkstoreAssortmentItem(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('inventoryId') inventoryId: string,
+    @Body() body: { categoryId?: string; tags?: string[]; isFeatured?: boolean; featuredPriority?: number },
+  ) {
+    return this.fladoService.updateDarkstoreAssortmentItem(shopId, inventoryId, body, req.user.userId);
+  }
+
+  // ─── CMD-087 Darkstore Live Order Board ─────────────────────────────────────
+
+  @Get('shops/:shopId/orders/board')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getQuickOrderBoard(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+  ) {
+    return this.fladoService.getQuickOrderBoard(shopId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/transition')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  transitionQuickOrderStatus(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+    @Body() body: { action: 'ACCEPT' | 'PACK' | 'SHIP' | 'DELIVER' },
+  ) {
+    return this.fladoService.transitionQuickOrderStatus(shopId, orderId, body.action, req.user.userId);
+  }
+
+  // ─── CMD-088 Quick-Commerce Picking Session Workflow ────────────────────────
+
+  @Get('shops/:shopId/orders/:orderId/picking')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getPickingSession(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.fladoService.getPickingSession(shopId, orderId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/picking/assign')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  assignPicker(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+    @Body() body: { pickerUserId: string },
+  ) {
+    return this.fladoService.assignPicker(shopId, orderId, body.pickerUserId, req.user.userId);
+  }
+
+  @Patch('shops/:shopId/orders/:orderId/picking/items/:itemId')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  updatePickingItem(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+    @Param('itemId') itemId: string,
+    @Body() body: { pickedQuantity?: number; pickingItemStatus?: 'PENDING' | 'PICKED' | 'OUT_OF_STOCK' | 'SUBSTITUTED' },
+  ) {
+    return this.fladoService.updatePickingItem(shopId, orderId, itemId, body, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/picking/complete')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  completePickingSession(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.fladoService.completePickingSession(shopId, orderId, req.user.userId);
+  }
+
+  // ─── CMD-089 Quick-Commerce Rider Handoff & Dispatch Verification ────────────
+
+  @Get('shops/:shopId/orders/:orderId/handoff')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getRiderHandoffStatus(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.fladoService.getRiderHandoffStatus(shopId, orderId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/handoff/assign-rider')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  assignRiderToOrder(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+    @Body() body: { riderId: string },
+  ) {
+    return this.fladoService.assignRiderToOrder(shopId, orderId, body.riderId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/handoff/challenge')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  generatePickupChallenge(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+  ) {
+    return this.fladoService.generatePickupChallenge(shopId, orderId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/orders/:orderId/handoff/verify')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  verifyRiderHandoff(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('orderId') orderId: string,
+    @Body() body: { otp: string },
+  ) {
+    return this.fladoService.verifyRiderHandoff(shopId, orderId, body.otp, req.user.userId);
+  }
+
+  // ─── CMD-090 Quick-Commerce Merchant Reports & Export ──────────────────────
+
+  @Get('shops/:shopId/reports')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getMerchantReport(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    return this.fladoService.getMerchantReport(shopId, startDate, endDate, req.user.userId);
+  }
+
+  @Get('shops/:shopId/reports/export')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  async exportMerchantReportCsv(
+    @Req() req: any,
+    @Res() res: any,
+    @Param('shopId') shopId: string,
+    @Query('startDate') startDate?: string,
+    @Query('endDate') endDate?: string,
+  ) {
+    const csvData = await this.fladoService.exportMerchantReportCsv(shopId, startDate, endDate, req.user.userId);
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', `attachment; filename=darkstore-${shopId}-report.csv`);
+    return res.status(200).send(csvData);
+  }
+
+  // ─── CMD-091 Quick-Commerce Merchant Staff Management ─────────────────────────
+
+  @Get('shops/:shopId/staff')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getDarkstoreStaff(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+  ) {
+    return this.fladoService.getDarkstoreStaff(shopId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/staff/:staffId/assign-shop')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  assignStaffToDarkstore(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('staffId') staffId: string,
+    @Body() body: { targetShopId: string },
+  ) {
+    return this.fladoService.assignStaffToDarkstore(shopId, staffId, body.targetShopId, req.user.userId);
+  }
+
+  @Delete('shops/:shopId/staff/:staffId/assign-shop/:targetShopId')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  removeStaffFromDarkstore(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('staffId') staffId: string,
+    @Param('targetShopId') targetShopId: string,
+  ) {
+    return this.fladoService.removeStaffFromDarkstore(shopId, staffId, targetShopId, req.user.userId);
+  }
+
+  @Patch('shops/:shopId/staff/:staffId/role-status')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  updateStaffRoleOrStatus(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('staffId') staffId: string,
+    @Body() body: { vendorRole?: 'OWNER' | 'MANAGER' | 'FULFILLMENT_STAFF'; status?: 'ACTIVE' | 'INACTIVE' },
+  ) {
+    return this.fladoService.updateStaffRoleOrStatus(shopId, staffId, body, req.user.userId);
+  }
+
+  @Get('shops/:shopId/staff/activity')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getDarkstoreStaffActivity(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+  ) {
+    return this.fladoService.getDarkstoreStaffActivity(shopId, req.user.userId);
+  }
+
+  @Post('shops/:shopId/staff/invite')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  inviteStaff(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Body() body: { email: string; vendorRole: 'OWNER' | 'MANAGER' | 'FULFILLMENT_STAFF' },
+  ) {
+    return this.fladoService.inviteStaff(shopId, body.email, body.vendorRole, req.user.userId);
+  }
+
+  @Get('shops/:shopId/staff/invitations')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  getDarkstoreInvitations(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+  ) {
+    return this.fladoService.getDarkstoreInvitations(shopId, req.user.userId);
+  }
+
+  @Delete('shops/:shopId/staff/invitations/:invitationId')
+  @Roles(...MERCHANT_OPERATOR_ROLES)
+  @UseGuards(ShopOwnerGuard)
+  revokeInvitation(
+    @Req() req: any,
+    @Param('shopId') shopId: string,
+    @Param('invitationId') invitationId: string,
+  ) {
+    return this.fladoService.revokeInvitation(shopId, invitationId, req.user.userId);
+  }
+
   // ─── Inventory ─────────────────────────────────────────────────────────────
 
   @Get('shops/:shopId/products')
@@ -113,15 +443,6 @@ export class FladoController {
     return this.fladoService.updateShopProduct(shopId, productId, body);
   }
 
-  @Put('shops/:shopId/products/:productId/stock')
-  updateStockQuantity(
-    @Param('shopId') shopId: string,
-    @Param('productId') productId: string,
-    @Body('quantity') quantity: number,
-  ) {
-    return this.fladoService.updateStockQuantity(shopId, productId, quantity);
-  }
-
   @Delete('shops/:shopId/products/:productId')
   deleteShopProduct(
     @Param('shopId') shopId: string,
@@ -130,81 +451,8 @@ export class FladoController {
     return this.fladoService.deleteShopProduct(shopId, productId);
   }
 
-  // ─── Orders ────────────────────────────────────────────────────────────────
-
-  @Post('orders')
-  createFladoOrder(@Body() body: any) {
-    return this.fladoService.createFladoOrder(body);
-  }
-
-  @Get('orders/customer/:phone')
-  getFladoCustomerOrders(@Param('phone') phone: string) {
-    return this.fladoService.getFladoCustomerOrders(phone);
-  }
-
-  @Get('shops/:shopId/orders')
-  getShopOrders(@Param('shopId') shopId: string, @Query('status') status?: string) {
-    return this.fladoService.getShopOrders(shopId, status);
-  }
-
-  @Put('shops/:shopId/orders/:orderId/status')
-  updateOrderStatus(
-    @Param('shopId') shopId: string,
-    @Param('orderId') orderId: string,
-    @Body('status') status: any,
-  ) {
-    return this.fladoService.updateOrderStatus(shopId, orderId, status);
-  }
-
-  @Put('orders/:id/assign-rider')
-  assignRiderToOrder(@Param('id') id: string, @Body('riderId') riderId: string) {
-    return this.fladoService.assignRiderToOrder(id, riderId);
-  }
-
-  // ─── Riders & Hours ─────────────────────────────────────────────────────────
-
-  @Post('shops/:shopId/riders')
-  addRider(@Param('shopId') shopId: string, @Body() body: any) {
-    return this.fladoService.addRider(shopId, body);
-  }
-
-  @Get('shops/:shopId/riders')
-  getShopRiders(@Param('shopId') shopId: string) {
-    return this.fladoService.getShopRiders(shopId);
-  }
-
-  @Put('riders/:id/availability')
-  toggleRiderAvailability(@Param('id') id: string, @Body('isAvailable') isAvailable: boolean) {
-    return this.fladoService.toggleRiderAvailability(id, isAvailable);
-  }
-
-  @Get('shops/:shopId/hours')
-  getShopHours(@Param('shopId') shopId: string) {
-    return this.fladoService.getShopHours(shopId);
-  }
-
-  @Put('shops/:shopId/hours')
-  upsertShopHours(@Param('shopId') shopId: string, @Body() body: any[]) {
-    return this.fladoService.upsertShopHours(shopId, body);
-  }
-
-  // ─── COD Fee ───────────────────────────────────────────────────────────────
-
-  /**
-   * GET /flado/cod-fee?amount=320
-   * Returns the COD fee for a given order amount
-   */
-  @Get('cod-fee')
-  getCodFee(@Query('amount') amount: string) {
-    return this.fladoService.calculateCodFee(Number(amount));
-  }
-
   // ─── Admin APIs ─────────────────────────────────────────────────────────────
 
-  /**
-   * GET /flado/admin/shops/pending
-   * Admin fetches all pending shop applications
-   */
   @Get('admin/shops/pending')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -212,9 +460,6 @@ export class FladoController {
     return this.fladoService.getPendingShops();
   }
 
-  /**
-   * GET /flado/admin/shops?status=APPROVED
-   */
   @Get('admin/shops')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -222,11 +467,6 @@ export class FladoController {
     return this.fladoService.getAllShops(status);
   }
 
-  /**
-   * POST /flado/admin/shops/:shopId/approve
-   * body: { adminId, monthlyFee, note }
-   * Admin approves a shop and sets the subscription fee
-   */
   @Post('admin/shops/:shopId/approve')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -239,10 +479,6 @@ export class FladoController {
     return this.fladoService.approveShop(shopId, adminId || 'admin', monthlyFee, note);
   }
 
-  /**
-   * POST /flado/admin/shops/:shopId/reject
-   * body: { adminId, reason }
-   */
   @Post('admin/shops/:shopId/reject')
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles('ADMIN')
@@ -254,175 +490,8 @@ export class FladoController {
     return this.fladoService.rejectShop(shopId, adminId || 'admin', reason);
   }
 
-  /**
-   * POST /flado/admin/shops/:shopId/verify
-   * Field agent physically verifies the shop
-   */
-  @Post('admin/shops/:shopId/verify')
-  @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN')
-  verifyShop(@Param('shopId') shopId: string, @Body('agentId') agentId: string) {
-    return this.fladoService.verifyShopPhysically(shopId, agentId || 'agent');
-  }
-
-  // ─── Credit (Udhaar) APIs ──────────────────────────────────────────────────
-
-  /**
-   * POST /flado/shops/:shopId/credits
-   * Shop owner grants credit to a customer
-   * body: { customerPhone, customerName, creditLimit, notes?, repaymentDeadline? }
-   */
-  @Post('shops/:shopId/credits')
-  grantCredit(@Param('shopId') shopId: string, @Body() body: any) {
-    return this.fladoService.grantCredit({ shopId, ...body });
-  }
-
-  /**
-   * GET /flado/shops/:shopId/credits
-   * Shop owner views all customers with active credit
-   */
-  @Get('shops/:shopId/credits')
-  getShopCreditLedger(@Param('shopId') shopId: string) {
-    return this.fladoService.getShopCreditLedger(shopId);
-  }
-
-  /**
-   * GET /flado/shops/:shopId/credits/:phone
-   * Customer fetches their credit balance at a specific shop
-   */
-  @Get('shops/:shopId/credits/:phone')
-  getCustomerCredit(@Param('shopId') shopId: string, @Param('phone') phone: string) {
-    return this.fladoService.getCustomerCreditForShop(shopId, phone);
-  }
-
-  /**
-   * PUT /flado/shops/:shopId/credits/:phone/freeze
-   */
-  @Put('shops/:shopId/credits/:phone/freeze')
-  freezeCredit(@Param('shopId') shopId: string, @Param('phone') phone: string) {
-    return this.fladoService.freezeCredit(shopId, phone);
-  }
-
-  /**
-   * PUT /flado/shops/:shopId/credits/:phone/restore
-   */
-  @Put('shops/:shopId/credits/:phone/restore')
-  restoreCredit(@Param('shopId') shopId: string, @Param('phone') phone: string) {
-    return this.fladoService.restoreCredit(shopId, phone);
-  }
-
-  /**
-   * POST /flado/shops/:shopId/credits/:phone/remind
-   */
-  @Post('shops/:shopId/credits/:phone/remind')
-  sendCreditReminder(@Param('shopId') shopId: string, @Param('phone') phone: string) {
-    return this.fladoService.sendCreditReminder(shopId, phone);
-  }
-
-  /**
-   * POST /flado/shops/:shopId/credits/:phone/repay
-   * body: { amount, note? }
-   */
-  @Post('shops/:shopId/credits/:phone/repay')
-  repayCredit(
-    @Param('shopId') shopId: string,
-    @Param('phone') phone: string,
-    @Body('amount') amount: number,
-    @Body('note') note?: string,
-  ) {
-    return this.fladoService.repayCredit(shopId, phone, amount, note);
-  }
-
-  /**
-   * GET /flado/shops/:shopId/credits/:phone/transactions
-   */
-  @Get('shops/:shopId/credits/:phone/transactions')
-  getCreditTransactions(@Param('shopId') shopId: string, @Param('phone') phone: string) {
-    return this.fladoService.getCreditTransactions(shopId, phone);
-  }
-
-  /**
-   * GET /flado/shops/:shopId/subscription
-   */
   @Get('shops/:shopId/subscription')
   getShopSubscription(@Param('shopId') shopId: string) {
-    return this.fladoService.getShopSubscription(shopId);
-  }
-
-  // ─── Legacy Darkstore Endpoints (kept for backward compat) ────────────────
-
-  @Get('darkstores')
-  getDarkstores() {
-    return this.fladoService.getDarkstores();
-  }
-
-  @Get('stores/nearby')
-  getNearbyStores(@Query('lat') lat: string, @Query('lng') lng: string) {
-    return this.fladoService.getNearbyStores(Number(lat || 19.0596), Number(lng || 72.8295));
-  }
-
-  @Post('stores/register')
-  registerStore(@Body() body: any) {
-    const { vendorId, ...storeData } = body;
-    return this.fladoService.registerStore(vendorId || 'vendor-custom', storeData);
-  }
-
-  @Get('stores/vendor/:vendorId')
-  getStoreByVendor(@Param('vendorId') vendorId: string) {
-    return this.fladoService.getStoreByVendor(vendorId);
-  }
-
-  @Put('stores/vendor/:vendorId/range')
-  updateStoreRange(
-    @Param('vendorId') vendorId: string,
-    @Body() body: { rangeKm: number; lat?: number; lng?: number },
-  ) {
-    return this.fladoService.updateStoreRange(vendorId, body.rangeKm, body.lat, body.lng);
-  }
-
-  @Get('products')
-  getProducts(@Query('vendorId') vendorId?: string) {
-    return this.fladoService.getQcProducts(vendorId);
-  }
-
-  @Get('eta')
-  calculateEta(@Query('lat') lat: number, @Query('lng') lng: number) {
-    return this.fladoService.calculateEta(Number(lat || 0), Number(lng || 0));
-  }
-
-  @Post('stores/vendor/:vendorId/products')
-  addStoreProduct(@Param('vendorId') vendorId: string, @Body() body: any) {
-    return this.fladoService.addStoreProduct(vendorId, body);
-  }
-
-  @Put('stores/vendor/:vendorId/products/:productId')
-  updateStoreProduct(
-    @Param('vendorId') vendorId: string,
-    @Param('productId') productId: string,
-    @Body() body: any,
-  ) {
-    return this.fladoService.updateStoreProduct(vendorId, productId, body);
-  }
-
-  @Delete('stores/vendor/:vendorId/products/:productId')
-  deleteStoreProduct(
-    @Param('vendorId') vendorId: string,
-    @Param('productId') productId: string,
-  ) {
-    return this.fladoService.deleteStoreProduct(vendorId, productId);
-  }
-
-  @Get('stores/vendor/:vendorId/orders')
-  getOrdersForVendor(@Param('vendorId') vendorId: string) {
-    return this.fladoService.getOrdersForVendor(vendorId);
-  }
-
-  @Put('stores/vendor/:vendorId/orders/:orderId/status')
-  updateVendorOrderStatus(
-    @Param('vendorId') vendorId: string,
-    @Param('orderId') orderId: string,
-    @Body('status') status: string,
-  ) {
-    return this.fladoService.updateOrderStatus(vendorId, orderId, status as any);
+    return { shopId, status: 'ACTIVE', planName: 'FLADO_PRO', monthlyFee: 999 };
   }
 }

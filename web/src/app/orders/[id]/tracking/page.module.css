@@ -1,0 +1,58 @@
+.container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 30px 20px 60px 20px;
+}
+
+.header {
+  margin-bottom: 24px;
+}
+
+.title {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1E293B;
+  margin-bottom: 8px;
+}
+
+.metaRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+  color: #64748B;
+}
+
+.card {
+  background: white;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.riderBox {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px;
+  background: #F8FAFC;
+  border-radius: 8px;
+  margin-top: 16px;
+}
+
+.eta {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: #059669;
+  margin-bottom: 12px;
+}
+
+.errorAlert {
+  padding: 16px;
+  background: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+  border-radius: 8px;
+}

@@ -1,0 +1,45 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  padding: var(--space-6) 0;
+}
+
+.emptyContainer {
+  width: 100%;
+}
+
+.layout {
+  display: flex;
+  gap: var(--space-6);
+  align-items: flex-start;
+  width: 100%;
+}
+
+.sidebarColumn {
+  width: 260px;
+  flex-shrink: 0;
+}
+
+.contentColumn {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (max-width: 991px) {
+  .sidebarColumn {
+    width: 220px;
+  }
+}
+
+@media (max-width: 767px) {
+  .layout {
+    flex-direction: column;
+    gap: var(--space-4);
+  }
+
+  .sidebarColumn {
+    width: 100%;
+  }
+}

@@ -1,0 +1,36 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg, 1.5rem);
+  width: 100%;
+}
+
+.summaryDistributionGrid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: var(--space-lg, 1.5rem);
+}
+
+@media (min-width: 768px) {
+  .summaryDistributionGrid {
+    grid-template-columns: 240px 1fr;
+    align-items: center;
+  }
+}
+
+.mainContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md, 1rem);
+}
+
+/* Surface Token Accents */
+.marketplace {
+  --color-primary: #7c3aed;
+  --color-primary-hover: #6d28d9;
+}
+
+.quickCommerce {
+  --color-primary: #059669;
+  --color-primary-hover: #047857;
+}

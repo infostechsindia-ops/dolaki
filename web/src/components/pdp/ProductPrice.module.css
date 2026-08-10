@@ -1,0 +1,51 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  width: 100%;
+  min-width: 0;
+}
+
+.priceRow {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+  width: 100%;
+  min-width: 0;
+}
+
+.price {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  word-break: break-word;
+}
+
+.fladoPrice {
+  color: var(--color-flado, #10B981);
+}
+
+.comparePrice {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.discount {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background-color: #fef2f2;
+  color: #ef4444;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid #fecaca;
+  white-space: nowrap;
+}
+
+.currency {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}

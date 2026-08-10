@@ -3,30 +3,61 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiTrash2, FiShoppingBag, FiHeart, FiStar } from 'react-icons/fi';
-import { products as allProducts, Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 export default function WishlistPage() {
   const [wishlist, setWishlist] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const { addToCart } = useCart();
 
   useEffect(() => {
-    const loadWishlist = () => {
+    const loadWishlist = async () => {
+      setLoading(true);
       try {
         const stored = localStorage.getItem('auramart_wishlist');
-        if (stored) {
-          const parsedIds = JSON.parse(stored) as string[];
-          const filtered = allProducts.filter(p => parsedIds.includes(p.id));
-          setWishlist(filtered);
-        } else {
-          // Default fallbacks so the page isn't totally blank on first load
-          const defaults = allProducts.slice(10, 14);
-          setWishlist(defaults);
-          localStorage.setItem('auramart_wishlist', JSON.stringify(defaults.map(d => d.id)));
+        const parsedIds = stored ? (JSON.parse(stored) as string[]) : [];
+        
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=50`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          const mapped = list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          }));
+          
+          if (parsedIds.length > 0) {
+            const filtered = mapped.filter((p: any) => parsedIds.includes(p.id));
+            setWishlist(filtered.length > 0 ? filtered : mapped.slice(0, 4));
+          } else {
+            setWishlist(mapped.slice(0, 4));
+          }
         }
       } catch (e) {
-        console.error('Failed to parse wishlist from local storage.');
+        console.error('Failed to load wishlist:', e);
+      } finally {
+        setLoading(false);
       }
     };
 

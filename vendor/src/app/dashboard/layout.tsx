@@ -50,9 +50,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const navLinks = [
     { name: "Overview", href: "/dashboard", icon: <DashboardIcon size={18} /> },
+    { name: "Flado Darkstore Console", href: "/dashboard/merchant", icon: <FladoIcon size={18} /> },
+    { name: "Onboarding & KYC", href: "/dashboard/onboarding", icon: <ProfileIcon size={18} /> },
     { name: "Inventory", href: "/dashboard/inventory", icon: <InventoryIcon size={18} /> },
     { name: "Orders & Fulfillment", href: "/dashboard/orders", icon: <OrdersIcon size={18} /> },
+    { name: "Returns & QC", href: "/dashboard/returns", icon: <InventoryIcon size={18} /> },
     { name: "Settlements & Payouts", href: "/dashboard/payouts", icon: <PayoutsIcon size={18} /> },
+    { name: "Analytics & Trends", href: "/dashboard/analytics", icon: <DashboardIcon size={18} /> },
+    { name: "Staff & Team", href: "/dashboard/staff", icon: <ProfileIcon size={18} /> },
     { name: "Business Details", href: "/dashboard/profile", icon: <ProfileIcon size={18} /> }
   ];
 
@@ -71,7 +76,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     if (pathname === "/dashboard") return "Seller Overview";
     if (pathname === "/dashboard/inventory") return "Manage Inventory";
     if (pathname === "/dashboard/orders") return "Fulfillment & Orders";
+    if (pathname === "/dashboard/returns") return "Returns & QC";
     if (pathname === "/dashboard/payouts") return "Payouts & Settlements";
+    if (pathname === "/dashboard/analytics") return "Business Analytics";
+    if (pathname === "/dashboard/staff") return "Team & Staff Permissions";
     if (pathname === "/dashboard/profile") return "Business Profile";
     return "Partner Console";
   };

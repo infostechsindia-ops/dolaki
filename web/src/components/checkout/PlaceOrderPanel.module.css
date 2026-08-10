@@ -1,0 +1,78 @@
+.panel {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+}
+
+.paymentErrorAlert {
+  padding: var(--space-3) var(--space-4);
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-md);
+  color: #991b1b;
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+}
+
+.termsLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-2);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+.checkbox {
+  accent-color: var(--color-primary);
+  margin-top: 2px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  outline: none;
+}
+
+.checkbox:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.termsText {
+  line-height: 1.4;
+}
+
+.placeOrderBtn {
+  width: 100%;
+  padding: var(--space-4);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.placeOrderBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.placeOrderBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.placeOrderBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.fladoBtn {
+  background-color: var(--color-flado, #10B981);
+}

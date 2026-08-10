@@ -5,9 +5,20 @@
   --font-heading: 'Outfit', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   --font-body: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 
+  /* Font Sizes */
+  --font-size-xs: 0.75rem;   /* 12px */
+  --font-size-sm: 0.875rem;  /* 14px */
+  --font-size-md: 1rem;      /* 16px */
+  --font-size-lg: 1.125rem;  /* 18px */
+  --font-size-xl: 1.25rem;   /* 20px */
+  --font-size-2xl: 1.5rem;   /* 24px */
+  --font-size-3xl: 1.875rem; /* 30px */
+  --font-size-4xl: 2.25rem;  /* 36px */
+
   /* AuraMart Brand — Deep Violet + Indigo */
   --color-primary: #7C3AED;
   --color-primary-hover: #6D28D9;
+  --color-primary-active: #5B21B6;
   --color-primary-dark: #5B21B6;
   --color-primary-light: #EDE9FE;
   --color-primary-glow: rgba(124, 58, 237, 0.15);
@@ -16,6 +27,7 @@
   /* Flado Brand — Emerald Green */
   --color-flado: #059669;
   --color-flado-hover: #047857;
+  --color-flado-active: #065F46;
   --color-flado-dark: #065F46;
   --color-flado-light: #D1FAE5;
   --color-flado-glow: rgba(5, 150, 105, 0.15);
@@ -30,36 +42,82 @@
   --color-text-muted: #94A3B8;
   --color-border: #E2E8F0;
   --color-border-strong: #CBD5E1;
-  --color-star: #F59E0B;
-  --color-danger: #EF4444;
+
+  /* Disabled States */
+  --color-disabled-bg: #F1F5F9;
+  --color-disabled-text: #94A3B8;
+  --color-disabled-border: #E2E8F0;
+  --opacity-disabled: 0.6;
+
+  /* Skeleton */
+  --color-skeleton-base: #E2E8F0;
+  --color-skeleton-highlight: #F1F5F9;
+
+  /* Overlays & Backdrops */
+  --color-overlay-backdrop: rgba(15, 23, 42, 0.65);
+  --color-overlay-modal: #FFFFFF;
+
+  /* Semantic Feedback Colors */
   --color-success: #10B981;
+  --color-success-light: #D1FAE5;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-danger: #EF4444;
+  --color-danger-light: #FEE2E2;
+  --color-info: #3B82F6;
+  --color-info-light: #DBEAFE;
+
+  /* Spacing Scale */
+  --space-0-5: 2px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Control Heights */
+  --control-height-sm: 32px;
+  --control-height-md: 40px;
+  --control-height-lg: 48px;
+  --control-height-xl: 56px;
+
+  /* Icon Sizes */
+  --icon-size-xs: 12px;
+  --icon-size-sm: 16px;
+  --icon-size-md: 20px;
+  --icon-size-lg: 24px;
+  --icon-size-xl: 32px;
+
+  /* Breakpoint Primitives & Content Widths */
+  --breakpoint-sm: 640px;
+  --breakpoint-md: 768px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+  --breakpoint-2xl: 1536px;
+
+  --content-max-sm: 640px;
+  --content-max-md: 768px;
+  --content-max-lg: 1024px;
+  --content-max-xl: 1280px;
+  --content-max-2xl: 1536px;
 
   /* Premium Gradients */
   --gradient-brand: linear-gradient(135deg, #7C3AED 0%, #6366F1 50%, #818CF8 100%);
   --gradient-brand-vivid: linear-gradient(135deg, #5B21B6 0%, #7C3AED 50%, #8B5CF6 100%);
   --gradient-flado: linear-gradient(135deg, #047857 0%, #059669 50%, #10B981 100%);
-  --gradient-gold: linear-gradient(135deg, #D97706 0%, #F59E0B 100%);
-  --gradient-sunset: linear-gradient(135deg, #E11D48 0%, #F59E0B 100%);
-  --gradient-ocean: linear-gradient(135deg, #0EA5E9 0%, #6366F1 100%);
-  --gradient-hero-1: linear-gradient(135deg, #1E1B4B 0%, #2D1B69 40%, #4C1D95 100%);
-  --gradient-hero-2: linear-gradient(135deg, #064E3B 0%, #065F46 40%, #047857 100%);
-  --gradient-hero-3: linear-gradient(135deg, #831843 0%, #9D174D 40%, #BE185D 100%);
-  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.9) 0%, rgba(255,255,255,0.7) 100%);
-  --gradient-card: linear-gradient(180deg, #FFFFFF 0%, #FAFAFE 100%);
 
-  /* Shadows — layered for depth */
+  /* Shadows */
   --shadow-xs: 0 1px 2px rgba(0,0,0,0.04);
   --shadow-sm: 0 2px 8px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
   --shadow-md: 0 4px 16px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.04);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.1), 0 4px 8px rgba(0,0,0,0.05);
   --shadow-xl: 0 16px 48px rgba(0,0,0,0.12), 0 8px 16px rgba(0,0,0,0.06);
   --shadow-2xl: 0 32px 64px rgba(0,0,0,0.15), 0 16px 24px rgba(0,0,0,0.08);
-  --shadow-brand: 0 8px 24px rgba(124, 58, 237, 0.25), 0 2px 8px rgba(124, 58, 237, 0.15);
-  --shadow-brand-hover: 0 12px 32px rgba(124, 58, 237, 0.35), 0 4px 12px rgba(124, 58, 237, 0.2);
-  --shadow-flado: 0 8px 24px rgba(5, 150, 105, 0.25), 0 2px 8px rgba(5, 150, 105, 0.15);
-  --shadow-flado-hover: 0 12px 32px rgba(5, 150, 105, 0.35), 0 4px 12px rgba(5, 150, 105, 0.2);
-  --shadow-card-hover: 0 16px 40px rgba(124, 58, 237, 0.12), 0 4px 12px rgba(0,0,0,0.06);
-  --shadow-inner: inset 0 1px 3px rgba(0,0,0,0.06);
 
   /* Border Radius */
   --radius-xs: 6px;
@@ -70,16 +128,63 @@
   --radius-2xl: 36px;
   --radius-full: 9999px;
 
-  /* Transitions */
-  --transition-fast: all 0.15s ease;
-  --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-slow: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  --transition-bounce: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Z-Index Layers */
+  --z-deep: -1;
+  --z-default: 1;
+  --z-dropdown: 100;
+  --z-sticky: 500;
+  --z-drawer: 800;
+  --z-modal: 1000;
+  --z-toast: 1100;
+  --z-tooltip: 1200;
+
+  /* Explicit Property Transitions (NO transition: all) */
+  --transition-color: color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bg: background-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-border: border-color 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-shadow: box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-transform: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-composite: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+
+  /* Focus Indicator */
+  --focus-ring: 0 0 0 3px rgba(124, 58, 237, 0.4);
+  --focus-ring-flado: 0 0 0 3px rgba(5, 150, 105, 0.4);
 
   /* Layout */
   --sidebar-width: 270px;
   --header-height: 80px;
+  --mobile-bottom-nav-height: 56px;
 }
+
+/* Reduced Motion Override */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Semantic Typography Classes */
+.heading-xl { font-family: var(--font-heading); font-size: var(--font-size-4xl); font-weight: 800; line-height: 1.2; }
+.heading-lg { font-family: var(--font-heading); font-size: var(--font-size-3xl); font-weight: 700; line-height: 1.25; }
+.heading-md { font-family: var(--font-heading); font-size: var(--font-size-2xl); font-weight: 700; line-height: 1.3; }
+.heading-sm { font-family: var(--font-heading); font-size: var(--font-size-xl); font-weight: 600; line-height: 1.35; }
+
+.body-lg { font-family: var(--font-body); font-size: var(--font-size-lg); font-weight: 400; line-height: 1.5; }
+.body-md { font-family: var(--font-body); font-size: var(--font-size-md); font-weight: 400; line-height: 1.5; }
+.body-sm { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 400; line-height: 1.4; }
+
+.label-md { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 600; line-height: 1.2; }
+.label-sm { font-family: var(--font-body); font-size: var(--font-size-xs); font-weight: 600; line-height: 1.2; }
+
+.caption-sm { font-family: var(--font-body); font-size: var(--font-size-sm); font-weight: 400; color: var(--color-text-muted); }
+.caption-xs { font-family: var(--font-body); font-size: var(--font-size-xs); font-weight: 400; color: var(--color-text-muted); }
+
+.price-lg { font-family: var(--font-heading); font-size: var(--font-size-2xl); font-weight: 800; color: var(--color-text-primary); }
+.price-md { font-family: var(--font-heading); font-size: var(--font-size-xl); font-weight: 700; color: var(--color-text-primary); }
+.price-sm { font-family: var(--font-heading); font-size: var(--font-size-md); font-weight: 700; color: var(--color-text-primary); }
 
 /* ========== Reset ========== */
 *, *::before, *::after {
@@ -116,7 +221,7 @@ h1, h2, h3, h4, h5, h6 {
 a {
   color: inherit;
   text-decoration: none;
-  transition: var(--transition);
+  transition: var(--transition-composite);
 }
 
 img {

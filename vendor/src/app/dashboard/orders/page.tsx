@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useVendor, Order, OrderStatus } from "@/context/VendorContext";
 import styles from "../dashboard.module.css";
 import {
@@ -11,131 +11,139 @@ import {
   InfoIcon
 } from "@/components/Icons";
 
+interface LiveVendorOrderSummaryDTO {
+  orderId: string;
+  orderNumber: string;
+  status: string;
+  paymentStatus: string;
+  vendorItemCount: number;
+  vendorTotalMinor: number;
+  formattedVendorTotal: string;
+  createdAt: string;
+  slaWarning: {
+    code: string;
+    severity: "INFO" | "WARNING" | "CRITICAL";
+    message: string;
+  } | null;
+}
+
+interface PackingSlipDTO {
+  orderId: string;
+  orderNumber: string;
+  orderDate: string;
+  vendorStoreName: string;
+  customerRecipientName: string;
+  shippingAddressMin: string;
+  items: Array<{
+    sku: string;
+    title: string;
+    quantityToPack: number;
+    unitPriceFormatted: string;
+    lineSubtotalFormatted: string;
+  }>;
+  packingInstructions: string;
+  barcodeRef: string;
+}
+
 export default function OrdersPage() {
   const { orders, updateOrderStatus } = useVendor();
+
+  const [liveOrders, setLiveOrders] = useState<LiveVendorOrderSummaryDTO[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+
   const [searchQuery, setSearchQuery] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | OrderStatus>("all");
+  const [activeTab, setActiveTab] = useState<string>("all");
 
-  const handleStatusTransition = (orderId: string, currentStatus: OrderStatus) => {
-    let nextStatus: OrderStatus = "pending";
-    if (currentStatus === "pending") nextStatus = "packed";
-    else if (currentStatus === "packed") nextStatus = "shipped";
-    else if (currentStatus === "shipped") nextStatus = "ready";
+  const [activeSlip, setActiveSlip] = useState<PackingSlipDTO | null>(null);
+  const [isSlipModalOpen, setIsSlipModalOpen] = useState<boolean>(false);
 
-    updateOrderStatus(orderId, nextStatus);
-  };
+  const fetchLiveOrders = useCallback(async () => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
 
-  const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case "pending":
-        return <span className="badge badge-info">AWAITING PACK</span>;
-      case "packed":
-        return <span className="badge badge-warning">PACKED & READY</span>;
-      case "shipped":
-        return <span className="badge badge-info" style={{ backgroundColor: "rgba(59, 130, 246, 0.1)", color: "#2563eb", borderColor: "#bfdbfe" }}>SHIPPED / IN TRANSIT</span>;
-      case "ready":
-        return <span className="badge badge-success">READY / DELIVERED</span>;
-      default:
-        return null;
+    if (isDemo || !token) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/orders`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to load vendor orders");
+      let data = await res.json();
+      if (data && typeof data === "object" && "data" in data) data = data.data;
+
+      setLiveOrders(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setError(err?.message || "Failed to fetch vendor orders");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveOrders();
+  }, [fetchLiveOrders]);
+
+  const handleFulfillAction = async (orderId: string, action: "ACCEPT" | "PACK" | "SHIP") => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    if (isDemo || !token) {
+      let nextStatus: OrderStatus = "pending";
+      if (action === "ACCEPT" || action === "PACK") nextStatus = "packed";
+      else if (action === "SHIP") nextStatus = "shipped";
+      updateOrderStatus(orderId, nextStatus);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/orders/${orderId}/fulfill`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ action })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || `Fulfillment action ${action} failed`);
+      }
+
+      setSuccessMsg(`Fulfillment action "${action}" completed for order ${orderId}.`);
+      fetchLiveOrders();
+    } catch (err: any) {
+      setError(err?.message || "Fulfillment transition error");
     }
   };
 
-  const getFulfillmentAction = (order: Order) => {
-    switch (order.status) {
-      case "pending":
-        return (
-          <button
-            className={styles.primaryBtn}
-            onClick={() => handleStatusTransition(order.id, "pending")}
-            style={{ width: "100%", justifyContent: "center" }}
-          >
-            <PackageIcon size={16} />
-            <span>Pack Order (Generate Invoice)</span>
-          </button>
-        );
-      case "packed":
-        return (
-          <button
-            className={styles.primaryBtn}
-            onClick={() => handleStatusTransition(order.id, "packed")}
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              backgroundColor: "#d97706", // amber color for shipping
-            }}
-          >
-            <ShipIcon size={16} />
-            <span>Handover to Courier (Ship)</span>
-          </button>
-        );
-      case "shipped":
-        return (
-          <button
-            className={styles.primaryBtn}
-            onClick={() => handleStatusTransition(order.id, "shipped")}
-            style={{
-              width: "100%",
-              justifyContent: "center",
-              backgroundColor: "var(--primary-green-hover)",
-            }}
-          >
-            <CheckIcon size={16} />
-            <span>Mark as Delivered (Ready)</span>
-          </button>
-        );
-      case "ready":
-        return (
-          <div style={{
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            gap: "6px",
-            color: "var(--primary-green)",
-            fontWeight: 700,
-            fontSize: "0.875rem",
-            padding: "0.5rem",
-            backgroundColor: "var(--accent-green-light)",
-            border: "1px solid var(--accent-green-border)",
-            borderRadius: "var(--radius-sm)"
-          }}>
-            <CheckIcon size={16} />
-            <span>Fulfillment Completed & Settled</span>
-          </div>
-        );
-      default:
-        return null;
+  const handleFetchPackingSlip = async (orderId: string) => {
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/orders/${orderId}/packing-slip`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to generate packing slip");
+      let data = await res.json();
+      if (data && typeof data === "object" && "data" in data) data = data.data;
+
+      setActiveSlip(data);
+      setIsSlipModalOpen(true);
+    } catch (err: any) {
+      setError(err?.message || "Packing slip error");
     }
   };
-
-  const getStepClass = (orderStatus: OrderStatus, step: OrderStatus) => {
-    const sequence: OrderStatus[] = ["pending", "packed", "shipped", "ready"];
-    const orderIndex = sequence.indexOf(orderStatus);
-    const stepIndex = sequence.indexOf(step);
-
-    if (orderIndex >= stepIndex) {
-      return {
-        dotStyle: { backgroundColor: "var(--primary-green)", color: "white" },
-        textStyle: { color: "var(--text-primary)", fontWeight: 700 }
-      };
-    }
-    return {
-      dotStyle: { backgroundColor: "var(--border-color)", color: "var(--text-light)" },
-      textStyle: { color: "var(--text-light)", fontWeight: 500 }
-    };
-  };
-
-  // Filter logic
-  const filteredOrders = orders.filter((order) => {
-    const matchesSearch =
-      order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.shippingAddress.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      order.city.toLowerCase().includes(searchQuery.toLowerCase());
-
-    const matchesTab = activeTab === "all" || order.status === activeTab;
-
-    return matchesSearch && matchesTab;
-  });
 
   const formatINR = (val: number) => {
     return new Intl.NumberFormat("en-IN", {
@@ -155,6 +163,29 @@ export default function OrdersPage() {
     });
   };
 
+  const displayOrders = liveOrders !== null
+    ? liveOrders
+    : orders.map((o) => ({
+        orderId: o.id,
+        orderNumber: o.id,
+        status: o.status === "pending" ? "PLACED" : o.status === "packed" ? "PREPARING" : o.status === "shipped" ? "SHIPPED" : "DELIVERED",
+        paymentStatus: o.paymentMethod === "COD" ? "COD_PENDING" : "PAID",
+        vendorItemCount: o.items.length,
+        vendorTotalMinor: Math.round(o.totalAmount * 100),
+        formattedVendorTotal: formatINR(o.totalAmount),
+        createdAt: o.createdAt,
+        slaWarning: o.status === "pending" ? { code: "URGENT_PACKING", severity: "WARNING" as const, message: "Awaiting vendor packing confirmation" } : null
+      }));
+
+  const filteredOrders = displayOrders.filter((order) => {
+    const matchesSearch =
+      order.orderId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase());
+
+    const matchesTab = activeTab === "all" || order.status === activeTab;
+    return matchesSearch && matchesTab;
+  });
+
   return (
     <div className="animate-fade-in">
       {/* Search and Tabs Filter Panel */}
@@ -164,7 +195,7 @@ export default function OrdersPage() {
             <SearchIcon size={16} className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Search orders by ID, name, city..."
+              placeholder="Search orders by Order ID or Order Number..."
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
@@ -172,20 +203,17 @@ export default function OrdersPage() {
           </div>
         </div>
 
+        {error && (
+          <div style={{ backgroundColor: "#FEF2F2", borderLeft: "4px solid #EF4444", color: "#991B1B", padding: "1rem", borderRadius: "4px", fontSize: "0.875rem" }}>
+            <strong>Fulfillment Error:</strong> {error}
+          </div>
+        )}
+
         {/* Tab Controls */}
-        <div style={{
-          display: "flex",
-          borderBottom: "1px solid var(--border-color)",
-          gap: "1.5rem",
-          overflowX: "auto"
-        }}>
-          {(["all", "pending", "packed", "shipped", "ready"] as const).map((tab) => {
-            const count = tab === "all" ? orders.length : orders.filter(o => o.status === tab).length;
-            const label = tab === "all" ? "All Orders" :
-                          tab === "pending" ? "Pending Pack" :
-                          tab === "packed" ? "Ready to Ship" :
-                          tab === "shipped" ? "Shipped" : "Ready / Delivered";
-            
+        <div style={{ display: "flex", borderBottom: "1px solid var(--border-color)", gap: "1.5rem", overflowX: "auto" }}>
+          {(["all", "PLACED", "PREPARING", "SHIPPED", "DELIVERED", "CANCELLED"] as const).map((tab) => {
+            const count = tab === "all" ? displayOrders.length : displayOrders.filter((o) => o.status === tab).length;
+            const label = tab === "all" ? "All Orders" : tab === "PLACED" ? "Placed / Action Required" : tab === "PREPARING" ? "Preparing / Packed" : tab === "SHIPPED" ? "Shipped" : tab === "DELIVERED" ? "Delivered" : "Cancelled";
             const isActive = activeTab === tab;
 
             return (
@@ -208,15 +236,7 @@ export default function OrdersPage() {
                 }}
               >
                 <span>{label}</span>
-                <span style={{
-                  fontSize: "0.7rem",
-                  background: isActive ? "var(--accent-green-light)" : "var(--bg-color)",
-                  color: isActive ? "var(--primary-green)" : "var(--text-secondary)",
-                  padding: "2px 6px",
-                  borderRadius: "10px",
-                  border: isActive ? "1px solid var(--accent-green-border)" : "1px solid var(--border-color)",
-                  fontWeight: 700
-                }}>
+                <span style={{ fontSize: "0.7rem", background: isActive ? "var(--accent-green-light)" : "var(--bg-color)", color: isActive ? "var(--primary-green)" : "var(--text-secondary)", padding: "2px 6px", borderRadius: "10px", border: isActive ? "1px solid var(--accent-green-border)" : "1px solid var(--border-color)", fontWeight: 700 }}>
                   {count}
                 </span>
               </button>
@@ -225,164 +245,119 @@ export default function OrdersPage() {
         </div>
       </div>
 
-      {/* Orders Pipeline List */}
+      {/* Orders List */}
       {filteredOrders.length === 0 ? (
         <div style={{ padding: "4rem 2rem", textAlign: "center", backgroundColor: "var(--card-bg)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
           <InfoIcon size={48} style={{ color: "var(--text-light)", marginBottom: "1rem" }} />
           <h3 style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: "0.25rem" }}>No Orders Located</h3>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-            There are no orders listed matching this status category.
-          </p>
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>There are no orders listed matching this status category.</p>
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}>
           {filteredOrders.map((order) => (
-            <div
-              key={order.id}
-              style={{
-                backgroundColor: "var(--card-bg)",
-                border: "1px solid var(--border-color)",
-                borderRadius: "var(--radius-md)",
-                padding: "1.5rem",
-                boxShadow: "var(--shadow-sm)"
-              }}
-            >
+            <div key={order.orderId} style={{ backgroundColor: "var(--card-bg)", border: "1px solid var(--border-color)", borderRadius: "var(--radius-md)", padding: "1.5rem", boxShadow: "var(--shadow-sm)" }}>
+              {/* SLA Warning Banner */}
+              {order.slaWarning && (
+                <div style={{ backgroundColor: order.slaWarning.severity === "CRITICAL" ? "#FEE2E2" : "#FEF3C7", borderLeft: `4px solid ${order.slaWarning.severity === "CRITICAL" ? "#EF4444" : "#F59E0B"}`, color: order.slaWarning.severity === "CRITICAL" ? "#991B1B" : "#92400E", padding: "8px 12px", marginBottom: "1rem", borderRadius: "4px", fontSize: "0.8125rem", fontWeight: 700 }}>
+                  ⚠️ {order.slaWarning.message}
+                </div>
+              )}
+
               {/* Order Header info */}
-              <div style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
-                borderBottom: "1px solid var(--border-color)",
-                paddingBottom: "1rem",
-                marginBottom: "1rem",
-                gap: "1rem",
-                flexWrap: "wrap"
-              }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid var(--border-color)", paddingBottom: "1rem", marginBottom: "1rem", gap: "1rem", flexWrap: "wrap" }}>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                    <span style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--primary-dark-green)" }}>
-                      {order.id}
-                    </span>
-                    {getStatusBadge(order.status)}
+                    <span style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--primary-dark-green)" }}>{order.orderNumber}</span>
+                    <span className={`badge ${order.status === "DELIVERED" ? "badge-success" : order.status === "PLACED" ? "badge-warning" : "badge-info"}`}>{order.status}</span>
                   </div>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>
-                    Placed: {formatDate(order.createdAt)}
-                  </span>
+                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "4px", display: "block" }}>Placed: {formatDate(order.createdAt)}</span>
                 </div>
-                
-                <div style={{ textAlign: "right" }}>
-                  <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block" }}>
-                    PAYMENT TYPE
-                  </span>
-                  <span className={`badge ${order.paymentMethod === "COD" ? "badge-warning" : "badge-success"}`} style={{ marginTop: "4px" }}>
-                    {order.paymentMethod} ({order.paymentMethod === "COD" ? "Collect on Delivery" : "Paid"})
-                  </span>
+
+                <div style={{ textAlign: "right", display: "flex", gap: "10px", alignItems: "center" }}>
+                  <div>
+                    <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)", display: "block" }}>VENDOR VALUE</span>
+                    <span style={{ fontWeight: 800, fontSize: "1.1rem", color: "var(--text-primary)" }}>{order.formattedVendorTotal}</span>
+                  </div>
+                  <button type="button" className={styles.secondaryBtn} onClick={() => handleFetchPackingSlip(order.orderId)} style={{ fontSize: "0.75rem", padding: "6px 12px" }}>
+                    📄 Packing Slip
+                  </button>
                 </div>
               </div>
 
-              {/* Order content detail grid */}
-              <div style={{
-                display: "grid",
-                gridTemplateColumns: "1.5fr 1fr 1fr",
-                gap: "2rem",
-                marginBottom: "1.5rem"
-              }}>
-                {/* Ship to Address */}
-                <div>
-                  <h4 style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
-                    Shipping Destination
-                  </h4>
-                  <div style={{ fontSize: "0.875rem" }}>
-                    <div style={{ fontWeight: 700 }}>{order.customerName}</div>
-                    <div style={{ color: "var(--text-secondary)", marginTop: "2px" }}>{order.shippingAddress}</div>
-                    <div style={{ fontWeight: 600, marginTop: "2px" }}>
-                      {order.city}, {order.state} - {order.pincode}
-                    </div>
-                    <div style={{ color: "var(--primary-green)", fontWeight: 600, marginTop: "6px" }}>
-                      Phone: {order.customerPhone}
-                    </div>
+              {/* Action Buttons */}
+              <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end" }}>
+                {order.status === "PLACED" && (
+                  <button type="button" className={styles.primaryBtn} onClick={() => handleFulfillAction(order.orderId, "ACCEPT")}>
+                    <PackageIcon size={16} /> Accept & Start Prep
+                  </button>
+                )}
+                {order.status === "PREPARING" && (
+                  <>
+                    <button type="button" className={styles.secondaryBtn} onClick={() => handleFulfillAction(order.orderId, "PACK")}>
+                      Pack Items
+                    </button>
+                    <button type="button" className={styles.primaryBtn} onClick={() => handleFulfillAction(order.orderId, "SHIP")}>
+                      <ShipIcon size={16} /> Handover to Carrier (Ship)
+                    </button>
+                  </>
+                )}
+                {order.status === "SHIPPED" && (
+                  <div style={{ fontSize: "0.875rem", fontWeight: 700, color: "#2563EB", padding: "6px 12px", backgroundColor: "#EFF6FF", borderRadius: "4px" }}>
+                    🚚 Dispatched with carrier (In Transit)
                   </div>
-                </div>
-
-                {/* Ordered Items details */}
-                <div>
-                  <h4 style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.5rem" }}>
-                    Ordered Items
-                  </h4>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
-                    {order.items.map((item, idx) => (
-                      <div key={idx} style={{ fontSize: "0.875rem", display: "flex", justifyContent: "space-between" }}>
-                        <span style={{ color: "var(--text-primary)" }}>
-                          {item.productName} <span style={{ fontWeight: 700 }}>x{item.quantity}</span>
-                        </span>
-                        <span style={{ fontWeight: 600, color: "var(--text-secondary)" }}>
-                          {formatINR(item.price * item.quantity)}
-                        </span>
-                      </div>
-                    ))}
-                    <div style={{
-                      borderTop: "1px dashed var(--border-color)",
-                      paddingTop: "6px",
-                      marginTop: "4px",
-                      display: "flex",
-                      justifyContent: "space-between",
-                      fontWeight: 800,
-                      fontSize: "0.9rem",
-                      color: "var(--text-primary)"
-                    }}>
-                      <span>Total Value:</span>
-                      <span>{formatINR(order.totalAmount)}</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Stepper Timeline & Action Area */}
-                <div style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
-                  <div>
-                    <h4 style={{ fontSize: "0.8125rem", color: "var(--text-secondary)", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: "0.75rem" }}>
-                      Fulfillment Progress
-                    </h4>
-                    
-                    {/* Visual pipeline steps */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: "10px", paddingLeft: "4px" }}>
-                      {[
-                        { step: "pending", label: "Awaiting Packing" },
-                        { step: "packed", label: "Packed & Invoice Ready" },
-                        { step: "shipped", label: "Dispatched (In Transit)" },
-                        { step: "ready", label: "Delivered (Completed)" }
-                      ].map((item, idx) => {
-                        const stepStyles = getStepClass(order.status, item.step as OrderStatus);
-                        return (
-                          <div key={idx} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                            <div style={{
-                              width: "16px",
-                              height: "16px",
-                              borderRadius: "50%",
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              fontSize: "9px",
-                              transition: "all 0.3s",
-                              ...stepStyles.dotStyle
-                            }}>
-                              ✓
-                            </div>
-                            <span style={{ fontSize: "0.75rem", transition: "all 0.3s", ...stepStyles.textStyle }}>
-                              {item.label}
-                            </span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  <div style={{ marginTop: "1rem" }}>
-                    {getFulfillmentAction(order)}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Packing Slip Modal */}
+      {isSlipModalOpen && activeSlip && (
+        <div className={styles.modalOverlay} onClick={() => setIsSlipModalOpen(false)}>
+          <div className={styles.modalContent} onClick={(e) => e.stopPropagation()} style={{ maxWidth: "600px" }}>
+            <div className={styles.modalHeader}>
+              <h3 className={styles.modalTitle}>Official Packing Slip — {activeSlip.orderNumber}</h3>
+              <button className={styles.closeBtn} onClick={() => setIsSlipModalOpen(false)}>✕</button>
+            </div>
+            <div className={styles.modalBody} style={{ fontSize: "0.875rem" }}>
+              <div style={{ borderBottom: "1px solid #E5E7EB", paddingBottom: "8px", marginBottom: "12px" }}>
+                <div style={{ fontWeight: 800, fontSize: "1rem" }}>{activeSlip.vendorStoreName}</div>
+                <div style={{ color: "#4B5563" }}>Date: {formatDate(activeSlip.orderDate)}</div>
+                <div style={{ color: "#4B5563" }}>Ship To: <strong>{activeSlip.customerRecipientName}</strong> ({activeSlip.shippingAddressMin})</div>
+              </div>
+              <table style={{ width: "100%", borderCollapse: "collapse", marginBottom: "1rem" }}>
+                <thead>
+                  <tr style={{ backgroundColor: "#F3F4F6", textTransform: "uppercase", fontSize: "0.75rem" }}>
+                    <th style={{ padding: "6px", textAlign: "left" }}>SKU</th>
+                    <th style={{ padding: "6px", textAlign: "left" }}>Item Title</th>
+                    <th style={{ padding: "6px", textAlign: "center" }}>Qty</th>
+                    <th style={{ padding: "6px", textAlign: "right" }}>Subtotal</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {activeSlip.items.map((item, idx) => (
+                    <tr key={idx} style={{ borderBottom: "1px solid #F3F4F6" }}>
+                      <td style={{ padding: "6px", fontFamily: "monospace" }}>{item.sku}</td>
+                      <td style={{ padding: "6px" }}>{item.title}</td>
+                      <td style={{ padding: "6px", textAlign: "center", fontWeight: 700 }}>{item.quantityToPack}</td>
+                      <td style={{ padding: "6px", textAlign: "right" }}>{item.lineSubtotalFormatted}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              <div style={{ padding: "8px", backgroundColor: "#FEF3C7", borderRadius: "4px", fontSize: "0.8125rem", color: "#92400E" }}>
+                📌 <strong>Instructions:</strong> {activeSlip.packingInstructions}
+              </div>
+              <div style={{ marginTop: "12px", textAlign: "center", fontFamily: "monospace", fontSize: "0.75rem", color: "#6B7280" }}>
+                {activeSlip.barcodeRef}
+              </div>
+            </div>
+            <div className={styles.modalFooter}>
+              <button type="button" className={styles.secondaryBtn} onClick={() => window.print()}>🖨️ Print Packing Slip</button>
+              <button type="button" className={styles.primaryBtn} onClick={() => setIsSlipModalOpen(false)}>Close</button>
+            </div>
+          </div>
         </div>
       )}
     </div>

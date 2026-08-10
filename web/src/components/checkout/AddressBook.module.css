@@ -1,0 +1,319 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: var(--space-3);
+}
+
+.heading {
+  font-size: var(--font-size-lg);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+/* ─── Add New Button ─────────────────────────────── */
+.addBtn {
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s ease, transform 0.1s ease;
+}
+
+.addBtn:hover {
+  background: var(--color-primary-dark, #5b21b6);
+}
+
+.addBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ─── Empty State ─────────────────────────────────── */
+.empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-3);
+  padding: var(--space-10) var(--space-4);
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 2.5rem;
+  color: var(--color-text-muted);
+}
+
+.emptyText {
+  margin: 0;
+  font-size: var(--font-size-base);
+  color: var(--color-text-muted);
+}
+
+.addBtnLg {
+  padding: var(--space-3) var(--space-6);
+  background: var(--color-primary);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s ease;
+}
+
+.addBtnLg:hover {
+  background: var(--color-primary-dark, #5b21b6);
+}
+
+.addBtnLg:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* ─── Address List ─────────────────────────────────── */
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+/* ─── Address Card ─────────────────────────────────── */
+.card {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card:hover {
+  border-color: var(--color-primary);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.defaultCard {
+  border-color: var(--color-primary);
+  background: hsl(265, 100%, 99%);
+}
+
+.loading {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+/* ─── Label Row ─────────────────────────────────────── */
+.labelRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.labelBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.labelHome {
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.labelWork {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+.labelOther {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.defaultBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-sm);
+  background: hsl(265, 85%, 93%);
+  color: hsl(265, 85%, 35%);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ─── Body ──────────────────────────────────────────── */
+.body {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.name {
+  margin: 0;
+  font-size: var(--font-size-base);
+  font-weight: 600;
+  color: var(--color-text-primary);
+}
+
+.phone {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.addressLines {
+  margin: var(--space-1) 0 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  font-style: normal;
+  line-height: 1.5;
+}
+
+.coords {
+  margin: var(--space-1) 0 0;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  font-family: monospace;
+}
+
+/* ─── Actions ───────────────────────────────────────── */
+.actions {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  padding-top: var(--space-2);
+  border-top: 1px solid var(--color-border);
+}
+
+.defaultBtn {
+  font-size: var(--font-size-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-primary);
+  background: transparent;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.defaultBtn:hover {
+  background: var(--color-primary);
+  color: #fff;
+}
+
+.defaultBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.editBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  background: transparent;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: border-color 0.15s, color 0.15s;
+}
+
+.editBtn:hover {
+  border-color: var(--color-text-secondary);
+  color: var(--color-text-primary);
+}
+
+.editBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.deleteBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--font-size-xs);
+  font-family: var(--font-body);
+  font-weight: 600;
+  color: #dc2626;
+  background: transparent;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+  cursor: pointer;
+  outline: none;
+  transition: background 0.15s, color 0.15s;
+}
+
+.deleteBtn:hover {
+  background: #fef2f2;
+}
+
+.deleteBtn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.25);
+}
+
+.deleteBtn:disabled,
+.editBtn:disabled,
+.defaultBtn:disabled {
+  opacity: 0.4;
+  pointer-events: none;
+}
+
+/* ─── Responsive ────────────────────────────────────── */
+@media (max-width: 480px) {
+  .actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .defaultBtn,
+  .editBtn,
+  .deleteBtn {
+    justify-content: center;
+    width: 100%;
+    padding: var(--space-2);
+  }
+}

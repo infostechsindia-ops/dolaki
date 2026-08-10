@@ -1,0 +1,73 @@
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  gap: var(--space-4);
+  flex-wrap: wrap;
+}
+
+.leftGroup {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.count {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+.rightGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.viewToggle {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-background);
+}
+
+.viewBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2);
+  background: none;
+  border: none;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: none;
+  font-size: 16px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.viewBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.viewBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.viewBtn.active {
+  background-color: var(--color-surface);
+  color: var(--color-primary);
+}

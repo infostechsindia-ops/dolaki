@@ -1,0 +1,104 @@
+.card {
+  border: 1px solid var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-lg, 0.75rem);
+  padding: var(--space-lg, 1.5rem);
+  background-color: var(--color-white, #ffffff);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm, 0.5rem);
+  transition: border-color var(--transition-fast, 150ms ease);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md, 1rem);
+  flex-wrap: wrap;
+}
+
+.authorWrapper {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+}
+
+.metaInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.ratingRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+  margin-top: var(--space-xs, 0.25rem);
+}
+
+.title {
+  font-size: var(--font-size-md, 1rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-gray-900, #111827);
+  margin: 0;
+}
+
+.variantInfo {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.body {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-gray-700, #374151);
+  line-height: var(--line-height-relaxed, 1.75);
+  margin: var(--space-xs, 0.25rem) 0;
+  white-space: pre-line;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-xs, 0.25rem);
+  padding-top: var(--space-sm, 0.5rem);
+  border-top: 1px solid var(--color-gray-100, #f3f4f6);
+}
+
+.vendorResponseBlock {
+  margin-top: var(--space-sm, 0.5rem);
+  padding: var(--space-md, 1rem);
+  background-color: var(--color-gray-50, #f9fafb);
+  border-left: 3px solid var(--color-primary, #6366f1);
+  border-radius: var(--radius-sm, 0.375rem);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 0.25rem);
+}
+
+.vendorResponseHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.vendorTitle {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-semibold, 600);
+  color: var(--color-primary, #6366f1);
+}
+
+.vendorDate {
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.vendorText {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-gray-800, #1f2937);
+  margin: 0;
+  line-height: 1.5;
+}

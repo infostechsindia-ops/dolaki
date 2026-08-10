@@ -1,0 +1,234 @@
+.page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  padding: var(--space-6) 0;
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.progressRow {
+  width: 100%;
+}
+
+.emptyContainer {
+  width: 100%;
+}
+
+.layout {
+  display: flex;
+  gap: var(--space-8);
+  align-items: flex-start;
+  width: 100%;
+}
+
+.formColumn {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  flex: 1;
+  min-width: 0;
+}
+
+.sidebarColumn {
+  width: 380px;
+  flex-shrink: 0;
+}
+
+.sidebarCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  position: sticky;
+  top: var(--space-6);
+}
+
+.mobileStickyBar {
+  display: none;
+}
+
+@media (max-width: 991px) {
+  .sidebarColumn {
+    width: 320px;
+  }
+}
+
+@media (max-width: 767px) {
+  .layout {
+    flex-direction: column;
+    gap: var(--space-6);
+  }
+
+  .sidebarColumn {
+    width: 100%;
+  }
+
+  .sidebarCard {
+    position: static;
+  }
+
+  .mobileStickyBar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3, 12px);
+    position: fixed;
+    bottom: calc(var(--mobile-bottom-nav-height, 56px) + env(safe-area-inset-bottom, 0px));
+    left: 0;
+    right: 0;
+    z-index: 85;
+    background-color: var(--color-surface, #ffffff);
+    border-top: 1px solid var(--color-border, #e2e8f0);
+    padding: var(--space-3, 12px) var(--space-4, 16px);
+    box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+  }
+
+  .mobilePriceInfo {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .mobileTotalLabel {
+    font-size: var(--font-size-xs, 0.75rem);
+    color: var(--color-text-muted, #64748b);
+  }
+
+  .mobileGrandTotal {
+    font-size: var(--font-size-md, 1rem);
+    font-weight: 800;
+    color: var(--color-text-primary, #0f172a);
+  }
+
+  .mobileCheckoutBtn {
+    min-height: 44px;
+    padding: 0 var(--space-4, 16px);
+    border-radius: var(--radius-md, 6px);
+    font-family: var(--font-body);
+    font-size: var(--font-size-sm, 0.875rem);
+    font-weight: 700;
+    cursor: pointer;
+    outline: none;
+    border: none;
+    background-color: var(--color-primary, #7c3aed);
+    color: #ffffff;
+    transition: opacity 0.15s ease;
+  }
+
+  .fladoCheckoutBtn {
+    background-color: var(--color-flado, #10b981);
+  }
+
+  .mobileCheckoutBtn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .mobileCheckoutBtn:focus-visible {
+    box-shadow: var(--focus-ring);
+  }
+}
+
+.loadingSkeleton {
+  display: flex;
+  gap: var(--space-8);
+  width: 100%;
+}
+
+.skeletonForm {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+}
+
+.skeletonSidebar {
+  width: 380px;
+  flex-shrink: 0;
+}
+
+.blockerAlert {
+  padding: var(--space-4);
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-md);
+  color: #dc2626;
+  font-size: var(--font-size-sm);
+}
+
+.blockerList {
+  margin: var(--space-2) 0 0 var(--space-4);
+  padding: 0;
+}
+
+/* CMD-043 — Fetch Error Banner */
+.fetchErrorBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: #fffbeb;
+  border: 1px solid #fcd34d;
+  border-radius: var(--radius-md);
+  color: #92400e;
+  font-size: var(--font-size-sm);
+}
+
+.fetchErrorText {
+  flex: 1;
+  line-height: 1.4;
+}
+
+.retryBtn {
+  flex-shrink: 0;
+  padding: var(--space-1) var(--space-3);
+  background-color: #92400e;
+  color: #ffffff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.15s ease;
+}
+
+.retryBtn:hover {
+  opacity: 0.85;
+}
+
+.retryBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+/* CMD-043 — Section hint text when section has no content */
+.sectionHint {
+  margin: 0;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+}
+
+/* CMD-043 — Mobile bottom padding to prevent sticky bar from clipping content */
+@media (max-width: 767px) {
+  .page {
+    padding-bottom: calc(
+      var(--mobile-bottom-nav-height, 56px) +
+      env(safe-area-inset-bottom, 0px) +
+      72px
+    );
+  }
+}

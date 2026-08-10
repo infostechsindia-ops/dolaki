@@ -1,561 +1,408 @@
 'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
-import { 
-  FiMapPin, 
-  FiCreditCard, 
-  FiSmartphone, 
-  FiCheckCircle, 
-  FiInfo, 
-  FiLock, 
-  FiPlus, 
-  FiArrowRight, 
-  FiClock, 
-  FiGift 
-} from 'react-icons/fi';
 import { useCart } from '@/context/CartContext';
-import { findClosestStoreAndETA } from '@/data/fladoDarkstores';
-import styles from './page.module.css';
+import CheckoutPage from '@/components/checkout/CheckoutPage';
+import { ShippingAddressCardProps, ShippingAddressData } from '@/components/checkout/ShippingAddressCard';
+import { DeliveryMethod } from '@/components/checkout/DeliveryMethodSelector';
+import { PaymentMethodOption } from '@/components/checkout/PaymentMethodSelector';
+import { OrderSummaryItem } from '@/components/checkout/OrderSummary';
 
-declare const L: any; // Leaflet global declaration
-
-export default function CheckoutPage() {
+function CheckoutContent() {
   const router = useRouter();
-  const { cart, clearCart, totalPrice } = useCart();
-  
-  const [discount, setDiscount] = useState(0);
-  const [name, setName] = useState('');
-  const [phone, setPhone] = useState('');
-  const [address, setAddress] = useState('');
-  const [city, setCity] = useState('Mumbai');
-  const [pincode, setPincode] = useState('400050');
-  
-  // Dynamic Map coordinates
-  const [coordinates, setCoordinates] = useState({ lat: 19.0596, lng: 72.8295 });
-  const [etaDetails, setEtaDetails] = useState({ storeName: 'Bandra Hub', distance: 0.5, eta: 10 });
-  const [mapLoaded, setMapLoaded] = useState(false);
-  const mapRef = useRef<any>(null);
-  const markerRef = useRef<any>(null);
+  const { cart, formattedSubtotal, formattedTax, formattedShipping, formattedGrandTotal, clearCart } = useCart();
 
-  // Delivery Slots & Tips
-  const [fladoSlot, setFladoSlot] = useState<'asap' | 'scheduled'>('asap');
-  const [scheduledTime, setScheduledTime] = useState('Tomorrow 09:00 AM - 11:00 AM');
-  const [riderTip, setRiderTip] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [previewData, setPreviewData] = useState<any | null>(null);
+  const [fetchError, setFetchError] = useState<string | undefined>(undefined);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(undefined);
+  const [selectedDeliveryId, setSelectedDeliveryId] = useState<string | undefined>(undefined);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string>('pay-upi');
+  const [deliveryNotes, setDeliveryNotes] = useState<string>('');
+  const [termsAccepted, setTermsAccepted] = useState<boolean>(false);
+  const [showValidation, setShowValidation] = useState<boolean>(false);
+  const [isProcessingPayment, setIsProcessingPayment] = useState<boolean>(false);
+  const [paymentError, setPaymentError] = useState<string | undefined>(undefined);
 
-  // Payment Options
-  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'card' | 'cod'>('upi');
-  const [cardNo, setCardNo] = useState('');
-  const [cardExpiry, setCardExpiry] = useState('');
-  const [cardCvv, setCardCvv] = useState('');
-  const [upiId, setUpiId] = useState('');
-  const [isProcessing, setIsProcessing] = useState(false);
+  // Fetch authoritative checkout preview from server
+  const fetchPreview = async (addressId?: string, deliveryId?: string, paymentId?: string) => {
+    setIsLoading(true);
+    setFetchError(undefined);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+      if (token) {
+        const res = await fetch('/api/v1/checkout/preview', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            addressId,
+            deliveryOptionId: deliveryId,
+            paymentMethod: paymentId,
+          }),
+        });
 
-  // Load discount on mount
-  useEffect(() => {
-    const savedDiscount = localStorage.getItem('auramart_discount');
-    if (savedDiscount) {
-      setDiscount(parseInt(savedDiscount));
-    }
-  }, []);
-
-  // 1. Load Leaflet Map dynamically
-  useEffect(() => {
-    // Check if Leaflet script is already loaded
-    if (typeof L !== 'undefined') {
-      setMapLoaded(true);
-      return;
-    }
-
-    const cssLink = document.createElement('link');
-    cssLink.rel = 'stylesheet';
-    cssLink.href = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.css';
-    document.head.appendChild(cssLink);
-
-    const script = document.createElement('script');
-    script.src = 'https://unpkg.com/leaflet@1.7.1/dist/leaflet.js';
-    script.onload = () => {
-      setMapLoaded(true);
-    };
-    document.head.appendChild(script);
-  }, []);
-
-  // 2. Initialize Leaflet Map
-  useEffect(() => {
-    if (!mapLoaded || typeof L === 'undefined') return;
-
-    // Initialize Map element
-    const container = document.getElementById('leaflet-checkout-map');
-    if (!container || mapRef.current) return;
-
-    const mapInstance = L.map('leaflet-checkout-map').setView([coordinates.lat, coordinates.lng], 14);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(mapInstance);
-
-    const customMarker = L.marker([coordinates.lat, coordinates.lng], { draggable: true }).addTo(mapInstance);
-
-    // Drop Pin Click event
-    mapInstance.on('click', (e: any) => {
-      const { lat, lng } = e.latlng;
-      customMarker.setLatLng([lat, lng]);
-      setCoordinates({ lat, lng });
-    });
-
-    // Drag Pin Event
-    customMarker.on('dragend', () => {
-      const position = customMarker.getLatLng();
-      setCoordinates({ lat: position.lat, lng: position.lng });
-    });
-
-    mapRef.current = mapInstance;
-    markerRef.current = customMarker;
-
-    return () => {
-      if (mapRef.current) {
-        mapRef.current.remove();
-        mapRef.current = null;
+        if (res.ok) {
+          const data = await res.json();
+          setPreviewData(data);
+          if (data.selectedAddress?.id) setSelectedAddressId(data.selectedAddress.id);
+          if (data.selectedDeliveryOption?.id) setSelectedDeliveryId(data.selectedDeliveryOption.id);
+          if (data.selectedPaymentMethod) setSelectedPaymentId(data.selectedPaymentMethod);
+          return;
+        } else {
+          setFetchError('Could not load your checkout details. Please try again.');
+        }
       }
-    };
-  }, [mapLoaded]);
+    } catch (e) {
+      console.warn('Checkout preview fetch failed:', e);
+      setFetchError('Network error — could not reach checkout service. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-  // 3. Recalculate Closest store & ETA when coordinates move
+  const handleRetry = () => {
+    fetchPreview(selectedAddressId, selectedDeliveryId, selectedPaymentId);
+  };
+
   useEffect(() => {
-    const result = findClosestStoreAndETA(coordinates.lat, coordinates.lng);
-    if (result) {
-      setEtaDetails({
-        storeName: result.store.name,
-        distance: result.distance,
-        eta: result.eta
-      });
-      // Auto prefill pincode based on selected store
-      if (result.store.id === 'store-andheri') setPincode('400059');
-      else if (result.store.id === 'store-worli') setPincode('400018');
-      else setPincode('400050');
-    }
-  }, [coordinates]);
+    fetchPreview(selectedAddressId, selectedDeliveryId, selectedPaymentId);
+  }, []);
 
-  const savedAddresses = [
-    {
-      id: 1,
-      name: 'Arif Al Nukhbah',
-      phone: '+91 98765 43210',
-      address: 'Apt 402, Sea Green Apartments, Carter Road, Bandra West',
-      city: 'Mumbai',
-      pincode: '400050',
-      lat: 19.0596,
-      lng: 72.8295
-    },
-    {
-      id: 2,
-      name: 'Arif Al Nukhbah (Office)',
-      phone: '+91 98765 43210',
-      address: 'Level 12, Maker Chambers VI, Nariman Point',
-      city: 'Mumbai',
-      pincode: '400021',
-      lat: 18.9067,
-      lng: 72.8147
+  const handleSelectAddress = (id: string) => {
+    setSelectedAddressId(id);
+    fetchPreview(id, selectedDeliveryId, selectedPaymentId);
+  };
+
+  const handleAddNewAddress = async (formData: any) => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+      if (token) {
+        const res = await fetch('/api/v1/users/addresses', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+        if (res.ok) {
+          const newAddress = await res.json();
+          setSelectedAddressId(newAddress.id);
+          await fetchPreview(newAddress.id, selectedDeliveryId, selectedPaymentId);
+        }
+      }
+    } catch (e) {
+      console.warn('Failed to add new address:', e);
     }
+  };
+
+  const handleSelectDelivery = (id: string) => {
+    setSelectedDeliveryId(id);
+    fetchPreview(selectedAddressId, id, selectedPaymentId);
+  };
+
+  const handleSelectPayment = (id: string) => {
+    setSelectedPaymentId(id);
+    fetchPreview(selectedAddressId, selectedDeliveryId, id);
+  };
+
+  const handlePlaceOrderPreview = async () => {
+    // CMD-043: Display validation errors first
+    setShowValidation(true);
+
+    // Compute validity inline — avoids stale state from useEffect
+    const validNow =
+      !!addressProps &&
+      !!(selectedDeliveryId || deliveryMethodsList[0]?.id) &&
+      !!selectedPaymentId &&
+      (!previewData?.checkoutEligibility || previewData.checkoutEligibility.isEligible);
+
+    if (!validNow || isProcessingPayment) return;
+
+    // CMD-045: Direct payment orchestration — never in useEffect to prevent double-fire
+    setIsProcessingPayment(true);
+    setPaymentError(undefined);
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+      if (token) {
+        // 1. Create Payment Intent (Server-Authoritative)
+        const intentRes = await fetch('/api/v1/payments/intents', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            addressId: selectedAddressId || addressProps?.address?.id,
+            deliveryOptionId: selectedDeliveryId || deliveryMethodsList[0]?.id,
+            paymentMethod: selectedPaymentId || 'pay-upi',
+          }),
+        });
+
+        if (!intentRes.ok) {
+          const errData = await intentRes.json();
+          setPaymentError(errData.message || errData.error?.message || 'Payment intent creation failed. Please try again.');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        const intent = await intentRes.json();
+
+        // 2. Confirm Payment Intent
+        if (intent.status !== 'SUCCEEDED') {
+          const confirmRes = await fetch(`/api/v1/payments/intents/${intent.id}/confirm`, {
+            method: 'POST',
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              paymentMethod: selectedPaymentId,
+            }),
+          });
+
+          if (!confirmRes.ok) {
+            const errData = await confirmRes.json();
+            setPaymentError(errData.message || errData.error?.message || 'Payment confirmation failed. Please try again.');
+            setIsProcessingPayment(false);
+            return;
+          }
+        }
+
+        // 3. CMD-046 Authoritative Order Placement
+        const orderRes = await fetch('/api/v1/orders/place', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            paymentIntentId: intent.id,
+            addressId: selectedAddressId || addressProps?.address?.id,
+            deliveryOptionId: selectedDeliveryId || deliveryMethodsList[0]?.id,
+          }),
+        });
+
+        if (!orderRes.ok) {
+          const errData = await orderRes.json();
+          setPaymentError(errData.message || errData.error?.message || 'Order placement failed. Please try again.');
+          setIsProcessingPayment(false);
+          return;
+        }
+
+        const placedOrder = await orderRes.json();
+        if (clearCart) clearCart();
+        router.push(`/orders?placedId=${placedOrder.id}`);
+      } else {
+        // Unauthenticated preview mode fallback
+        if (clearCart) clearCart();
+        router.push('/orders');
+      }
+    } catch (e) {
+      console.warn('Payment orchestration failed:', e);
+      setPaymentError('Network error — could not reach payment service. Please try again.');
+    } finally {
+      setIsProcessingPayment(false);
+    }
+  };
+
+  const isFladoCart = cart.some((i) => i.product.isFlado);
+
+  // CMD-044: Address book entries for AddressSelector
+  const savedAddresses: any[] = previewData?.addresses || [];
+  const addressBookEntries = savedAddresses.map((a: any) => ({
+    id: a.id,
+    label: a.label || 'Home',
+    fullName: a.fullName || 'Valued Customer',
+    phone: a.phone || '',
+    line1: a.line1,
+    line2: a.line2,
+    city: a.city,
+    state: a.state,
+    pincode: a.pincode,
+    isDefault: a.isDefault,
+    lat: a.lat,
+    lng: a.lng,
+  }));
+
+  // Address card props
+  const addressProps: ShippingAddressCardProps | undefined = previewData?.selectedAddress
+    ? {
+        address: {
+          name: previewData.selectedAddress.fullName || 'Valued Customer',
+          phone: previewData.selectedAddress.phone || '',
+          addressLine1: previewData.selectedAddress.line1,
+          addressLine2: previewData.selectedAddress.line2,
+          city: previewData.selectedAddress.city,
+          state: previewData.selectedAddress.state,
+          country: 'India',
+          postalCode: previewData.selectedAddress.pincode,
+          isDefault: previewData.selectedAddress.isDefault,
+          label: previewData.selectedAddress.label,
+          lat: previewData.selectedAddress.lat,
+          lng: previewData.selectedAddress.lng,
+        },
+      }
+    : previewData?.addresses?.length > 0
+    ? {
+        address: {
+          name: previewData.addresses[0].fullName || 'Valued Customer',
+          phone: previewData.addresses[0].phone || '',
+          addressLine1: previewData.addresses[0].line1,
+          addressLine2: previewData.addresses[0].line2,
+          city: previewData.addresses[0].city,
+          state: previewData.addresses[0].state,
+          country: 'India',
+          postalCode: previewData.addresses[0].pincode,
+          isDefault: previewData.addresses[0].isDefault,
+          label: previewData.addresses[0].label,
+          lat: previewData.addresses[0].lat,
+          lng: previewData.addresses[0].lng,
+        },
+      }
+    : undefined;
+
+  // Delivery options props
+  const deliveryMethodsList: DeliveryMethod[] = previewData?.deliveryOptions?.map((d: any) => ({
+    id: d.id,
+    name: d.label,
+    description: d.description || d.etaText || 'Standard Delivery',
+    etaText: d.etaText || '1-3 Business Days',
+    priceText: d.formattedPrice,
+  })) || [
+    {
+      id: isFladoCart ? 'del-flado-instant' : 'del-standard',
+      name: isFladoCart ? 'Flado Quick-Commerce Delivery' : 'AuraMart Standard Delivery',
+      description: isFladoCart ? 'Superfast Darkstore Delivery' : 'Standard Courier Delivery',
+      etaText: isFladoCart ? '10-15 mins' : '1-3 Business Days',
+      priceText: formattedShipping || 'FREE',
+    },
   ];
 
-  const handleSelectSavedAddress = (id: number) => {
-    const addr = savedAddresses.find(a => a.id === id);
-    if (addr) {
-      setName(addr.name);
-      setPhone(addr.phone);
-      setAddress(addr.address);
-      setCity(addr.city);
-      setPincode(addr.pincode);
-      setCoordinates({ lat: addr.lat, lng: addr.lng });
+  // Payment method options props
+  const paymentMethodsList: PaymentMethodOption[] = previewData?.paymentMethods?.map((p: any) => ({
+    id: p.id,
+    name: p.label,
+    description: p.uneligibleReason || p.description || '',
+  })) || [
+    { id: 'pay-upi', name: 'UPI / Instant Pay', description: 'Google Pay, PhonePe, Paytm' },
+    { id: 'pay-card', name: 'Credit / Debit Card', description: 'Visa, Mastercard, RuPay' },
+    { id: 'pay-cod', name: 'Cash on Delivery (COD)', description: 'Pay upon delivery' },
+  ];
 
-      // Move marker on map if loaded
-      if (markerRef.current && mapRef.current) {
-        markerRef.current.setLatLng([addr.lat, addr.lng]);
-        mapRef.current.setView([addr.lat, addr.lng], 14);
+  // Order summary items
+  const summaryItems: OrderSummaryItem[] = (previewData?.items || cart).map((i: any) => ({
+    id: i.id || i.product?.id,
+    title: i.title || i.product?.name,
+    image: i.image || i.product?.image || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+    priceText: i.formattedLineTotal || `$${(i.product?.price * i.quantity).toFixed(2)}`,
+    quantity: i.quantity,
+  }));
+
+  const grandTotalStr = previewData?.formattedGrandTotal || formattedGrandTotal || '$0.00';
+
+  // CMD-043: Derive per-section inline validation errors (shown after first submission attempt)
+  const hasNoAddress = !addressProps;
+  const hasNoDelivery =
+    deliveryMethodsList.length > 0 &&
+    !(selectedDeliveryId || deliveryMethodsList[0]?.id);
+  const hasNoPayment = !selectedPaymentId;
+
+  const validationErrors = showValidation
+    ? {
+        address: hasNoAddress ? 'Please add a delivery address to continue.' : undefined,
+        delivery: hasNoDelivery ? 'Please select a delivery method to continue.' : undefined,
+        payment: hasNoPayment ? 'Please select a payment method to continue.' : undefined,
       }
-    }
-  };
+    : undefined;
 
-  // Set default address on load
-  useEffect(() => {
-    handleSelectSavedAddress(1);
-  }, []);
+  // Navigate if no validation blockers remain after surface errors are shown
+  const isValidToPlace =
+    !hasNoAddress && !hasNoDelivery && !hasNoPayment &&
+    (!previewData?.checkoutEligibility || previewData.checkoutEligibility.isEligible);
 
-  const handlePlaceOrder = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !phone || !address || !pincode) {
-      alert('Please fill in all shipping details.');
-      return;
-    }
-
-    setIsProcessing(true);
-
-    // Simulate payment transaction
-    setTimeout(() => {
-      const orderId = 'FLADO-' + Math.floor(100000 + Math.random() * 900000);
-      localStorage.setItem('last_order_id', orderId);
-      localStorage.setItem('last_order_total', finalTotal.toLocaleString('en-IN'));
-      localStorage.setItem('last_order_eta', etaDetails.eta.toString());
-      localStorage.setItem('last_order_store', etaDetails.storeName);
-
-      clearCart();
-      localStorage.removeItem('auramart_discount');
-      setIsProcessing(false);
-      router.push('/checkout/confirmation');
-    }, 2000);
-  };
-
-  const hasFladoItems = cart.some(item => item.product.isFlado);
-  const gst = Math.round(totalPrice * 0.18);
-  const convenienceFee = hasFladoItems ? 15 : 49;
-  const finalTotal = Math.max(0, totalPrice + gst + convenienceFee + riderTip - discount);
+  // NOTE: Payment orchestration is handled directly in handlePlaceOrderPreview above.
+  // Do NOT move payment API calls into useEffect — it risks double-fire in React StrictMode.
 
   return (
-    <div className={styles.checkoutPage}>
-      {isProcessing && (
-        <div className={styles.processingOverlay}>
-          <div className={styles.loadingSpinnerBox}>
-            <div className={styles.spinner}></div>
-            <h3>Processing Secure Transaction...</h3>
-            <p>Please do not close this window or hit refresh.</p>
-          </div>
-        </div>
-      )}
-
-      <div className="container">
-        <h1 className={styles.pageTitle}>Secure Checkout Basket</h1>
-        
-        <div className={styles.checkoutGrid}>
-          
-          {/* Left Column: Details */}
-          <div className={styles.formColumn}>
-            
-            {/* Address Presets */}
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <FiMapPin className={styles.titleIcon} /> Saved Locations
-              </h3>
-              <div className={styles.addressPresets}>
-                {savedAddresses.map((addr) => (
-                  <button
-                    key={addr.id}
-                    className={styles.presetBtn}
-                    onClick={() => handleSelectSavedAddress(addr.id)}
-                    type="button"
-                  >
-                    <strong>📍 {addr.name}</strong>
-                    <p style={{ margin: '4px 0', fontSize: '0.78rem' }}>{addr.address}</p>
-                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>{addr.phone}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* LEAFLET OPENSTREETMAP ADDRESS SELECTOR */}
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <FiMapPin className={styles.titleIcon} /> Drop Pin Location (OpenStreetMap)
-              </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-                Drag the marker or click on the map to pinpoint your exact home location.
-              </p>
-              
-              <div 
-                id="leaflet-checkout-map" 
-                style={{ 
-                  height: '240px', 
-                  width: '100%', 
-                  backgroundColor: '#E5E7EB', 
-                  borderRadius: '12px',
-                  marginBottom: '16px',
-                  border: '1.5px solid var(--color-border)',
-                  zIndex: 10
-                }}
-              />
-
-              <div className={styles.inputGrid}>
-                <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                  <label>Home / Office Flat / Street Address</label>
-                  <input
-                    type="text"
-                    required
-                    value={address}
-                    onChange={(e) => setAddress(e.target.value)}
-                    placeholder="Apt, Building, Street, Landmark"
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Receiver Name</label>
-                  <input
-                    type="text"
-                    required
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Name"
-                    className={styles.formInput}
-                  />
-                </div>
-                <div className={styles.inputGroup}>
-                  <label>Receiver Mobile Phone</label>
-                  <input
-                    type="tel"
-                    required
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="Phone"
-                    className={styles.formInput}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* SCHEDULED SLOT PICKER */}
-            {hasFladoItems && (
-              <div className={styles.card}>
-                <h3 className={styles.cardTitle}>
-                  <FiClock className={styles.titleIcon} /> Choose Delivery Time
-                </h3>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px', marginBottom: '12px' }}>
-                  <button
-                    onClick={() => setFladoSlot('asap')}
-                    className={`${styles.presetBtn} ${fladoSlot === 'asap' ? styles.presetActive : ''}`}
-                    type="button"
-                    style={{ padding: '16px', textAlign: 'left' }}
-                  >
-                    <strong>⚡ Instant ASAP</strong>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem' }}>Deliver in {etaDetails.eta} mins</p>
-                  </button>
-                  <button
-                    onClick={() => setFladoSlot('scheduled')}
-                    className={`${styles.presetBtn} ${fladoSlot === 'scheduled' ? styles.presetActive : ''}`}
-                    type="button"
-                    style={{ padding: '16px', textAlign: 'left' }}
-                  >
-                    <strong>📅 Schedule Later</strong>
-                    <p style={{ margin: '4px 0 0 0', fontSize: '0.75rem' }}>Choose slots tomorrow</p>
-                  </button>
-                </div>
-
-                {fladoSlot === 'scheduled' && (
-                  <div style={{ marginTop: '12px' }}>
-                    <label style={{ fontSize: '0.78rem', fontWeight: '800', display: 'block', marginBottom: '6px' }}>Select Slot Interval:</label>
-                    <select
-                      value={scheduledTime}
-                      onChange={(e) => setScheduledTime(e.target.value)}
-                      style={{
-                        width: '100%',
-                        padding: '10px 14px',
-                        borderRadius: '8px',
-                        border: '1.5px solid var(--color-border)',
-                        fontSize: '0.82rem',
-                        fontWeight: '700',
-                        cursor: 'pointer'
-                      }}
-                    >
-                      <option value="Tomorrow 09:00 AM - 11:00 AM">Tomorrow 09:00 AM - 11:00 AM</option>
-                      <option value="Tomorrow 01:00 PM - 03:00 PM">Tomorrow 01:00 PM - 03:00 PM</option>
-                      <option value="Tomorrow 06:00 PM - 08:00 PM">Tomorrow 06:00 PM - 08:00 PM</option>
-                    </select>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {/* DELIVERY PARTNER TIP ROW */}
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <FiGift className={styles.titleIcon} style={{ color: '#10B981' }} /> Delivery Partner Tip
-              </h3>
-              <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', marginBottom: '12px' }}>
-                Add a tip to show appreciation for your rider. 100% of tips go directly to the rider.
-              </p>
-              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-                {[0, 10, 20, 30, 50].map((tip) => (
-                  <button
-                    key={tip}
-                    onClick={() => setRiderTip(tip)}
-                    className={`${styles.presetBtn} ${riderTip === tip ? styles.presetActive : ''}`}
-                    type="button"
-                    style={{ padding: '10px 20px', minWidth: '70px', display: 'inline-flex', justifyContent: 'center' }}
-                  >
-                    {tip === 0 ? 'No Tip' : `₹${tip}`}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Payment Details */}
-            <div className={styles.card}>
-              <h3 className={styles.cardTitle}>
-                <FiCreditCard className={styles.titleIcon} /> Choose Payment Method
-              </h3>
-              
-              <div className={styles.paymentMethods}>
-                <button
-                  className={`${styles.methodBtn} ${paymentMethod === 'upi' ? styles.methodActive : ''}`}
-                  onClick={() => setPaymentMethod('upi')}
-                  type="button"
-                >
-                  <FiSmartphone className={styles.methodIcon} />
-                  <div>
-                    <strong>UPI Pay (Instant Verification)</strong>
-                    <span>Use GPay, PhonePe, Paytm</span>
-                  </div>
-                </button>
-                
-                <button
-                  className={`${styles.methodBtn} ${paymentMethod === 'card' ? styles.methodActive : ''}`}
-                  onClick={() => setPaymentMethod('card')}
-                  type="button"
-                >
-                  <FiCreditCard className={styles.methodIcon} />
-                  <div>
-                    <strong>Credit / Debit Card</strong>
-                    <span>All Indian & Global cards accepted</span>
-                  </div>
-                </button>
-
-                <button
-                  className={`${styles.methodBtn} ${paymentMethod === 'cod' ? styles.methodActive : ''}`}
-                  onClick={() => setPaymentMethod('cod')}
-                  type="button"
-                >
-                  <FiCheckCircle className={styles.methodIcon} />
-                  <div>
-                    <strong>Cash on Delivery (COD)</strong>
-                    <span>Pay on delivery scanner or cash</span>
-                  </div>
-                </button>
-              </div>
-
-              {paymentMethod === 'upi' && (
-                <div style={{ marginTop: '16px' }}>
-                  <label style={{ fontSize: '0.78rem', fontWeight: '800', display: 'block', marginBottom: '6px' }}>Enter VPA / UPI ID:</label>
-                  <input
-                    type="text"
-                    value={upiId}
-                    onChange={(e) => setUpiId(e.target.value)}
-                    placeholder="yourname@okaxis"
-                    className={styles.formInput}
-                  />
-                </div>
-              )}
-
-              {paymentMethod === 'card' && (
-                <div className={styles.inputGrid} style={{ marginTop: '16px' }}>
-                  <div className={`${styles.inputGroup} ${styles.fullWidth}`}>
-                    <label>16-digit Card Number</label>
-                    <input
-                      type="text"
-                      value={cardNo}
-                      onChange={(e) => setCardNo(e.target.value.replace(/\D/g, '').substring(0, 16))}
-                      placeholder="4000 1234 5678 9010"
-                      className={styles.formInput}
-                    />
-                  </div>
-                  <div className={styles.inputGroup}>
-                    <label>Expiry Date</label>
-                    <input
-                      type="text"
-                      value={cardExpiry}
-                      onChange={(e) => setCardExpiry(e.target.value.substring(0, 5))}
-                      placeholder="MM / YY"
-                      className={styles.formInput}
-                    />
-                  </div>
-                  <div className={styles.inputGroup}>
-                    <label>CVV</label>
-                    <input
-                      type="password"
-                      value={cardCvv}
-                      onChange={(e) => setCardCvv(e.target.value.replace(/\D/g, '').substring(0, 3))}
-                      placeholder="•••"
-                      className={styles.formInput}
-                    />
-                  </div>
-                </div>
-              )}
-            </div>
-
-          </div>
-
-          {/* Right Column: Calculations */}
-          <div className={styles.summaryColumn}>
-            <div className={styles.summaryCard}>
-              <h3 className={styles.summaryTitle}>Payment Overview</h3>
-              <div className={styles.pricesList}>
-                <div className={styles.priceRow}>
-                  <span>Item Subtotal</span>
-                  <span>₹{totalPrice.toLocaleString('en-IN')}</span>
-                </div>
-                <div className={styles.priceRow}>
-                  <span>CGST + SGST (18%)</span>
-                  <span>₹{gst.toLocaleString('en-IN')}</span>
-                </div>
-                <div className={styles.priceRow}>
-                  <span>Convenience Delivery Fee</span>
-                  <span>₹{convenienceFee}</span>
-                </div>
-                {riderTip > 0 && (
-                  <div className={styles.priceRow}>
-                    <span>Rider Tip (100% to Rider)</span>
-                    <span>₹{riderTip}</span>
-                  </div>
-                )}
-                {discount > 0 && (
-                  <div className={`${styles.priceRow} ${styles.discountText}`}>
-                    <span>Coupon Savings</span>
-                    <span>- ₹{discount}</span>
-                  </div>
-                )}
-                <div className={styles.divider}></div>
-                <div className={styles.totalRow}>
-                  <span>Total Payable</span>
-                  <span>₹{finalTotal.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-
-              <div style={{
-                backgroundColor: '#ECFDF5',
-                border: '1px solid #A7F3D0',
-                borderRadius: '8px',
-                padding: '10px 14px',
-                marginBottom: '16px',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '8px'
-              }}>
-                <span style={{ fontSize: '1.25rem' }}>🛵</span>
-                <span style={{ fontSize: '0.75rem', color: '#047857', fontWeight: '800' }}>
-                  Fulfilling from {etaDetails.storeName} ({etaDetails.distance} km away).
-                </span>
-              </div>
-
-              <button 
-                onClick={handlePlaceOrder}
-                className={styles.placeOrderBtn}
-                type="button"
-              >
-                Place Secure Order & Pay ₹{finalTotal.toLocaleString('en-IN')}
-              </button>
-
-              <div className={styles.secureSeal}>
-                <FiLock className={styles.sealIcon} />
-                <span>256-bit Encrypted Transaction SSL</span>
-              </div>
-            </div>
-            
-            <div className={styles.infoBox}>
-              <FiInfo className={styles.infoIcon} />
-              <p style={{ margin: 0 }}>
-                Flado items are fulfilled instantly from our darkstore within 10-minutes. Ensure your receiver phone is reachable for active delivery rider updates.
-              </p>
-            </div>
-          </div>
-
-        </div>
-      </div>
+    <div style={{ padding: '24px 16px', maxWidth: '1280px', margin: '0 auto' }}>
+      <CheckoutPage
+        title="Checkout Preview"
+        progress={{
+          currentStep: 'review',
+          steps: [
+            { id: 'cart', label: 'Cart' },
+            { id: 'address', label: 'Address' },
+            { id: 'payment', label: 'Payment' },
+            { id: 'review', label: 'Review Preview' },
+          ],
+        }}
+        isLoading={isLoading}
+        isEmpty={cart.length === 0}
+        surface={isFladoCart ? 'QUICK_COMMERCE' : 'MARKETPLACE'}
+        blockers={previewData?.checkoutEligibility?.blockers || []}
+        grandTotalFormatted={grandTotalStr}
+        address={addressProps}
+        addressSelector={
+          addressBookEntries.length > 0
+            ? {
+                addresses: addressBookEntries,
+                selectedId: selectedAddressId || addressBookEntries[0]?.id,
+                onSelect: handleSelectAddress,
+                onAddNew: handleAddNewAddress,
+              }
+            : undefined
+        }
+        deliveryMethods={{
+          methods: deliveryMethodsList,
+          selectedId: selectedDeliveryId || deliveryMethodsList[0]?.id,
+          onSelectMethod: handleSelectDelivery,
+        }}
+        paymentMethods={{
+          methods: paymentMethodsList,
+          selectedId: selectedPaymentId,
+          onSelectMethod: handleSelectPayment,
+        }}
+        notes={{
+          value: deliveryNotes,
+          onChange: setDeliveryNotes,
+        }}
+        orderSummary={{
+          items: summaryItems,
+        }}
+        billingSummary={{
+          subtotal: previewData?.formattedSubtotal || formattedSubtotal || '$0.00',
+          shipping: previewData?.formattedShipping || formattedShipping || 'FREE',
+          tax: previewData?.formattedTax || formattedTax || '$0.00',
+          discount: previewData?.formattedDiscount || '$0.00',
+          grandTotal: grandTotalStr,
+        }}
+        placeOrder={{
+          termsAccepted,
+          onTermsChange: setTermsAccepted,
+          onPlaceOrder: handlePlaceOrderPreview,
+          buttonLabel: 'Review Order Preview',
+          disabled: !previewData?.checkoutEligibility?.isEligible,
+        }}
+        onReturnToCart={() => router.push('/cart')}
+        fetchError={fetchError}
+        onRetry={handleRetry}
+        validationErrors={validationErrors}
+        isProcessingPayment={isProcessingPayment}
+        paymentError={paymentError}
+      />
     </div>
+  );
+}
+
+export default function CheckoutPageRoute() {
+  return (
+    <Suspense fallback={<div style={{ padding: 32, textAlign: 'center' }}>Loading Checkout Preview...</div>}>
+      <CheckoutContent />
+    </Suspense>
   );
 }

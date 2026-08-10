@@ -1,0 +1,58 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.rangeDisplay {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.dash {
+  color: var(--color-text-muted);
+}
+
+.inputsRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.inputGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.inputMeta {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.numInput {
+  width: 100%;
+  padding: var(--space-1) var(--space-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  background-color: var(--color-background);
+  outline: none;
+}
+
+.numInput:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.rangeSlider {
+  width: 100%;
+  accent-color: var(--color-primary);
+  cursor: pointer;
+}

@@ -18,9 +18,14 @@ import {
   Sparkles, 
   Tag, 
   Zap, 
-  AlertCircle
+  AlertCircle,
+  FolderPlus,
+  Smartphone,
+  Monitor
 } from 'lucide-react';
 import styles from './cms.module.css';
+import { API_BASE_URL } from '@/lib/config';
+import BannerAssetPicker from '@/components/BannerAssetPicker';
 
 interface CMSSection {
   id: string;
@@ -49,6 +54,11 @@ export default function CMSManagerPage() {
   const [newSectionType, setNewSectionType] = useState('');
   const [newSectionTitle, setNewSectionTitle] = useState('');
 
+  // Asset picker modal state
+  const [pickerOpen, setPickerOpen] = useState(false);
+  const [activePickerTarget, setActivePickerTarget] = useState<{ arrayField?: string; index?: number; fieldName: string } | null>(null);
+  const [previewMode, setPreviewMode] = useState<'desktop' | 'mobile'>('desktop');
+
   // Fetch active layout from backend API when tab changes
   useEffect(() => {
     fetchLayout(activeTab);
@@ -57,26 +67,36 @@ export default function CMSManagerPage() {
   const fetchLayout = async (tab: 'homepage' | 'flado') => {
     setLoading(true);
     const endpoint = tab === 'homepage' ? 'homepage' : 'flado';
+    const sduiUrl = `${API_BASE_URL}/api/v1/sdui/${endpoint}`;
+    console.log('[CMSManagerPage] Fetching SDUI layout:', sduiUrl);
+
     try {
-      const res = await fetch(`http://localhost:5000/api/sdui/${endpoint}`);
+      const res = await fetch(sduiUrl);
       if (res.ok) {
-        const data = await res.json();
-        if (data.sections) {
+        let data = await res.json();
+        if (data && typeof data === 'object' && 'data' in data) {
+          data = data.data;
+        }
+        if (data && data.sections) {
           data.sections.sort((a: any, b: any) => a.order - b.order);
         }
         setConfig(data);
-        if (data.sections && data.sections.length > 0) {
+        if (data && data.sections && data.sections.length > 0) {
           setSelectedSectionId(data.sections[0].id);
         } else {
           setSelectedSectionId(null);
         }
       }
     } catch (e) {
-      console.error('Failed to connect to backend api. Using local mockup storage.', e);
+      console.warn('[CMSManagerPage] Backend unreachable, falling back to local storage:', e);
       const localMockKey = tab === 'homepage' ? 'auramart_cms_config_v2' : 'auramart_cms_config_flado';
-      const localMock = localStorage.getItem(localMockKey);
+      const localMock = typeof window !== 'undefined' ? localStorage.getItem(localMockKey) : null;
       if (localMock) {
-        setConfig(JSON.parse(localMock));
+        try {
+          setConfig(JSON.parse(localMock));
+        } catch {
+          setConfig(null);
+        }
       } else {
         setConfig(null);
       }
@@ -91,17 +111,21 @@ export default function CMSManagerPage() {
     setStatusMessage(null);
     const endpoint = activeTab === 'homepage' ? 'homepage' : 'flado';
     try {
-      const res = await fetch(`http://localhost:5000/api/sdui/${endpoint}`, {
+      const res = await fetch(`${API_BASE_URL}/api/v1/sdui/${endpoint}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(config)
       });
       if (res.ok) {
-        const result = await res.json();
-        if (result.success) {
-          setConfig(result.config);
+        let result = await res.json();
+        if (result && typeof result === 'object' && 'data' in result) {
+          result = result.data;
+        }
+        if (result.success || result.config) {
+          const updatedConfig = result.config || result;
+          setConfig(updatedConfig);
           const localMockKey = activeTab === 'homepage' ? 'auramart_cms_config_v2' : 'auramart_cms_config_flado';
-          localStorage.setItem(localMockKey, JSON.stringify(result.config));
+          localStorage.setItem(localMockKey, JSON.stringify(updatedConfig));
           window.dispatchEvent(new Event('cms-updated'));
           setStatusMessage({ type: 'success', text: `${activeTab === 'homepage' ? 'Homepage' : 'Flado'} layout successfully published! Now synced live on Web & App.` });
         } else {
@@ -110,15 +134,20 @@ export default function CMSManagerPage() {
       }
     } catch (e) {
       console.error(e);
-      const updated = {
-        ...config,
-        version: config.version + 1,
-        lastUpdated: new Date().toISOString()
-      };
-      setConfig(updated);
-      const localMockKey = activeTab === 'homepage' ? 'auramart_cms_config_v2' : 'auramart_cms_config_flado';
-      localStorage.setItem(localMockKey, JSON.stringify(updated));
-      setStatusMessage({ type: 'success', text: 'CMS saved locally! Start NestJS backend (port 5000) to sync across other servers.' });
+      const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+      if (isDemo) {
+        const updated = {
+          ...config,
+          version: config.version + 1,
+          lastUpdated: new Date().toISOString()
+        };
+        setConfig(updated);
+        const localMockKey = activeTab === 'homepage' ? 'auramart_cms_config_v2' : 'auramart_cms_config_flado';
+        localStorage.setItem(localMockKey, JSON.stringify(updated));
+        setStatusMessage({ type: 'success', text: 'CMS saved locally! Start NestJS backend (port 5000) to sync across other servers.' });
+      } else {
+        setStatusMessage({ type: 'error', text: 'Connection failure: Unable to publish CMS changes to the backend API. Please make sure the backend is running.' });
+      }
     } finally {
       setPublishing(false);
     }
@@ -326,6 +355,28 @@ export default function CMSManagerPage() {
     handleConfigChange(arrayField, items);
   };
 
+  const openAssetPicker = (fieldName: string, arrayField?: string, index?: number) => {
+    setActivePickerTarget({ fieldName, arrayField, index });
+    setPickerOpen(true);
+  };
+
+  const handleSelectAsset = (asset: { publicUrl: string; altText?: string; filename: string }) => {
+    if (!activePickerTarget) return;
+
+    const { fieldName, arrayField, index } = activePickerTarget;
+    if (arrayField !== undefined && index !== undefined) {
+      handleNestedConfigChange(arrayField, index, fieldName, asset.publicUrl);
+      if (asset.altText) {
+        handleNestedConfigChange(arrayField, index, 'altText', asset.altText);
+      }
+    } else {
+      handleConfigChange(fieldName, asset.publicUrl);
+      if (asset.altText) {
+        handleConfigChange('altText', asset.altText);
+      }
+    }
+  };
+
   if (loading) {
     return (
       <div className={styles.loadingContainer}>
@@ -496,6 +547,106 @@ export default function CMSManagerPage() {
                 </div>
               </div>
 
+              {/* Responsive Hero Banner Preview Component */}
+              {(selectedSection.type === 'hero_banners' || selectedSection.type === 'flado_hero_carousel') && selectedSection.config.banners?.length > 0 && (
+                <div style={{ margin: '1rem', padding: '1rem', backgroundColor: '#F8FAFC', borderRadius: '8px', border: '1px solid #E2E8F0' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+                    <span style={{ fontSize: '0.75rem', fontWeight: 800, color: '#475569' }}>
+                      HERO BANNER LIVE PREVIEW
+                    </span>
+                    <div style={{ display: 'flex', gap: '4px' }}>
+                      <button
+                        onClick={() => setPreviewMode('desktop')}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: 'none',
+                          backgroundColor: previewMode === 'desktop' ? '#4F46E5' : '#E2E8F0',
+                          color: previewMode === 'desktop' ? '#FFFFFF' : '#475569',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Monitor size={12} /> Desktop
+                      </button>
+                      <button
+                        onClick={() => setPreviewMode('mobile')}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '0.7rem',
+                          fontWeight: 'bold',
+                          borderRadius: '4px',
+                          border: 'none',
+                          backgroundColor: previewMode === 'mobile' ? '#4F46E5' : '#E2E8F0',
+                          color: previewMode === 'mobile' ? '#FFFFFF' : '#475569',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                      >
+                        <Smartphone size={12} /> Mobile
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Banner Renderer Preview */}
+                  <div style={{
+                    width: previewMode === 'mobile' ? '300px' : '100%',
+                    margin: previewMode === 'mobile' ? '0 auto' : '0',
+                    height: previewMode === 'mobile' ? '160px' : '180px',
+                    borderRadius: '8px',
+                    overflow: 'hidden',
+                    position: 'relative',
+                    backgroundColor: selectedSection.config.banners[0].backgroundColor || '#4C1D95',
+                    boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)'
+                  }}>
+                    {selectedSection.config.banners[0].imageUrl && (
+                      <img 
+                        src={selectedSection.config.banners[0].imageUrl} 
+                        alt={selectedSection.config.banners[0].altText || selectedSection.config.banners[0].title}
+                        style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: 0.85 }}
+                      />
+                    )}
+                    <div style={{
+                      position: 'absolute',
+                      inset: 0,
+                      padding: '1.25rem',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      justifyContent: 'center',
+                      background: 'linear-gradient(to right, rgba(0,0,0,0.7), transparent)'
+                    }}>
+                      <span style={{ color: '#F3F4F6', fontSize: previewMode === 'mobile' ? '0.75rem' : '0.875rem', fontWeight: 600 }}>
+                        {selectedSection.config.banners[0].subtitle || 'Promo Tagline'}
+                      </span>
+                      <h4 style={{ color: '#FFFFFF', fontSize: previewMode === 'mobile' ? '1rem' : '1.35rem', fontWeight: 850, margin: '2px 0 8px 0' }}>
+                        {selectedSection.config.banners[0].title || 'Hero Campaign Title'}
+                      </h4>
+                      {selectedSection.config.banners[0].ctaText && (
+                        <div>
+                          <span style={{
+                            display: 'inline-block',
+                            backgroundColor: '#FFFFFF',
+                            color: '#1E293B',
+                            padding: '4px 12px',
+                            borderRadius: '20px',
+                            fontSize: '0.75rem',
+                            fontWeight: 800
+                          }}>
+                            {selectedSection.config.banners[0].ctaText} →
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className={styles.editorBody}>
                 {/* 1. TOP ANNOUNCEMENT EDITOR */}
                 {selectedSection.type === 'top_announcement' && (
@@ -543,7 +694,8 @@ export default function CMSManagerPage() {
                           subtitle: 'Write short promo taglines here',
                           ctaText: 'Shop Now',
                           ctaUrl: '/search',
-                          backgroundColor: '#4C1D95'
+                          backgroundColor: '#4C1D95',
+                          altText: 'New campaign promotional hero banner'
                         })}
                         className={styles.addButton}
                       >
@@ -565,12 +717,41 @@ export default function CMSManagerPage() {
                           </div>
                           <div className={styles.formGrid}>
                             <div className={styles.field}>
-                              <label>Image URL</label>
+                              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                <span>Image URL</span>
+                                <button
+                                  type="button"
+                                  onClick={() => openAssetPicker('imageUrl', 'banners', bIdx)}
+                                  style={{
+                                    border: 'none',
+                                    background: 'none',
+                                    color: '#4F46E5',
+                                    fontWeight: 'bold',
+                                    fontSize: '0.75rem',
+                                    cursor: 'pointer',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '4px'
+                                  }}
+                                >
+                                  <FolderPlus size={12} /> Select / Upload Media Asset
+                                </button>
+                              </label>
                               <input 
                                 type="text"
                                 value={banner.imageUrl}
                                 onChange={(e) => handleNestedConfigChange('banners', bIdx, 'imageUrl', e.target.value)}
                                 className={styles.input}
+                              />
+                            </div>
+                            <div className={styles.field}>
+                              <label>Accessible Alt Text</label>
+                              <input 
+                                type="text"
+                                value={banner.altText || ''}
+                                onChange={(e) => handleNestedConfigChange('banners', bIdx, 'altText', e.target.value)}
+                                className={styles.input}
+                                placeholder="Describe banner image for accessibility..."
                               />
                             </div>
                             <div className={styles.field}>
@@ -640,7 +821,26 @@ export default function CMSManagerPage() {
                       />
                     </div>
                     <div className={styles.field}>
-                      <label>Background Image URL</label>
+                      <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Background Image URL</span>
+                        <button
+                          type="button"
+                          onClick={() => openAssetPicker('imageUrl')}
+                          style={{
+                            border: 'none',
+                            background: 'none',
+                            color: '#059669',
+                            fontWeight: 'bold',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FolderPlus size={12} /> Select / Upload Asset
+                        </button>
+                      </label>
                       <input 
                         type="text"
                         value={selectedSection.config.imageUrl || ''}
@@ -671,624 +871,6 @@ export default function CMSManagerPage() {
                   </div>
                 )}
 
-                {/* 4. CATEGORY GRID EDITOR */}
-                {(selectedSection.type === 'category_grid' || selectedSection.type === 'flado_category_pills') && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Active Category Icons ({selectedSection.config.categories?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('categories', {
-                          name: 'New Cat',
-                          slug: 'new-cat',
-                          icon: '📦',
-                          color: '#F1F5F9'
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Category
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.categories?.map((cat: any, cIdx: number) => (
-                        <div key={cIdx} className={styles.itemRowCompact}>
-                          <input 
-                            type="text"
-                            placeholder="Emoji"
-                            value={cat.icon}
-                            onChange={(e) => handleNestedConfigChange('categories', cIdx, 'icon', e.target.value)}
-                            className={styles.emojiInput}
-                          />
-                          <input 
-                            type="text"
-                            placeholder="Name"
-                            value={cat.name}
-                            onChange={(e) => handleNestedConfigChange('categories', cIdx, 'name', e.target.value)}
-                            className={styles.input}
-                          />
-                          <input 
-                            type="text"
-                            placeholder="Slug"
-                            value={cat.slug}
-                            onChange={(e) => handleNestedConfigChange('categories', cIdx, 'slug', e.target.value)}
-                            className={styles.input}
-                          />
-                          <input 
-                            type="color"
-                            value={cat.color || '#F1F5F9'}
-                            onChange={(e) => handleNestedConfigChange('categories', cIdx, 'color', e.target.value)}
-                            className={styles.colorInputCompact}
-                          />
-                          <button 
-                            onClick={() => removeArrayItem('categories', cIdx)}
-                            className={styles.deleteIconBtn}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 5. FLASH SALE Countdowns */}
-                {selectedSection.type === 'flash_sale' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Flash Sale Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Expiration Date/Time</label>
-                      <input 
-                        type="datetime-local"
-                        value={selectedSection.config.expiresAt ? selectedSection.config.expiresAt.substring(0,16) : ''}
-                        onChange={(e) => handleConfigChange('expiresAt', new Date(e.target.value).toISOString())}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 6. AURALIVE DEAL (Simulated Live Streaming) */}
-                {selectedSection.type === 'live_deal' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Live Product Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.productName || ''}
-                        onChange={(e) => handleConfigChange('productName', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Live Host Name</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.hostName || ''}
-                        onChange={(e) => handleConfigChange('hostName', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.fieldRow}>
-                      <div>
-                        <label>Live Special Price (₹)</label>
-                        <input 
-                          type="number"
-                          value={selectedSection.config.livePrice || 0}
-                          onChange={(e) => handleConfigChange('livePrice', parseInt(e.target.value))}
-                          className={styles.input}
-                        />
-                      </div>
-                      <div>
-                        <label>Watchers Counter</label>
-                        <input 
-                          type="number"
-                          value={selectedSection.config.watchersCount || 100}
-                          onChange={(e) => handleConfigChange('watchersCount', parseInt(e.target.value))}
-                          className={styles.input}
-                        />
-                      </div>
-                    </div>
-                    <div className={styles.field}>
-                      <label>End Time</label>
-                      <input 
-                        type="datetime-local"
-                        value={selectedSection.config.expiresAt ? selectedSection.config.expiresAt.substring(0,16) : ''}
-                        onChange={(e) => handleConfigChange('expiresAt', new Date(e.target.value).toISOString())}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 7. PRODUCT STRIP EDITORS (Curated lists) */}
-                {selectedSection.type === 'product_strip' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Block Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Block Subtitle</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.subtitle || ''}
-                        onChange={(e) => handleConfigChange('subtitle', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Curated Product IDs (comma-separated)</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.productIds ? selectedSection.config.productIds.join(', ') : ''}
-                        onChange={(e) => handleConfigChange('productIds', e.target.value.split(',').map(s => s.trim()))}
-                        className={styles.input}
-                        placeholder="e.g. ele-1, be-5, fas-4"
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 8. BRAND SPOTLIGHTS */}
-                {selectedSection.type === 'brand_spotlight' && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Featured Brands ({selectedSection.config.brands?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('brands', {
-                          name: 'New Brand',
-                          slug: 'new-brand',
-                          logoUrl: 'https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?w=200',
-                          bannerUrl: 'https://images.unsplash.com/photo-1610945264803-c22b62d2a7b3?w=600',
-                          tagline: 'Brand slogan tag line goes here',
-                          badgeColor: '#1E293B'
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Brand
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.brands?.map((brand: any, brIdx: number) => (
-                        <div key={brIdx} className={styles.itemRow}>
-                          <div className={styles.itemRowHeader}>
-                            <span>Brand #{brIdx + 1}: {brand.name}</span>
-                            <button 
-                              onClick={() => removeArrayItem('brands', brIdx)}
-                              className={styles.deleteBtn}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                          <div className={styles.formGrid}>
-                            <div className={styles.field}>
-                              <label>Brand Name</label>
-                              <input 
-                                type="text"
-                                value={brand.name}
-                                onChange={(e) => handleNestedConfigChange('brands', brIdx, 'name', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Tagline</label>
-                              <input 
-                                type="text"
-                                value={brand.tagline}
-                                onChange={(e) => handleNestedConfigChange('brands', brIdx, 'tagline', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Brand Logo URL</label>
-                              <input 
-                                type="text"
-                                value={brand.logoUrl}
-                                onChange={(e) => handleNestedConfigChange('brands', brIdx, 'logoUrl', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.fieldRow}>
-                              <div>
-                                <label>Slug Link</label>
-                                <input 
-                                  type="text"
-                                  value={brand.slug}
-                                  onChange={(e) => handleNestedConfigChange('brands', brIdx, 'slug', e.target.value)}
-                                  className={styles.input}
-                                />
-                              </div>
-                              <div>
-                                <label>Badge Color</label>
-                                <input 
-                                  type="color"
-                                  value={brand.badgeColor || '#1E293B'}
-                                  onChange={(e) => handleNestedConfigChange('brands', brIdx, 'badgeColor', e.target.value)}
-                                  className={styles.colorInputCompact}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 9. SPONSOR BRAND STRIPS */}
-                {(selectedSection.type === 'sponsor_strip' || selectedSection.type === 'flado_sponsor_row') && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Sponsor Brands ({selectedSection.config.brands?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('brands', {
-                          name: 'New Sponsor',
-                          logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100',
-                          discountText: 'Flat 10% Off',
-                          slug: 'new-slug'
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Sponsor
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.brands?.map((brand: any, sIdx: number) => (
-                        <div key={sIdx} className={styles.itemRowCompact}>
-                          <input 
-                            type="text"
-                            placeholder="Brand Name"
-                            value={brand.name}
-                            onChange={(e) => handleNestedConfigChange('brands', sIdx, 'name', e.target.value)}
-                            className={styles.input}
-                          />
-                          <input 
-                            type="text"
-                            placeholder="Discount tag"
-                            value={brand.discountText}
-                            onChange={(e) => handleNestedConfigChange('brands', sIdx, 'discountText', e.target.value)}
-                            className={styles.input}
-                          />
-                          <input 
-                            type="text"
-                            placeholder="Slug Link"
-                            value={brand.slug}
-                            onChange={(e) => handleNestedConfigChange('brands', sIdx, 'slug', e.target.value)}
-                            className={styles.input}
-                          />
-                          <button 
-                            onClick={() => removeArrayItem('brands', sIdx)}
-                            className={styles.deleteIconBtn}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 10. NEW LAUNCHES EDITOR */}
-                {selectedSection.type === 'new_launches' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Launch Section Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Subtitle Tagline</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.subtitle || ''}
-                        onChange={(e) => handleConfigChange('subtitle', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Product IDs (comma-separated)</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.productIds ? selectedSection.config.productIds.join(', ') : ''}
-                        onChange={(e) => handleConfigChange('productIds', e.target.value.split(',').map(s => s.trim()))}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 11. TRENDING NOW EDITOR */}
-                {selectedSection.type === 'trending_now' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Trending Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Subtitle Tagline</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.subtitle || ''}
-                        onChange={(e) => handleConfigChange('subtitle', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Trending Product IDs (comma-separated)</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.productIds ? selectedSection.config.productIds.join(', ') : ''}
-                        onChange={(e) => handleConfigChange('productIds', e.target.value.split(',').map(s => s.trim()))}
-                        className={styles.input}
-                      />
-                    </div>
-                  </div>
-                )}
-
-                {/* 12. CURATED COLLECTIONS CARDS */}
-                {selectedSection.type === 'collection_cards' && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Collections List ({selectedSection.config.collections?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('collections', {
-                          title: 'New Collection',
-                          subtitle: 'Description',
-                          imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600',
-                          slug: 'sports',
-                          tag: 'Offer Badge'
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Collection
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.collections?.map((col: any, cIdx: number) => (
-                        <div key={cIdx} className={styles.itemRow}>
-                          <div className={styles.itemRowHeader}>
-                            <span>Collection #{cIdx + 1}: {col.title}</span>
-                            <button 
-                              onClick={() => removeArrayItem('collections', cIdx)}
-                              className={styles.deleteBtn}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                          <div className={styles.formGrid}>
-                            <div className={styles.field}>
-                              <label>Title</label>
-                              <input 
-                                type="text"
-                                value={col.title}
-                                onChange={(e) => handleNestedConfigChange('collections', cIdx, 'title', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Subtitle</label>
-                              <input 
-                                type="text"
-                                value={col.subtitle}
-                                onChange={(e) => handleNestedConfigChange('collections', cIdx, 'subtitle', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Image URL</label>
-                              <input 
-                                type="text"
-                                value={col.imageUrl}
-                                onChange={(e) => handleNestedConfigChange('collections', cIdx, 'imageUrl', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.fieldRow}>
-                              <div>
-                                <label>Slug Link</label>
-                                <input 
-                                  type="text"
-                                  value={col.slug}
-                                  onChange={(e) => handleNestedConfigChange('collections', cIdx, 'slug', e.target.value)}
-                                  className={styles.input}
-                                />
-                              </div>
-                              <div>
-                                <label>Offer Tag</label>
-                                <input 
-                                  type="text"
-                                  value={col.tag}
-                                  onChange={(e) => handleNestedConfigChange('collections', cIdx, 'tag', e.target.value)}
-                                  className={styles.input}
-                                />
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 13. STYLE LOOKBOOKS */}
-                {selectedSection.type === 'look_book' && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Lookbooks List ({selectedSection.config.items?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('items', {
-                          id: `l-${Date.now()}`,
-                          imageUrl: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400',
-                          title: 'New Street Look',
-                          tags: ['Fashion', 'Oversized']
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Lookbook Item
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.items?.map((item: any, iIdx: number) => (
-                        <div key={item.id || iIdx} className={styles.itemRow}>
-                          <div className={styles.itemRowHeader}>
-                            <span>Lookbook #{iIdx + 1}: {item.title}</span>
-                            <button 
-                              onClick={() => removeArrayItem('items', iIdx)}
-                              className={styles.deleteBtn}
-                            >
-                              <Trash2 size={14} />
-                            </button>
-                          </div>
-                          <div className={styles.formGrid}>
-                            <div className={styles.field}>
-                              <label>Title</label>
-                              <input 
-                                type="text"
-                                value={item.title}
-                                onChange={(e) => handleNestedConfigChange('items', iIdx, 'title', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Image URL</label>
-                              <input 
-                                type="text"
-                                value={item.imageUrl}
-                                onChange={(e) => handleNestedConfigChange('items', iIdx, 'imageUrl', e.target.value)}
-                                className={styles.input}
-                              />
-                            </div>
-                            <div className={styles.field}>
-                              <label>Style Hashtags (comma-separated)</label>
-                              <input 
-                                type="text"
-                                value={item.tags ? item.tags.join(', ') : ''}
-                                onChange={(e) => handleNestedConfigChange('items', iIdx, 'tags', e.target.value.split(',').map((s: string) => s.trim()))}
-                                className={styles.input}
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                {/* 14. PROMO STRIP EDITOR */}
-                {selectedSection.type === 'promo_strip' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Banner Text Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>CTA Page Link</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.ctaUrl || ''}
-                        onChange={(e) => handleConfigChange('ctaUrl', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.fieldRow}>
-                      <div>
-                        <label>Background color</label>
-                        <input 
-                          type="color"
-                          value={selectedSection.config.backgroundColor || '#F59E0B'}
-                          onChange={(e) => handleConfigChange('backgroundColor', e.target.value)}
-                          className={styles.colorInputCompact}
-                        />
-                      </div>
-                      <div>
-                        <label>Text Color</label>
-                        <input 
-                          type="color"
-                          value={selectedSection.config.textColor || '#1E293B'}
-                          onChange={(e) => handleConfigChange('textColor', e.target.value)}
-                          className={styles.colorInputCompact}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 15. FLADO OFFERS STRIP */}
-                {selectedSection.type === 'flado_offers_strip' && (
-                  <div className={styles.formGroup}>
-                    <div className={styles.subHeaderRow}>
-                      <label>Coupon Offers List ({selectedSection.config.offers?.length || 0})</label>
-                      <button 
-                        onClick={() => addArrayItem('offers', {
-                          text: 'Get 10% Off | Use Code: AURA10',
-                          code: 'AURA10'
-                        })}
-                        className={styles.addButton}
-                      >
-                        <Plus size={14} /> Add Offer
-                      </button>
-                    </div>
-
-                    <div className={styles.itemsList}>
-                      {selectedSection.config.offers?.map((offer: any, oIdx: number) => (
-                        <div key={oIdx} className={styles.itemRowCompact}>
-                          <input 
-                            type="text"
-                            placeholder="Offer promo text"
-                            value={offer.text}
-                            onChange={(e) => handleNestedConfigChange('offers', oIdx, 'text', e.target.value)}
-                            className={styles.input}
-                          />
-                          <input 
-                            type="text"
-                            placeholder="Coupon Code"
-                            value={offer.code}
-                            onChange={(e) => handleNestedConfigChange('offers', oIdx, 'code', e.target.value)}
-                            className={styles.input}
-                          />
-                          <button 
-                            onClick={() => removeArrayItem('offers', oIdx)}
-                            className={styles.deleteIconBtn}
-                          >
-                            <Trash2 size={14} />
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
                 {/* 16. FLADO PROMO AD BANNER */}
                 {selectedSection.type === 'flado_promo_banner' && (
                   <div className={styles.formGrid}>
@@ -1311,111 +893,31 @@ export default function CMSManagerPage() {
                       />
                     </div>
                     <div className={styles.field}>
-                      <label>Image URL</label>
+                      <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>Image URL</span>
+                        <button
+                          type="button"
+                          onClick={() => openAssetPicker('imageUrl')}
+                          style={{
+                            border: 'none',
+                            background: 'none',
+                            color: '#059669',
+                            fontWeight: 'bold',
+                            fontSize: '0.75rem',
+                            cursor: 'pointer',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '4px'
+                          }}
+                        >
+                          <FolderPlus size={12} /> Select / Upload Asset
+                        </button>
+                      </label>
                       <input 
                         type="text"
                         value={selectedSection.config.imageUrl || ''}
                         onChange={(e) => handleConfigChange('imageUrl', e.target.value)}
                         className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.fieldRow}>
-                      <div>
-                        <label>Background color</label>
-                        <input 
-                          type="color"
-                          value={selectedSection.config.backgroundColor || '#D1FAE5'}
-                          onChange={(e) => handleConfigChange('backgroundColor', e.target.value)}
-                          className={styles.colorInputCompact}
-                        />
-                      </div>
-                      <div>
-                        <label>Text Color</label>
-                        <input 
-                          type="color"
-                          value={selectedSection.config.textColor || '#065F46'}
-                          onChange={(e) => handleConfigChange('textColor', e.target.value)}
-                          className={styles.colorInputCompact}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 17. FLADO BRAND ZONE */}
-                {selectedSection.type === 'flado_brand_zone' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Brand Name</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.brandName || ''}
-                        onChange={(e) => handleConfigChange('brandName', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Banner Image URL</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.bannerUrl || ''}
-                        onChange={(e) => handleConfigChange('bannerUrl', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Tagline</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.tagline || ''}
-                        onChange={(e) => handleConfigChange('tagline', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.fieldRow}>
-                      <div>
-                        <label>Product Slug Filter</label>
-                        <input 
-                          type="text"
-                          value={selectedSection.config.productSlug || ''}
-                          onChange={(e) => handleConfigChange('productSlug', e.target.value)}
-                          className={styles.input}
-                          placeholder="e.g. groceries, beauty"
-                        />
-                      </div>
-                      <div>
-                        <label>Badge Color</label>
-                        <input 
-                          type="color"
-                          value={selectedSection.config.badgeColor || '#1E3A8A'}
-                          onChange={(e) => handleConfigChange('badgeColor', e.target.value)}
-                          className={styles.colorInputCompact}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* 18. FLADO PRODUCT ROW */}
-                {selectedSection.type === 'flado_product_row' && (
-                  <div className={styles.formGrid}>
-                    <div className={styles.field}>
-                      <label>Section Title</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.title || ''}
-                        onChange={(e) => handleConfigChange('title', e.target.value)}
-                        className={styles.input}
-                      />
-                    </div>
-                    <div className={styles.field}>
-                      <label>Filter Sub-Category</label>
-                      <input 
-                        type="text"
-                        value={selectedSection.config.subCategory || ''}
-                        onChange={(e) => handleConfigChange('subCategory', e.target.value)}
-                        className={styles.input}
-                        placeholder="e.g. Fruits & Vegetables, Dairy & Bread"
                       />
                     </div>
                   </div>
@@ -1430,6 +932,16 @@ export default function CMSManagerPage() {
           )}
         </div>
       </div>
+
+      {/* Banner Media Asset Picker Modal */}
+      <BannerAssetPicker
+        isOpen={pickerOpen}
+        onClose={() => {
+          setPickerOpen(false);
+          setActivePickerTarget(null);
+        }}
+        onSelectAsset={handleSelectAsset}
+      />
 
       {showAddModal && (
         <div style={{

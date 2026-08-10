@@ -203,4 +203,129 @@
   text-align: center;
   padding: 60px 0;
   color: var(--color-text-muted);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.brandStoryShort {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  font-weight: 500;
+}
+
+.brandProductCount {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-secondary, #F8FAFC);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--color-border);
+}
+
+.brandLogoPlaceholder {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  background: var(--color-bg-secondary, #F8FAFC);
+  border-radius: var(--radius-full);
+}
+
+/* Skeleton loaders */
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeletonCard {
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+  pointer-events: none;
+  cursor: default;
+}
+
+.skeletonLogo {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  background: var(--color-border, #E2E8F0);
+  margin-bottom: 16px;
+}
+
+.skeletonMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.skeletonLine {
+  height: 12px;
+  border-radius: 6px;
+  background: var(--color-border, #E2E8F0);
+}
+
+/* Results count */
+.resultsCount {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  margin-bottom: 24px;
+}
+
+/* Load more */
+.loadMoreWrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 40px;
+}
+
+.loadMoreBtn {
+  padding: 14px 36px;
+  background: white;
+  border: 2px solid var(--color-primary, #7C3AED);
+  color: var(--color-primary, #7C3AED);
+  border-radius: var(--radius-full);
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.loadMoreBtn:hover:not(:disabled) {
+  background: var(--color-primary, #7C3AED);
+  color: white;
+}
+
+.loadMoreBtn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Retry button */
+.retryBtn {
+  padding: 10px 28px;
+  background: var(--color-primary, #7C3AED);
+  color: white;
+  border: none;
+  border-radius: var(--radius-full);
+  font-size: 0.88rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.retryBtn:hover {
+  opacity: 0.9;
 }

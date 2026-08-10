@@ -9,6 +9,8 @@ import { fladoProductsData } from '@/data/fladoProducts';
 import ProductCard from '@/components/ProductCard';
 import styles from '../page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 interface FladoSubCategoryPageProps {
   params: Promise<{
     slug: string;
@@ -26,6 +28,8 @@ export default function FladoSubCategoryPage({ params }: FladoSubCategoryPagePro
     notFound();
   }
 
+  const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+
   // Format sub slug: e.g. "fresh-fruits" -> "Fresh Fruits"
   const formattedSub = sub
     .split('-')
@@ -36,7 +40,7 @@ export default function FladoSubCategoryPage({ params }: FladoSubCategoryPagePro
     const loadProducts = async () => {
       let items: any[] = [];
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         if (res.ok) {
           const data = await res.json();
           items = data.map((bp: any) => ({
@@ -53,10 +57,10 @@ export default function FladoSubCategoryPage({ params }: FladoSubCategoryPagePro
             brand: bp.brand || ''
           }));
         } else {
-          items = fladoProductsData;
+          items = isDemo ? fladoProductsData : [];
         }
       } catch (e) {
-        items = fladoProductsData;
+        items = isDemo ? fladoProductsData : [];
       }
       
       const filtered = items.filter(p => 

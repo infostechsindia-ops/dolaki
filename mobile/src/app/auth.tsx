@@ -1,29 +1,30 @@
 import React, { useState } from 'react';
-import { 
-  StyleSheet, View, Text, TextInput, TouchableOpacity, 
-  KeyboardAvoidingView, Platform, ActivityIndicator, Alert, 
-  Animated 
+import {
+  StyleSheet, View, Text, TextInput, TouchableOpacity,
+  KeyboardAvoidingView, Platform, ActivityIndicator, Alert,
+  Animated
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { BASE_URL } from '../utils/api';
+import { setSecureItem, SECURE_KEYS } from '../storage/secureStore';
 
 export default function AuthScreen() {
   const router = useRouter();
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  
+
   // Login State
   const [loginEmail, setLoginEmail] = useState('');
   const [loginPassword, setLoginPassword] = useState('');
-  
+
   // Register State
   const [regName, setRegName] = useState('');
   const [regEmail, setRegEmail] = useState('');
   const [regPhone, setRegPhone] = useState('');
   const [regPassword, setRegPassword] = useState('');
   const [regConfirm, setRegConfirm] = useState('');
-  
+
   const [loading, setLoading] = useState(false);
 
   const slideAnim = React.useRef(new Animated.Value(0)).current;
@@ -43,25 +44,47 @@ export default function AuthScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/auth/login', {
+      const res = await fetch(`${BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: loginEmail, password: loginPassword })
       });
       const data = await res.json();
-      
+
       if (res.ok) {
-        await AsyncStorage.setItem('aura_token', data.token || 'mock_token');
-        await AsyncStorage.setItem('aura_user', JSON.stringify(data.user || { name: 'User', email: loginEmail }));
+        if (!data.token && !data.access_token) {
+          Alert.alert('Auth Error', 'Authentication server failed to issue a session token.');
+          return;
+        }
+        // SECURITY: Store JWT in device secure keychain/keystore — never AsyncStorage
+        const accessToken = data.access_token || data.token;
+        const refreshToken = data.refresh_token;
+        await setSecureItem(SECURE_KEYS.ACCESS_TOKEN, accessToken);
+        if (refreshToken) {
+          await setSecureItem(SECURE_KEYS.REFRESH_TOKEN, refreshToken);
+        }
+        await setSecureItem(
+          SECURE_KEYS.USER_SESSION,
+          JSON.stringify(data.user || { name: 'User', email: loginEmail })
+        );
         router.replace('/(tabs)');
       } else {
-        Alert.alert('Login Failed', data.message || 'Invalid credentials');
+        if (res.status === 404) {
+          Alert.alert('Login Failed', 'Account not found. Please register.');
+        } else if (res.status === 401) {
+          Alert.alert('Login Failed', 'Invalid email or password.');
+        } else if (res.status === 429) {
+          Alert.alert('Too Many Attempts', 'Please wait before trying again.');
+        } else {
+          Alert.alert('Login Failed', `Server error (${res.status}): Unable to authenticate.`);
+        }
       }
-    } catch (e) {
-      // Fallback for demo
-      await AsyncStorage.setItem('aura_token', 'mock_token_123');
-      await AsyncStorage.setItem('aura_user', JSON.stringify({ name: 'Demo User', email: loginEmail }));
-      router.replace('/(tabs)');
+    } catch {
+      // No demo bypass — require backend to be reachable for authentication
+      Alert.alert(
+        'Connection Failure',
+        'Unable to connect to authentication server. Please check your network connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -78,25 +101,45 @@ export default function AuthScreen() {
     }
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/auth/register', {
+      const res = await fetch(`${BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: regName, email: regEmail, phone: regPhone, password: regPassword })
       });
       const data = await res.json();
-      
+
       if (res.ok) {
-        await AsyncStorage.setItem('aura_token', data.token || 'mock_token');
-        await AsyncStorage.setItem('aura_user', JSON.stringify(data.user || { name: regName, email: regEmail }));
+        if (!data.token && !data.access_token) {
+          Alert.alert('Registration Succeeded', 'Please return to login to verify credentials.');
+          return;
+        }
+        // SECURITY: Store JWT in device secure keychain/keystore — never AsyncStorage
+        const accessToken = data.access_token || data.token;
+        const refreshToken = data.refresh_token;
+        await setSecureItem(SECURE_KEYS.ACCESS_TOKEN, accessToken);
+        if (refreshToken) {
+          await setSecureItem(SECURE_KEYS.REFRESH_TOKEN, refreshToken);
+        }
+        await setSecureItem(
+          SECURE_KEYS.USER_SESSION,
+          JSON.stringify(data.user || { name: regName, email: regEmail })
+        );
         router.replace('/(tabs)');
       } else {
-        Alert.alert('Registration Failed', data.message || 'Error occurred');
+        if (res.status === 409) {
+          Alert.alert('Registration Failed', 'An account with this email already exists.');
+        } else if (res.status === 429) {
+          Alert.alert('Too Many Attempts', 'Please wait before trying again.');
+        } else {
+          Alert.alert('Registration Failed', data.message || 'Error occurred');
+        }
       }
-    } catch (e) {
-      // Fallback for demo
-      await AsyncStorage.setItem('aura_token', 'mock_token_123');
-      await AsyncStorage.setItem('aura_user', JSON.stringify({ name: regName, email: regEmail }));
-      router.replace('/(tabs)');
+    } catch {
+      // No demo bypass — require backend to be reachable for registration
+      Alert.alert(
+        'Connection Failure',
+        'Unable to contact registration server. Please check your network connection and try again.'
+      );
     } finally {
       setLoading(false);
     }
@@ -109,8 +152,8 @@ export default function AuthScreen() {
 
   return (
     <SafeAreaView style={styles.container}>
-      <KeyboardAvoidingView 
-        style={{ flex: 1 }} 
+      <KeyboardAvoidingView
+        style={{ flex: 1 }}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <View style={styles.header}>
@@ -133,21 +176,22 @@ export default function AuthScreen() {
             <View style={styles.formContainer}>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Email Address" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                   value={loginEmail}
                   onChangeText={setLoginEmail}
                 />
               </View>
               <View style={styles.inputWrap}>
                 <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Password" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
                   value={loginPassword}
@@ -174,9 +218,9 @@ export default function AuthScreen() {
             <View style={styles.formContainer}>
               <View style={styles.inputWrap}>
                 <Ionicons name="person-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Full Name" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Full Name"
                   placeholderTextColor="#9CA3AF"
                   value={regName}
                   onChangeText={setRegName}
@@ -184,21 +228,22 @@ export default function AuthScreen() {
               </View>
               <View style={styles.inputWrap}>
                 <Ionicons name="mail-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Email Address" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Email Address"
                   placeholderTextColor="#9CA3AF"
                   keyboardType="email-address"
                   autoCapitalize="none"
+                  autoCorrect={false}
                   value={regEmail}
                   onChangeText={setRegEmail}
                 />
               </View>
               <View style={styles.inputWrap}>
                 <Ionicons name="call-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Phone Number" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Phone Number"
                   placeholderTextColor="#9CA3AF"
                   keyboardType="phone-pad"
                   value={regPhone}
@@ -207,9 +252,9 @@ export default function AuthScreen() {
               </View>
               <View style={styles.inputWrap}>
                 <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Password" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Password"
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
                   value={regPassword}
@@ -218,9 +263,9 @@ export default function AuthScreen() {
               </View>
               <View style={styles.inputWrap}>
                 <Ionicons name="lock-closed-outline" size={20} color="#9CA3AF" style={styles.icon} />
-                <TextInput 
-                  style={styles.input} 
-                  placeholder="Confirm Password" 
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm Password"
                   placeholderTextColor="#9CA3AF"
                   secureTextEntry
                   value={regConfirm}

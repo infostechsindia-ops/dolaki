@@ -21,11 +21,10 @@ import {
   FiChevronUp,
   FiExternalLink
 } from 'react-icons/fi';
-import { products as localProducts, Product } from '@/data/products';
-import { fladoProductsData } from '@/data/fladoProducts';
 import { useCart } from '@/context/CartContext';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
 
 interface ProductPageProps {
   params: Promise<{
@@ -58,37 +57,47 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
 
   const { cart, addToCart, updateQuantity } = useCart();
 
+  // Modals & Drawers state
+  const [fullscreenImage, setFullscreenImage] = useState<string | null>(null);
+  const [buyingGuide, setBuyingGuide] = useState<any | null>(null);
+  const [showGuideModal, setShowGuideModal] = useState(false);
+  const [qnaList, setQnaList] = useState<any[]>([]);
+  const [newQuestionText, setNewQuestionText] = useState('');
+  const [comparisonProducts, setComparisonProducts] = useState<any[]>([]);
+  const [showCompareDrawer, setShowCompareDrawer] = useState(false);
+  const [aiRecommendations, setAiRecommendations] = useState<any[]>([]);
+
   useEffect(() => {
     const loadProductData = async () => {
       let fetchedProduct: Product | null = null;
+      const productUrl = `${API_BASE_URL}/api/v1/products/${id}`;
+      console.log('[ProductDetailPage] Fetching product:', productUrl);
+
       try {
-        const res = await fetch(`http://localhost:5000/api/products/${id}`);
+        const res = await fetch(productUrl);
         if (res.ok) {
           const bp = await res.json();
+          const pData = bp.data || bp;
           fetchedProduct = {
-            ...bp,
-            name: bp.title || '',
-            price: bp.discountPrice ?? bp.basePrice,
-            originalPrice: bp.basePrice,
-            image: bp.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
-            rating: bp.rating ?? 4.5,
-            reviewsCount: bp.reviewCount ?? 12,
-            category: bp.category || 'groceries',
-            subCategory: bp.subCategory || '',
-            brand: bp.brand || '',
-            isFlado: bp.isQuickCommerce ?? false,
-            colors: bp.colorsJson ? JSON.parse(bp.colorsJson) : [],
-            sizes: bp.sizesJson ? JSON.parse(bp.sizesJson) : [],
-            specifications: bp.specifications ? (typeof bp.specifications === 'string' ? JSON.parse(bp.specifications) : bp.specifications) : {}
+            ...pData,
+            id: pData.id || id,
+            name: pData.title || pData.name || 'Product Details',
+            price: pData.discountPrice ?? pData.basePrice ?? pData.price ?? 0,
+            originalPrice: pData.basePrice ?? pData.originalPrice ?? pData.price ?? 0,
+            image: pData.imageUrl || pData.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: pData.rating ?? 4.5,
+            reviewsCount: pData.reviewCount ?? 12,
+            category: pData.category || 'electronics',
+            subCategory: pData.subCategory || '',
+            brand: pData.brand?.name || pData.brand || 'AuraBrand',
+            isFlado: pData.isQuickCommerce ?? false,
+            colors: pData.colorsJson ? (typeof pData.colorsJson === 'string' ? JSON.parse(pData.colorsJson) : pData.colorsJson) : (pData.colors || ['Standard']),
+            sizes: pData.sizesJson ? (typeof pData.sizesJson === 'string' ? JSON.parse(pData.sizesJson) : pData.sizesJson) : (pData.sizes || ['One Size']),
+            specifications: pData.specifications ? (typeof pData.specifications === 'string' ? JSON.parse(pData.specifications) : pData.specifications) : {}
           };
         }
       } catch (e) {
-        console.log('Failed to fetch product by ID from backend. Falling back to local data.');
-      }
-
-      if (!fetchedProduct) {
-        const found = localProducts.find((p) => p.id === id) || fladoProductsData.find((p) => p.id === id);
-        if (found) fetchedProduct = found;
+        console.warn('[ProductDetailPage] Main product fetch failed:', e);
       }
 
       if (fetchedProduct) {
@@ -100,11 +109,64 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
         if (fetchedProduct.sizes && fetchedProduct.sizes.length > 0) {
           setSelectedSize(fetchedProduct.sizes[0]);
         }
-        // Find Frequently Bought Together items
-        const related = [...localProducts, ...fladoProductsData]
-          .filter((p) => p.category === fetchedProduct.category && p.id !== fetchedProduct.id)
-          .slice(0, 2);
-        setBundleProducts(related);
+
+        // Fetch Backend Buying Guide
+        try {
+          const guideUrl = `${API_BASE_URL}/api/v1/products/buying-guides/${fetchedProduct.category || 'electronics'}`;
+          console.log('[ProductDetailPage] Fetching guide:', guideUrl);
+          const guideRes = await fetch(guideUrl);
+          if (guideRes.ok) setBuyingGuide(await guideRes.json());
+        } catch (e) {
+          console.warn('[ProductDetailPage] Buying guide fetch failed:', e);
+        }
+
+        // Fetch Q&A
+        try {
+          const qnaUrl = `${API_BASE_URL}/api/v1/products/${id}/qna`;
+          console.log('[ProductDetailPage] Fetching Q&A:', qnaUrl);
+          const qnaRes = await fetch(qnaUrl);
+          if (qnaRes.ok) {
+            const data = await qnaRes.json();
+            setQnaList(data.questions || []);
+          }
+        } catch (e) {
+          console.warn('[ProductDetailPage] Q&A fetch failed:', e);
+        }
+
+        // Fetch AI Recommendations
+        try {
+          const recUrl = `${API_BASE_URL}/api/v1/products/${id}/recommendations?type=RECOMMENDED_AI`;
+          console.log('[ProductDetailPage] Fetching recommendations:', recUrl);
+          const recRes = await fetch(recUrl);
+          if (recRes.ok) {
+            const data = await recRes.json();
+            setAiRecommendations(data.products || []);
+          }
+        } catch (e) {
+          console.warn('[ProductDetailPage] Recommendations fetch failed:', e);
+        }
+
+        // Fetch live related bundle items from backend
+        try {
+          const relUrl = `${API_BASE_URL}/api/v1/products?category=${fetchedProduct.category}&limit=3`;
+          console.log('[ProductDetailPage] Fetching related bundle:', relUrl);
+          const relRes = await fetch(relUrl);
+          if (relRes.ok) {
+            const relJson = await relRes.json();
+            const relList = (relJson.data || []).filter((p: any) => p.id !== id);
+            setBundleProducts(relList.map((bp: any) => ({
+              ...bp,
+              name: bp.title || bp.name || '',
+              price: bp.discountPrice ?? bp.basePrice ?? 0,
+              originalPrice: bp.basePrice ?? 0,
+              image: bp.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+              rating: bp.rating ?? 4.5,
+              reviewsCount: bp.reviewCount ?? 12,
+            })));
+          }
+        } catch (e) {
+          console.warn('[ProductDetailPage] Related products fetch failed:', e);
+        }
       }
       setLoading(false);
     };
@@ -140,17 +202,63 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     updateQuantity(product.id, quantityInCart - 1);
   };
 
-  const handlePincodeCheck = (e: React.FormEvent) => {
+  const handlePincodeCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!pincode.trim() || pincode.length < 6) {
       setEtaMessage('⚠️ Invalid pincode. Must be 6 digits.');
       return;
     }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/products/${product.id}/serviceability`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ pincode: pincode.trim() }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setEtaMessage(data.etaMessage || (data.serviceable ? '🟢 Available for delivery!' : '🔴 Pincode not serviceable'));
+        return;
+      }
+    } catch {
+      // Fallback
+    }
+
     if (product.isFlado) {
       setEtaMessage('⚡ Deliver in 10 mins! Eligible for Flado instant checkout.');
     } else {
       const isMetro = pincode.startsWith('1') || pincode.startsWith('4') || pincode.startsWith('5');
       setEtaMessage(isMetro ? '🟢 Arrives tomorrow morning! Express shipping.' : '🟢 Arrives in 2-3 business days.');
+    }
+  };
+
+  const handleAddQuestion = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newQuestionText.trim()) return;
+    const newQ = {
+      id: `q-${Date.now()}`,
+      question: newQuestionText.trim(),
+      askedBy: 'You (Verified Buyer)',
+      askedAt: 'Just now',
+      answers: [],
+    };
+    setQnaList([newQ, ...qnaList]);
+    setNewQuestionText('');
+  };
+
+  const handleOpenCompare = async () => {
+    setShowCompareDrawer(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/v1/products/compare`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ productIds: [product.id, ...bundleProducts.map((b) => b.id)] }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setComparisonProducts(data.products || []);
+      }
+    } catch {
+      // Fallback
     }
   };
 

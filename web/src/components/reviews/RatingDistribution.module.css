@@ -1,0 +1,56 @@
+.root {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs, 0.25rem);
+  width: 100%;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm, 0.5rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-gray-700, #374151);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  width: 3.5rem;
+  flex-shrink: 0;
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.barTrack {
+  flex: 1;
+  height: 0.5rem;
+  border-radius: var(--radius-full, 9999px);
+  background-color: var(--color-gray-200, #e5e7eb);
+  overflow: hidden;
+  appearance: none;
+  border: none;
+}
+
+.barTrack::-webkit-progress-bar {
+  background-color: var(--color-gray-200, #e5e7eb);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.barTrack::-webkit-progress-value {
+  background-color: var(--color-star, #f59e0b);
+  border-radius: var(--radius-full, 9999px);
+  transition: width var(--transition-normal, 250ms ease);
+}
+
+.barTrack::-moz-progress-bar {
+  background-color: var(--color-star, #f59e0b);
+  border-radius: var(--radius-full, 9999px);
+}
+
+.countCol {
+  width: 3rem;
+  text-align: right;
+  flex-shrink: 0;
+  color: var(--color-gray-500, #6b7280);
+}

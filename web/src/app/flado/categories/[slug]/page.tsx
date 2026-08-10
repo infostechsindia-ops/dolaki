@@ -21,17 +21,21 @@ import { fladoBrandsData } from '@/data/fladoBrands';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 interface FladoCategoryPageProps {
   params: Promise<{
     slug: string;
   }>;
 }
 
-export default function FladoCategoryPage({ params }: FladoCategoryPageProps) {
+export default function FladoCategoryStorePage({ params }: FladoCategoryPageProps) {
   const { slug } = use(params);
   const [loading, setLoading] = useState(true);
   const [activeSubcat, setActiveSubcat] = useState('All');
   const [productList, setProductList] = useState<any[]>([]);
+  const [selectedSub, setSelectedSub] = useState<string | null>(null);
+  const [selectedBrand, setSelectedBrand] = useState<string | null>(null);
   const [sortBy, setSortBy] = useState('relevance'); // relevance, price-asc, price-desc, rating
   const [inStockOnly, setInStockOnly] = useState(false);
 
@@ -40,11 +44,13 @@ export default function FladoCategoryPage({ params }: FladoCategoryPageProps) {
     notFound();
   }
 
+  const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+
   useEffect(() => {
     const loadProducts = async () => {
       let items: any[] = [];
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/products`);
         if (res.ok) {
           const data = await res.json();
           items = data.map((bp: any) => ({
@@ -61,11 +67,11 @@ export default function FladoCategoryPage({ params }: FladoCategoryPageProps) {
             brand: bp.brand || ''
           }));
         } else {
-          items = fladoProductsData;
+          items = isDemo ? fladoProductsData : [];
         }
       } catch (e) {
-        console.log('Failed to fetch from backend, using local flado catalog', e);
-        items = fladoProductsData;
+        console.log('Failed to fetch from backend', e);
+        items = isDemo ? fladoProductsData : [];
       }
       
       // Filter by category slug

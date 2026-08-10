@@ -2,16 +2,29 @@ import { DarkTheme, DefaultTheme, ThemeProvider } from 'expo-router';
 import { useColorScheme } from 'react-native';
 import { Stack } from 'expo-router';
 import { CartProvider } from '../context/CartContext';
-import { AnimatedSplashOverlay } from '@/components/animated-icon';
+import { AuthProvider, useAuthContext } from '../context/AuthContext';
+import { SurfaceProvider } from '../context/SurfaceContext';
+import { LoadingView } from '../components/common/StateViews';
 
-export default function RootLayout() {
+import { LocationProvider } from '../context/LocationContext';
+import { OfflineProvider, OfflineBanner } from '../context/OfflineContext';
+import { ErrorBoundary } from '../components/common/ErrorBoundary';
+
+function InnerRootLayout() {
   const colorScheme = useColorScheme();
+  const { isLoading } = useAuthContext();
+
+  if (isLoading) {
+    return <LoadingView message="Restoring AuraMart session..." />;
+  }
+
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <CartProvider>
-        <AnimatedSplashOverlay />
+        <OfflineBanner />
         <Stack screenOptions={{ headerShown: false }}>
           <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+          <Stack.Screen name="products/index" options={{ headerShown: false }} />
           <Stack.Screen name="products/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="checkout" options={{ headerShown: false }} />
           <Stack.Screen name="tracking/[id]" options={{ headerShown: false }} />
@@ -24,6 +37,22 @@ export default function RootLayout() {
         </Stack>
       </CartProvider>
     </ThemeProvider>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <SurfaceProvider>
+          <OfflineProvider>
+            <LocationProvider>
+              <InnerRootLayout />
+            </LocationProvider>
+          </OfflineProvider>
+        </SurfaceProvider>
+      </AuthProvider>
+    </ErrorBoundary>
   );
 }
 

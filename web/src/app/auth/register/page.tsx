@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from '../login/page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 export default function RegisterPage() {
   const router = useRouter();
   const [formData, setFormData] = useState({ fullName: '', email: '', phone: '', password: '', confirmPassword: '' });
@@ -24,7 +26,7 @@ export default function RegisterPage() {
     setError('');
     
     try {
-      const res = await fetch('http://localhost:3000/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -37,17 +39,22 @@ export default function RegisterPage() {
       
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem('aura_token', data.token || 'mock_token');
+        if (!data.token) {
+          setError('Registration succeeded, but the server failed to issue a session token. Please try logging in.');
+          return;
+        }
+        localStorage.setItem('aura_token', data.token);
         localStorage.setItem('aura_user', JSON.stringify(data.user || { email: formData.email, name: formData.fullName }));
         router.push('/');
       } else {
-        setError('Registration failed');
+        if (res.status === 409) {
+          setError('An account with this email address already exists.');
+        } else {
+          setError(`Registration failed (${res.status}): Please verify your details.`);
+        }
       }
     } catch (err) {
-      // Mock success if API is down
-      localStorage.setItem('aura_token', 'mock_token_123');
-      localStorage.setItem('aura_user', JSON.stringify({ email: formData.email, name: formData.fullName }));
-      router.push('/');
+      setError('Connection failure: Unable to contact registration service. Please verify if backend is running.');
     } finally {
       setLoading(false);
     }

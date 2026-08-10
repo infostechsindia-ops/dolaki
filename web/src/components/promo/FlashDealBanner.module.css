@@ -1,0 +1,147 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: linear-gradient(135deg, #EF4444 0%, #B91C1C 100%);
+  border-radius: var(--radius-lg);
+  padding: var(--space-6) var(--space-10);
+  color: white;
+  gap: var(--space-6);
+}
+
+.section.quickCommerce .container {
+  background: linear-gradient(135deg, #EF4444 0%, #991B1B 100%);
+}
+
+.leftCol {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-2);
+  text-align: left;
+}
+
+.alertHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.clockIcon {
+  font-size: var(--font-size-md);
+  color: var(--color-warning, #F59E0B);
+  animation: pulse 2s infinite ease-in-out;
+}
+
+.expiryBadge {
+  font-size: 11px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  background-color: rgba(0, 0, 0, 0.2);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.subtitle {
+  font-size: var(--font-size-xs);
+  opacity: 0.9;
+  line-height: 1.4;
+  margin: 0;
+}
+
+.rightCol {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.ctaBtn {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: white;
+  color: #B91C1C;
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-weight: 800;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.section.quickCommerce .ctaBtn {
+  color: #991B1B;
+}
+
+.ctaBtn:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.ctaBtn:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.arrow {
+  transition: transform 0.2s ease;
+}
+
+.ctaBtn:hover .arrow {
+  transform: translateX(3px);
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.6; }
+}
+
+/* Mobile responsive layout */
+@media (max-width: 767px) {
+  .container {
+    flex-direction: column;
+    padding: var(--space-6) var(--space-6);
+    text-align: center;
+    gap: var(--space-4);
+  }
+
+  .leftCol {
+    align-items: center;
+    text-align: center;
+  }
+
+  .rightCol {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .ctaBtn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .clockIcon {
+    animation: none !important;
+  }
+  .ctaBtn, .arrow {
+    transition: none !important;
+    transform: none !important;
+  }
+}

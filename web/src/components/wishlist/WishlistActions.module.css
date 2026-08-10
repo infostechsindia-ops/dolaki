@@ -1,0 +1,79 @@
+.actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  margin-top: auto;
+}
+
+.cartBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  width: 100%;
+  padding: var(--space-2) var(--space-3);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  border: 1px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  transition: opacity 0.15s ease;
+}
+
+.cartBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.cartBtn:disabled {
+  background-color: var(--color-disabled-bg);
+  border-color: var(--color-border);
+  color: var(--color-text-muted);
+  cursor: not-allowed;
+}
+
+.cartBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.iconButtons {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: var(--space-1);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-secondary);
+  font-size: 16px;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.iconBtn:hover:not(:disabled) {
+  background-color: var(--color-disabled-bg);
+  color: var(--color-text-primary);
+}
+
+.iconBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.removeBtn:hover:not(:disabled) {
+  border-color: #fecaca;
+  color: #ef4444;
+  background-color: #fef2f2;
+}

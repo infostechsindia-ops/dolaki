@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, TextInput, Activi
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import { BASE_URL } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
 
@@ -91,7 +92,8 @@ export default function FladoAdminDashboard() {
   const [loading, setLoading] = useState(false);
 
   // Pending shops state
-  const [pendingShops, setPendingShops] = useState(INITIAL_MOCK_PENDING_SHOPS);
+  const isDemo = process.env.EXPO_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+  const [pendingShops, setPendingShops] = useState(isDemo ? INITIAL_MOCK_PENDING_SHOPS : []);
   const [selectedShopForApprove, setSelectedShopForApprove] = useState<typeof INITIAL_MOCK_PENDING_SHOPS[0] | null>(null);
   
   // Form states for approval
@@ -105,19 +107,25 @@ export default function FladoAdminDashboard() {
   const [rejecting, setRejecting] = useState(false);
 
   // Stats State
-  const [totalShopsCount, setTotalShopsCount] = useState(14);
-  const [approvedSubscriptionSum, setApprovedSubscriptionSum] = useState(12000);
+  const [totalShopsCount, setTotalShopsCount] = useState(isDemo ? 14 : 0);
+  const [approvedSubscriptionSum, setApprovedSubscriptionSum] = useState(isDemo ? 12000 : 0);
 
   const fetchPendingShops = async () => {
     setLoading(true);
     try {
-      const res = await fetch('http://localhost:3000/flado/admin/shops/pending');
+      const res = await fetch(`${BASE_URL}/flado/admin/shops/pending`);
       const data = await res.json();
       if (Array.isArray(data) && data.length > 0) {
         setPendingShops(data);
+      } else {
+        setPendingShops([]);
       }
     } catch (e) {
-      // Keep mock data as fallback
+      if (isDemo) {
+        setPendingShops(INITIAL_MOCK_PENDING_SHOPS);
+      } else {
+        setPendingShops([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -136,7 +144,7 @@ export default function FladoAdminDashboard() {
 
     setApproving(true);
     try {
-      await fetch(`http://localhost:3000/flado/admin/shops/${selectedShopForApprove.id}/approve`, {
+      const res = await fetch(`${BASE_URL}/flado/admin/shops/${selectedShopForApprove.id}/approve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -144,19 +152,40 @@ export default function FladoAdminDashboard() {
           note: approvalNote,
         }),
       });
+      if (res.ok) {
+        Alert.alert(
+          'Shop Approved',
+          `✅ '${selectedShopForApprove.shopName}' is now live on Flado.\nMonthly subscription fee set to ₹${monthlyFee}.`
+        );
+        setPendingShops(prev => prev.filter(s => s.id !== selectedShopForApprove.id));
+        setTotalShopsCount(prev => prev + 1);
+        setApprovedSubscriptionSum(prev => prev + Number(monthlyFee));
+      } else {
+        if (isDemo) {
+          Alert.alert(
+            'Shop Approved',
+            `✅ '${selectedShopForApprove.shopName}' is now live on Flado.\nMonthly subscription fee set to ₹${monthlyFee}.`
+          );
+          setPendingShops(prev => prev.filter(s => s.id !== selectedShopForApprove.id));
+          setTotalShopsCount(prev => prev + 1);
+          setApprovedSubscriptionSum(prev => prev + Number(monthlyFee));
+        } else {
+          Alert.alert('Approval Failure', `Server status: ${res.status}`);
+        }
+      }
     } catch (e) {
-      // Mock success on network failure
+      if (isDemo) {
+        Alert.alert(
+          'Shop Approved',
+          `✅ '${selectedShopForApprove.shopName}' is now live on Flado.\nMonthly subscription fee set to ₹${monthlyFee}.`
+        );
+        setPendingShops(prev => prev.filter(s => s.id !== selectedShopForApprove.id));
+        setTotalShopsCount(prev => prev + 1);
+        setApprovedSubscriptionSum(prev => prev + Number(monthlyFee));
+      } else {
+        Alert.alert('Connection Failure', 'Failed to reach shop approval service.');
+      }
     }
-
-    Alert.alert(
-      'Shop Approved',
-      `✅ '${selectedShopForApprove.shopName}' is now live on Flado.\nMonthly subscription fee set to ₹${monthlyFee}.`
-    );
-
-    // Update state
-    setPendingShops(prev => prev.filter(s => s.id !== selectedShopForApprove.id));
-    setTotalShopsCount(prev => prev + 1);
-    setApprovedSubscriptionSum(prev => prev + Number(monthlyFee));
 
     // Reset
     setSelectedShopForApprove(null);
@@ -174,24 +203,41 @@ export default function FladoAdminDashboard() {
 
     setRejecting(true);
     try {
-      await fetch(`http://localhost:3000/flado/admin/shops/${selectedShopForReject.id}/reject`, {
+      const res = await fetch(`${BASE_URL}/flado/admin/shops/${selectedShopForReject.id}/reject`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           reason: rejectReason,
         }),
       });
+      if (res.ok) {
+        Alert.alert(
+          'Application Rejected',
+          `❌ '${selectedShopForReject.shopName}' registration has been rejected.`
+        );
+        setPendingShops(prev => prev.filter(s => s.id !== selectedShopForReject.id));
+      } else {
+        if (isDemo) {
+          Alert.alert(
+            'Application Rejected',
+            `❌ '${selectedShopForReject.shopName}' registration has been rejected.`
+          );
+          setPendingShops(prev => prev.filter(s => s.id !== selectedShopForReject.id));
+        } else {
+          Alert.alert('Rejection Failure', `Server status: ${res.status}`);
+        }
+      }
     } catch (e) {
-      // Mock success on network failure
+      if (isDemo) {
+        Alert.alert(
+          'Application Rejected',
+          `❌ '${selectedShopForReject.shopName}' registration has been rejected.`
+        );
+        setPendingShops(prev => prev.filter(s => s.id !== selectedShopForReject.id));
+      } else {
+        Alert.alert('Connection Failure', 'Failed to reach shop rejection service.');
+      }
     }
-
-    Alert.alert(
-      'Application Rejected',
-      `❌ '${selectedShopForReject.shopName}' registration has been rejected.`
-    );
-
-    // Update state
-    setPendingShops(prev => prev.filter(s => s.id !== selectedShopForReject.id));
 
     // Reset
     setSelectedShopForReject(null);

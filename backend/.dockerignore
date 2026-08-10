@@ -1,0 +1,24 @@
+# =============================================================================
+# AuraMart NestJS Backend — Production Docker Ignore (.dockerignore)
+# =============================================================================
+
+node_modules/
+dist/
+coverage/
+.git/
+.gitignore
+.env
+.env.*
+!.env.production.example
+*.log
+*.db
+*.sqlite
+*.sqlite3
+.DS_Store
+.idea/
+.vscode/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+test/

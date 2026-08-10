@@ -4,9 +4,11 @@ import React, { useState } from 'react';
 import { FiCopy, FiShare2, FiGift, FiUsers, FiAward, FiCheckCircle } from 'react-icons/fi';
 import styles from './page.module.css';
 
+import { FRONTEND_BASE_URL } from '@/lib/config';
+
 export default function InvitePage() {
   const referralCode = 'ARIF50';
-  const inviteLink = `http://localhost:3000/invite/${referralCode}`;
+  const inviteLink = `${FRONTEND_BASE_URL}/invite/${referralCode}`;
 
   const [copied, setCopied] = useState(false);
 

@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { ArrowUp, ArrowDown, Eye, EyeOff, Save, CheckCircle, RefreshCw } from "lucide-react";
 import styles from "../../crud.module.css";
+import { API_BASE_URL } from "@/lib/config";
 
 interface SDUISectionItem {
   id: string;
@@ -18,10 +19,10 @@ export default function SDUISectionLayoutPage() {
     { id: "top_flash_ticker", type: "top_flash_ticker", visible: true, order: 0, title: "🔥 Top Urgent Flash Sale Ticker", config: {} },
     { id: "flado_hero_carousel", type: "flado_hero_carousel", visible: true, order: 1, title: "🖼️ Hero Banners Carousel (3 Slides)", config: {} },
     { id: "flado_promo_strip_1", type: "flado_promo_banner", visible: true, order: 2, title: "🏷️ Replaceable Promo Strip Banner #1", config: {} },
-    { id: "flado_category_pills", type: "flado_category_pills", visible: true, order: 3, title: "🥬 12 Quick Emoji Category Chips", config: {} },
-    { id: "flado_trending", type: "flado_product_row", visible: true, order: 4, title: "🔥 Trending Products Shelf", config: { subCategory: "Trending" } },
-    { id: "flado_promo_strip_2", type: "flado_promo_banner", visible: true, order: 5, title: "🛒 Replaceable Promo Strip Banner #2", config: {} },
-    { id: "flado_featured_shops", type: "flado_featured_shops", visible: true, order: 6, title: "🏪 Local Verified Kirana Stores", config: {} },
+    { id: "flado_category_pills", type: "flado_category_pills", visible: true, order: 3, title: "🥬 12 Emoji category pills grid", config: {} },
+    { id: "flado_trending", type: "flado_product_row", visible: true, order: 4, title: "🔥 Trending Products shelf (10 min delivery)", config: { subCategory: "Trending" } },
+    { id: "flado_promo_strip_2", type: "flado_promo_banner", visible: true, order: 5, title: "⚡ Replaceable Promo Strip Banner #2", config: {} },
+    { id: "flado_featured_shops", type: "flado_featured_shops", visible: true, order: 6, title: "🏪 Serviceable Nearby shops carousel", config: {} },
     { id: "flado_row_fruits", type: "flado_product_row", visible: true, order: 7, title: "🥬 Fresh Fruits & Vegetables Shelf", config: {} },
     { id: "flado_row_dairy", type: "flado_product_row", visible: true, order: 8, title: "🥛 Dairy, Milk & Bread Shelf", config: {} },
     { id: "flado_loyalty_hook", type: "flado_loyalty_hook", visible: true, order: 9, title: "✨ AuraCoins Cashback Loyalty Banner", config: {} },
@@ -40,9 +41,12 @@ export default function SDUISectionLayoutPage() {
 
   const fetchLayout = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/sdui/flado");
+      const res = await fetch(`${API_BASE_URL}/api/v1/sdui/flado`);
       if (res.ok) {
-        const data = await res.json();
+        let data = await res.json();
+        if (data && typeof data === 'object' && 'data' in data) {
+          data = data.data;
+        }
         if (data && data.sections) {
           setSections(data.sections);
         }
@@ -86,7 +90,7 @@ export default function SDUISectionLayoutPage() {
         sections,
       };
 
-      const res = await fetch("http://localhost:5000/api/sdui/flado", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/sdui/flado`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),

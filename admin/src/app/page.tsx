@@ -15,6 +15,7 @@ import {
 } from "lucide-react";
 import { useAdmin, Order } from "@/context/AdminContext";
 import DashboardCharts from "@/components/DashboardCharts";
+import OrderStatusBadge from "@/components/OrderStatusBadge";
 import styles from "./crud.module.css";
 
 export default function Dashboard() {
@@ -22,32 +23,15 @@ export default function Dashboard() {
 
   // Compute live statistics based on state
   const totalRevenue = orders
-    .filter((o) => o.status === "Delivered" || o.status === "Shipped" || o.status === "Processing")
+    .filter((o) => (o.status as string) === "Delivered" || (o.status as string) === "DELIVERED" || (o.status as string) === "Shipped" || (o.status as string) === "SHIPPED" || (o.status as string) === "Processing" || (o.status as string) === "PROCESSING")
     .reduce((acc, curr) => acc + curr.amount, 0);
 
-  const pendingOrders = orders.filter((o) => o.status === "Pending" || o.status === "Processing").length;
+  const pendingOrders = orders.filter((o) => (o.status as string) === "Pending" || (o.status as string) === "Processing" || (o.status as string) === "PLACED" || (o.status as string) === "PREPARING").length;
   const activeProducts = products.filter((p) => p.status === "active").length;
   const activeVendors = vendors.filter((v) => v.status === "approved").length;
 
   const handleStatusChange = (orderId: string, status: Order["status"]) => {
     updateOrderStatus(orderId, status);
-  };
-
-  const getStatusBadgeClass = (status: Order["status"]) => {
-    switch (status) {
-      case "Delivered":
-        return "badge badge-success";
-      case "Shipped":
-        return "badge badge-info";
-      case "Processing":
-        return "badge badge-warning";
-      case "Pending":
-        return "badge badge-warning";
-      case "Cancelled":
-        return "badge badge-danger";
-      default:
-        return "badge badge-muted";
-    }
   };
 
   return (
@@ -161,7 +145,7 @@ export default function Dashboard() {
                     <span className="badge badge-muted">{order.paymentMethod}</span>
                   </td>
                   <td>
-                    <span className={getStatusBadgeClass(order.status)}>{order.status}</span>
+                    <OrderStatusBadge status={order.status} />
                   </td>
                   <td>
                     <select

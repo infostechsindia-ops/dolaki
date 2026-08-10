@@ -1,0 +1,31 @@
+{
+  "name": "AuraMart - Commerce OS & Fast Delivery",
+  "short_name": "AuraMart",
+  "description": "Shop electronics, fashion, beauty, home decor, and 10-minute grocery delivery via Flado Quick Commerce.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F8FAFC",
+  "theme_color": "#7C3AED",
+  "orientation": "portrait",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64 32x32 24x24 16x16",
+      "type": "image/x-icon"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Flado 10-Min Express",
+      "short_name": "Flado",
+      "description": "Instant 10-minute grocery delivery",
+      "url": "/flado"
+    },
+    {
+      "name": "My Orders",
+      "short_name": "Orders",
+      "description": "Track your recent orders",
+      "url": "/account/orders"
+    }
+  ]
+}

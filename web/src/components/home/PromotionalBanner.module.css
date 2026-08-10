@@ -1,0 +1,136 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+}
+
+.bannerCard {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-radius: var(--radius-lg);
+  color: white;
+  padding: var(--space-8) var(--space-12);
+  position: relative;
+  overflow: hidden;
+  min-height: 240px;
+}
+
+.content {
+  flex: 1.2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-3);
+  z-index: 2;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.badgeIcon {
+  color: var(--color-warning, #F59E0B);
+}
+
+.title {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-2xl);
+  font-weight: 900;
+  margin: 0;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+.subtitle {
+  font-size: var(--font-size-sm);
+  opacity: 0.9;
+  line-height: 1.5;
+  margin: 0;
+  max-width: 440px;
+}
+
+.ctaWrapper {
+  margin-top: var(--space-2);
+}
+
+.ctaLink {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  background-color: white;
+  color: var(--color-text-primary);
+  padding: var(--space-3) var(--space-6);
+  border-radius: var(--radius-full);
+  font-weight: 700;
+  font-size: var(--font-size-sm);
+  text-decoration: none;
+  box-shadow: var(--shadow-sm);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  outline: none;
+}
+
+.ctaLink:focus-visible {
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.ctaLink:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-md);
+}
+
+.imageCol {
+  flex: 0.8;
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  z-index: 2;
+}
+
+.bannerImg {
+  width: 100%;
+  max-width: 260px;
+  height: 160px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 767px) {
+  .bannerCard {
+    flex-direction: column;
+    padding: var(--space-6) var(--space-8);
+    gap: var(--space-6);
+  }
+
+  .content {
+    align-items: center;
+    text-align: center;
+  }
+
+  .imageCol {
+    justify-content: center;
+  }
+
+  .bannerImg {
+    max-width: 200px;
+    height: 120px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ctaLink {
+    transition: none !important;
+    transform: none !important;
+  }
+}

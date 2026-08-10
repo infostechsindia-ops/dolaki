@@ -2,10 +2,48 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ProductsController, AdminController } from './products.controller';
 import { ProductsService } from './products.service';
-import { Product, Category, Inventory, Vendor, ProductReview, AuditLog } from '../database/entities';
+import { BrandsModule } from '../brands/brands.module';
+import {
+  Product,
+  ProductVariant,
+  Brand,
+  Category,
+  AttributeKey,
+  AttributeValue,
+  ProductVariantAttribute,
+  ProductImage,
+  VariantImage,
+  SellerListing,
+  Inventory,
+  Vendor,
+  ProductReview,
+  AuditLog,
+  Order,
+  OrderItem,
+} from '../database/entities';
 
 @Module({
-  imports: [TypeOrmModule.forFeature([Product, Category, Inventory, Vendor, ProductReview, AuditLog])],
+  imports: [
+    TypeOrmModule.forFeature([
+      Product,
+      ProductVariant,
+      Brand,
+      Category,
+      AttributeKey,
+      AttributeValue,
+      ProductVariantAttribute,
+      ProductImage,
+      VariantImage,
+      SellerListing,
+      Inventory,
+      Vendor,
+      ProductReview,
+      AuditLog,
+      Order,
+      OrderItem,
+    ]),
+    BrandsModule,
+  ],
   controllers: [ProductsController, AdminController],
   providers: [ProductsService],
   exports: [ProductsService],

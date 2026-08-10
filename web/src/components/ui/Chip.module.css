@@ -1,0 +1,102 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-full);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 500;
+  border: 1px solid transparent;
+  user-select: none;
+  white-space: nowrap;
+}
+
+.label {
+  line-height: 1.4;
+}
+
+/* Variants */
+.default {
+  background-color: var(--color-bg-alt);
+  color: var(--color-text-secondary);
+  border-color: var(--color-border);
+}
+
+.primary {
+  background-color: var(--color-primary-light);
+  color: var(--color-primary-active);
+}
+
+.flado {
+  background-color: var(--color-flado-light);
+  color: var(--color-flado-active);
+}
+
+.success {
+  background-color: var(--color-success-light);
+  color: var(--color-success);
+}
+
+.warning {
+  background-color: var(--color-warning-light);
+  color: var(--color-warning);
+}
+
+.danger {
+  background-color: var(--color-danger-light);
+  color: var(--color-danger);
+}
+
+/* Clickable state */
+.clickable {
+  cursor: pointer;
+  transition: var(--transition-composite);
+}
+
+.clickable:hover:not(.disabled) {
+  filter: brightness(0.95);
+}
+
+.clickable:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Selected */
+.selected.default {
+  background-color: var(--color-primary);
+  color: var(--color-surface);
+  border-color: var(--color-primary);
+}
+
+/* Disabled */
+.disabled {
+  opacity: var(--opacity-disabled);
+  cursor: not-allowed;
+}
+
+.removeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  color: inherit;
+  opacity: 0.7;
+  padding: 0;
+  transition: var(--transition-composite);
+}
+
+.removeBtn:hover {
+  opacity: 1;
+}
+
+.removeBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}

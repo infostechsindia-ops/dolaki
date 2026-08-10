@@ -34,6 +34,7 @@ export default function TabLayout() {
         options={{
           title: 'AuraMart',
           tabBarLabel: 'Home',
+          tabBarAccessibilityLabel: 'Marketplace Home Tab',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'home' : 'home-outline'} size={22} color={color} />
           ),
@@ -44,6 +45,7 @@ export default function TabLayout() {
         options={{
           title: 'Search',
           tabBarLabel: 'Search',
+          tabBarAccessibilityLabel: 'Product Search Tab',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'search' : 'search-outline'} size={22} color={color} />
           ),
@@ -53,8 +55,9 @@ export default function TabLayout() {
         name="flado"
         options={{
           title: 'Flado 10m',
-          tabBarLabel: 'Flado',
-          tabBarActiveTintColor: '#059669', // Custom green active tint for Flado
+          tabBarLabel: 'Flado 10m',
+          tabBarAccessibilityLabel: 'Flado 10-Minute Quick Commerce Tab',
+          tabBarActiveTintColor: '#059669',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'flash' : 'flash-outline'} size={22} color={focused ? '#059669' : color} />
           ),
@@ -65,6 +68,7 @@ export default function TabLayout() {
         options={{
           title: 'Cart',
           tabBarLabel: 'Cart',
+          tabBarAccessibilityLabel: `Shopping Cart Tab, ${cartCount} items`,
           tabBarIcon: ({ color, focused }) => (
             <View style={{ width: 24, height: 24 }}>
               <Ionicons name={focused ? 'cart' : 'cart-outline'} size={22} color={color} />
@@ -95,7 +99,8 @@ export default function TabLayout() {
         name="profile"
         options={{
           title: 'Profile',
-          tabBarLabel: 'Profile',
+          tabBarLabel: 'Account',
+          tabBarAccessibilityLabel: 'User Account Profile Tab',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons name={focused ? 'person' : 'person-outline'} size={22} color={color} />
           ),

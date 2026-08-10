@@ -1,0 +1,80 @@
+global:
+  scrape_interval: 15s
+  evaluation_interval: 15s
+  scrape_timeout: 10s
+  external_labels:
+    environment: 'production'
+    cluster: 'auramart-vps'
+    region: 'hostinger'
+
+rule_files:
+  - 'alert.rules.yml'
+
+alerting:
+  alertmanagers:
+    - static_configs:
+        - targets: ['alertmanager:9093']
+      timeout: 10s
+
+scrape_configs:
+  # ── AuraMart Backend ───────────────────────────────────────────────────────
+  - job_name: 'auramart-backend'
+    metrics_path: '/api/v1/health/metrics'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['backend:5000']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auramart-backend-prod'
+
+  # ── PostgreSQL ─────────────────────────────────────────────────────────────
+  - job_name: 'postgres-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['postgres-exporter:9187']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auramart-postgres-prod'
+
+  # ── Redis ──────────────────────────────────────────────────────────────────
+  - job_name: 'redis-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['redis-exporter:9121']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auramart-redis-prod'
+
+  # ── Nginx ──────────────────────────────────────────────────────────────────
+  - job_name: 'nginx-exporter'
+    scrape_interval: 15s
+    static_configs:
+      - targets: ['nginx-exporter:9113']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auramart-nginx-prod'
+
+  # ── Host Node ─────────────────────────────────────────────────────────────
+  - job_name: 'node-exporter'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['node-exporter:9100']
+    relabel_configs:
+      - source_labels: [__address__]
+        target_label: instance
+        replacement: 'auramart-vps-host'
+
+  # ── Docker Containers ────────────────────────────────────────────────────
+  - job_name: 'cadvisor'
+    scrape_interval: 30s
+    static_configs:
+      - targets: ['cadvisor:8080']
+
+  # ── Prometheus Self-Monitoring ────────────────────────────────────────────
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']

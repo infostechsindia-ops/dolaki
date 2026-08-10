@@ -5,13 +5,32 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiFilter, FiChevronDown, FiAlertCircle, FiStar, FiZap, FiPercent, FiAward, FiArrowRight, FiInfo } from 'react-icons/fi';
 import { categoryThemesData, CategoryThemeConfig } from '@/data/categoryThemes';
-import { products as localProducts, Product } from '@/data/products';
 import { brandsData } from '@/data/brands';
 import { categoryBrandingData } from '@/data/categoryBranding';
 import CategoryRenderer from '@/components/CategoryRenderer';
 import ProductCard from '@/components/ProductCard';
 import Skeleton from '@/components/ui/Skeleton';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  title?: string;
+  price: number;
+  originalPrice?: number;
+  basePrice?: number;
+  discountPrice?: number;
+  image: string;
+  imageUrl?: string;
+  rating: number;
+  reviewsCount?: number;
+  reviewCount?: number;
+  category: string;
+  subCategory?: string;
+  brand: string;
+  inStock?: boolean;
+}
 
 interface CategoryPageProps {
   params: Promise<{
@@ -56,57 +75,99 @@ export default function CategoryPage({ params }: CategoryPageProps) {
   // Available brands in this category
   const [availableBrands, setAvailableBrands] = useState<string[]>([]);
 
-  // Fetch category layout theme + live products
-  useEffect(() => {
+  const [viewMode, setViewMode] = useState<'grid' | 'compact' | 'list'>('grid');
+  const [showMobileFilters, setShowMobileFilters] = useState(false);
+  const [facetData, setFacetData] = useState<any | null>(null);
+
+  // Fetch category layout theme + backend live products & facets
+  const [fetchError, setFetchError] = useState<string | null>(null);
+
+  // Fetch category layout theme + backend live products & facets
+  const loadData = async () => {
+    setLoading(true);
+    setFetchError(null);
     const config = categoryThemesData.find((c) => c.categoryId === slug);
-    if (!config) {
-      setLoading(false);
-      return;
-    }
-    setThemeConfig(config);
+    setThemeConfig(config || null);
 
-    const loadData = async () => {
-      let fetchedProducts: Product[] = [];
-      try {
-        const res = await fetch('http://localhost:5000/api/products');
-        if (res.ok) {
-          const raw = await res.json();
-          fetchedProducts = raw.map((bp: any) => ({
-            ...bp,
-            name: bp.title || '',
-            price: bp.discountPrice ?? bp.basePrice,
-            originalPrice: bp.basePrice,
-            image: bp.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
-            rating: bp.rating ?? 4.5,
-            reviewsCount: bp.reviewCount ?? 12,
-            category: bp.category || 'groceries',
-            subCategory: bp.subCategory || '',
-            brand: bp.brand || ''
-          }));
-        } else {
-          fetchedProducts = localProducts;
+    let fetchedProducts: Product[] = [];
+    try {
+      const searchUrl = `${API_BASE_URL}/api/v1/products/search?category=${slug}&limit=100`;
+      const listUrl = `${API_BASE_URL}/api/v1/products?category=${slug}&limit=100`;
+      const facetUrl = `${API_BASE_URL}/api/v1/products/facets/${slug}`;
+
+      console.log('[CategoryPage] Requesting endpoints:', { searchUrl, listUrl, facetUrl });
+
+      const results = await Promise.allSettled([
+        fetch(searchUrl),
+        fetch(listUrl),
+        fetch(facetUrl)
+      ]);
+
+      let rawList: any[] = [];
+
+      // Handle search endpoint result
+      if (results[0].status === 'fulfilled' && results[0].value.ok) {
+        try {
+          const searchJson = await results[0].value.json();
+          rawList = searchJson.products || searchJson.data || [];
+        } catch (e) {
+          console.warn('[CategoryPage] Error parsing search JSON:', e);
         }
-      } catch (e) {
-        console.log('Category page backend products load failed, falling back to mock.', e);
-        fetchedProducts = localProducts;
       }
 
-      // Filter to this category
-      const categoryProducts = fetchedProducts.filter(p => p.category === slug);
-      setProductsList(categoryProducts);
-
-      // Extract brands
-      const brands = Array.from(new Set(categoryProducts.map(p => p.brand).filter(Boolean)));
-      setAvailableBrands(brands);
-
-      // Set max price
-      if (categoryProducts.length > 0) {
-        const prices = categoryProducts.map(p => p.price);
-        setMaxPrice(Math.max(...prices, 1000));
+      // Fallback to list endpoint result if search returned no products
+      if (rawList.length === 0 && results[1].status === 'fulfilled' && results[1].value.ok) {
+        try {
+          const listJson = await results[1].value.json();
+          rawList = listJson.data || listJson.products || [];
+        } catch (e) {
+          console.warn('[CategoryPage] Error parsing list JSON:', e);
+        }
       }
-      setLoading(false);
-    };
 
+      // Process facets if fulfilled
+      if (results[2].status === 'fulfilled' && results[2].value.ok) {
+        try {
+          setFacetData(await results[2].value.json());
+        } catch (e) {
+          console.warn('[CategoryPage] Error parsing facets JSON:', e);
+        }
+      }
+
+      fetchedProducts = rawList.map((bp: any) => ({
+        id: bp.id,
+        name: bp.title || bp.name || 'Product',
+        title: bp.title || bp.name || 'Product',
+        price: bp.discountPrice ?? bp.basePrice ?? bp.price ?? 0,
+        originalPrice: bp.basePrice ?? bp.originalPrice ?? bp.price ?? 0,
+        image: bp.imageUrl || bp.image || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+        rating: bp.rating ?? 4.5,
+        reviewsCount: bp.reviewCount ?? 12,
+        category: slug,
+        subCategory: bp.subCategory || '',
+        brand: bp.brand?.name || bp.brand || ''
+      }));
+
+    } catch (e: any) {
+      console.error('[CategoryPage] Unexpected load error:', e);
+      setFetchError(e?.message || 'Failed to load category products');
+    }
+
+    setProductsList(fetchedProducts);
+
+    // Extract brands
+    const brands = Array.from(new Set(fetchedProducts.map(p => p.brand).filter(Boolean)));
+    setAvailableBrands(brands);
+
+    // Set max price
+    if (fetchedProducts.length > 0) {
+      const prices = fetchedProducts.map(p => p.price);
+      setMaxPrice(Math.max(...prices, 1000));
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
     loadData();
   }, [slug]);
 
@@ -479,6 +540,7 @@ export default function CategoryPage({ params }: CategoryPageProps) {
             {/* Category Blocks Renderer */}
             <CategoryRenderer 
               config={themeConfig} 
+              products={productsList}
               filters={{
                 maxPrice,
                 selectedBrands,

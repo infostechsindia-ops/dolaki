@@ -1,0 +1,15 @@
+.stateContainer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: 320px;
+  padding: var(--space-8) var(--space-4);
+  background-color: var(--color-surface);
+  border-radius: var(--radius-md);
+}
+
+.loadingContainer {
+  width: 100%;
+  padding: var(--space-4) 0;
+}

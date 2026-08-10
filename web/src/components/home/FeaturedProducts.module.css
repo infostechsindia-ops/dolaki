@@ -1,0 +1,54 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+}
+
+.header {
+  margin-bottom: var(--space-4);
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.sectionTitle {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-xl);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.sectionSubtitle {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: var(--space-1) 0 0 0;
+  line-height: 1.4;
+}
+
+/* Home Product Grid layout satisfying column constraints exactly */
+.homeProductGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+@media (min-width: 640px) {
+  .homeProductGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .homeProductGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .homeProductGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}

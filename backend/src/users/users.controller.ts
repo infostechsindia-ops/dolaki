@@ -1,12 +1,25 @@
-import { Controller, Get, Post, Delete, Param, Body, Request, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Patch,
+  Delete,
+  Param,
+  Body,
+  Request,
+} from '@nestjs/common';
 import { UsersService } from './users.service';
-import { JwtAuthGuard, RolesGuard } from '../auth/guards';
+import { NotificationsService } from '../notifications/notifications.service';
+import { UpdateNotificationPreferencesDto } from '../notifications/dto/update-preferences.dto';
 import { Roles } from '../auth/roles.decorator';
+import { Role } from '../auth/roles';
 
 @Controller('users')
-@UseGuards(JwtAuthGuard, RolesGuard)
 export class UsersController {
-  constructor(private readonly usersService: UsersService) {}
+  constructor(
+    private readonly usersService: UsersService,
+    private readonly notificationsService: NotificationsService,
+  ) {}
 
   @Get('profile')
   async getProfile(@Request() req: any) {
@@ -22,7 +35,7 @@ export class UsersController {
       wallet: {
         balance: wallet.balance,
         rewardPoints: wallet.rewardPoints,
-      }
+      },
     };
   }
 
@@ -41,6 +54,23 @@ export class UsersController {
     return this.usersService.deleteAddress(req.user.userId, addressId);
   }
 
+  @Patch('addresses/:id')
+  updateAddress(
+    @Request() req: any,
+    @Param('id') addressId: string,
+    @Body() body: any,
+  ) {
+    return this.usersService.updateAddress(req.user.userId, addressId, body);
+  }
+
+  @Patch('addresses/:id/default')
+  setDefaultAddress(
+    @Request() req: any,
+    @Param('id') addressId: string,
+  ) {
+    return this.usersService.setDefaultAddress(req.user.userId, addressId);
+  }
+
   @Get('wishlist')
   getWishlist(@Request() req: any) {
     return this.usersService.getWishlist(req.user.userId);
@@ -52,7 +82,10 @@ export class UsersController {
   }
 
   @Delete('wishlist/:productId')
-  removeFromWishlist(@Request() req: any, @Param('productId') productId: string) {
+  removeFromWishlist(
+    @Request() req: any,
+    @Param('productId') productId: string,
+  ) {
     return this.usersService.removeFromWishlist(req.user.userId, productId);
   }
 
@@ -66,8 +99,23 @@ export class UsersController {
     return this.usersService.getWalletTransactions(req.user.userId);
   }
 
+  @Roles(Role.CUSTOMER)
+  @Get('notification-preferences')
+  getNotificationPreferences(@Request() req: any) {
+    return this.notificationsService.getPreferences(req.user.userId);
+  }
+
+  @Roles(Role.CUSTOMER)
+  @Patch('notification-preferences')
+  updateNotificationPreferences(
+    @Request() req: any,
+    @Body() dto: UpdateNotificationPreferencesDto,
+  ) {
+    return this.notificationsService.updatePreferences(req.user.userId, dto);
+  }
+
+  @Roles(Role.SUPER_ADMIN)
   @Get()
-  @Roles('ADMIN')
   findAllUsers() {
     return this.usersService.findAll();
   }

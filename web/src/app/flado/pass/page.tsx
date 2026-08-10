@@ -2,8 +2,8 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { 
-  FiZap, 
   FiCheckCircle, 
   FiStar, 
   FiArrowRight, 
@@ -14,66 +14,144 @@ import {
 import styles from './page.module.css';
 
 interface PassPlan {
-  id: string;
+  id: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
   name: string;
-  price: number;
+  price: string;
   period: string;
   savingsDesc: string;
   badge?: string;
 }
 
 const PLANS: PassPlan[] = [
-  { id: 'monthly', name: 'Monthly Superpass', price: 39, period: '1 Month', savingsDesc: 'Saves ₹250/mo on avg' },
-  { id: 'quarterly', name: 'Quarterly Valuepass', price: 99, period: '3 Months', savingsDesc: 'Saves ₹900/mo on avg', badge: 'Popular' },
-  { id: 'annual', name: 'Annual VIP pass', price: 299, period: '1 Year', savingsDesc: 'Saves ₹4,200/yr on avg', badge: 'Best Value' }
+  { id: 'MONTHLY', name: 'Monthly Superpass', price: '$3.99', period: '1 Month', savingsDesc: 'Saves $15.00/mo on avg' },
+  { id: 'QUARTERLY', name: 'Quarterly Valuepass', price: '$9.99', period: '3 Months', savingsDesc: 'Saves $45.00/mo on avg', badge: 'Popular' },
+  { id: 'ANNUAL', name: 'Annual VIP Pass', price: '$29.99', period: '1 Year', savingsDesc: 'Saves $180.00/yr on avg', badge: 'Best Value' }
 ];
 
 export default function FladoPassPage() {
-  const [selectedPlan, setSelectedPlan] = useState<string>('quarterly');
+  const router = useRouter();
+  const [selectedPlan, setSelectedPlan] = useState<'MONTHLY' | 'QUARTERLY' | 'ANNUAL'>('QUARTERLY');
   const [isActivating, setIsActivating] = useState(false);
   const [isPassActive, setIsPassActive] = useState(false);
   const [expiryDate, setExpiryDate] = useState('');
+  const [activePlanName, setActivePlanName] = useState('');
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
-  useEffect(() => {
-    const active = localStorage.getItem('flado_pass_active') === 'true';
-    const expiry = localStorage.getItem('flado_pass_expiry') || '';
-    setIsPassActive(active);
-    setExpiryDate(expiry);
-  }, []);
+  const fetchVipStatus = async () => {
+    try {
+      const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+      if (!token) {
+        setIsPassActive(false);
+        return;
+      }
 
-  const handleActivatePass = () => {
-    setIsActivating(true);
-
-    setTimeout(() => {
-      const future = new Date();
-      if (selectedPlan === 'monthly') future.setMonth(future.getMonth() + 1);
-      else if (selectedPlan === 'quarterly') future.setMonth(future.getMonth() + 3);
-      else future.setFullYear(future.getFullYear() + 1);
-
-      const formattedDate = future.toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+      const res = await fetch('/api/v1/flado/vip/status', {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      localStorage.setItem('flado_pass_active', 'true');
-      localStorage.setItem('flado_pass_expiry', formattedDate);
-      
+      if (res.ok) {
+        const data = await res.json();
+        setIsPassActive(data.isVip);
+        if (data.isVip && data.expiresAt) {
+          const date = new Date(data.expiresAt);
+          setExpiryDate(date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }));
+          setActivePlanName(data.plan || 'VIP Pass');
+          setCancelAtPeriodEnd(!!data.cancelAtPeriodEnd);
+        }
+      }
+    } catch {
+      // Ignore initial check errors for anonymous shoppers
+    }
+  };
+
+  useEffect(() => {
+    fetchVipStatus();
+  }, []);
+
+  const handleActivatePass = async () => {
+    setErrorMsg('');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+
+    if (!token) {
+      router.push('/auth/login?redirect=/flado/pass');
+      return;
+    }
+
+    setIsActivating(true);
+
+    try {
+      // 1. Subscribe (Create pending subscription & payment intent)
+      const subRes = await fetch('/api/v1/flado/vip/subscribe', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Idempotency-Key': `idemp-pass-${Date.now()}`
+        },
+        body: JSON.stringify({ plan: selectedPlan })
+      });
+
+      if (!subRes.ok) {
+        const err = await subRes.json();
+        throw new Error(err.message || 'Failed to initiate subscription');
+      }
+
+      const subData = await subRes.json();
+
+      // 2. Confirm Payment & Activate Subscription
+      const confirmRes = await fetch('/api/v1/flado/vip/confirm-payment', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ subscriptionId: subData.subscription.id })
+      });
+
+      if (!confirmRes.ok) {
+        const err = await confirmRes.json();
+        throw new Error(err.message || 'Failed to confirm payment');
+      }
+
+      const activeSub = await confirmRes.json();
       setIsPassActive(true);
-      setExpiryDate(formattedDate);
-      setIsActivating(false);
+      if (activeSub.expiresAt) {
+        const date = new Date(activeSub.expiresAt);
+        setExpiryDate(date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }));
+      }
+      setActivePlanName(activeSub.plan);
 
       // Trigger custom window event to notify Header/other modules of state update
       window.dispatchEvent(new Event('flado_pass_updated'));
-    }, 2000);
+    } catch (err: any) {
+      setErrorMsg(err.message || 'An error occurred during VIP Pass activation.');
+    } finally {
+      setIsActivating(false);
+    }
   };
 
-  const handleDeactivatePass = () => {
-    localStorage.removeItem('flado_pass_active');
-    localStorage.removeItem('flado_pass_expiry');
-    setIsPassActive(false);
-    setExpiryDate('');
-    window.dispatchEvent(new Event('flado_pass_updated'));
+  const handleDeactivatePass = async () => {
+    setErrorMsg('');
+    const token = typeof window !== 'undefined' ? localStorage.getItem('aura_token') : null;
+    if (!token) return;
+
+    try {
+      const res = await fetch('/api/v1/flado/vip/cancel', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setCancelAtPeriodEnd(true);
+        window.dispatchEvent(new Event('flado_pass_updated'));
+      } else {
+        const err = await res.json();
+        setErrorMsg(err.message || 'Failed to cancel subscription.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err.message || 'Error cancelling subscription.');
+    }
   };
 
   return (
@@ -82,8 +160,8 @@ export default function FladoPassPage() {
         <div className={styles.paymentOverlay}>
           <div className={styles.processingCard}>
             <div className={styles.spinner}></div>
-            <h3>Securing VIP Flado Pass...</h3>
-            <p>Deducting pass fees from wallet balance.</p>
+            <h3>Securing Flado VIP Pass...</h3>
+            <p>Processing payment confirmation.</p>
           </div>
         </div>
       )}
@@ -97,6 +175,21 @@ export default function FladoPassPage() {
           </Link>
         </div>
 
+        {errorMsg && (
+          <div style={{
+            padding: '14px 20px',
+            backgroundColor: '#FEE2E2',
+            border: '1px solid #FCA5A5',
+            borderRadius: '12px',
+            color: '#991B1B',
+            fontWeight: '600',
+            marginBottom: '24px',
+            fontSize: '0.9rem'
+          }}>
+            ⚠️ {errorMsg}
+          </div>
+        )}
+
         <div className={styles.passGrid}>
           
           {/* Left Column: Perks List */}
@@ -109,7 +202,7 @@ export default function FladoPassPage() {
                 Join Flado Pass Elite
               </h2>
               <p style={{ fontSize: '0.9rem', color: '#A7F3D0', fontWeight: '600', margin: '0 0 32px 0', lineHeight: 1.5 }}>
-                Unlock unlimited free delivery benefits and extra discount percentages on 205+ items. Fulfill orders in 10-minutes instantly.
+                Unlock unlimited free 10-minute deliveries and waived cold-chain handling fees on all Flado Quick orders.
               </p>
 
               <div className={styles.perksList}>
@@ -117,15 +210,15 @@ export default function FladoPassPage() {
                   <FiCheckCircle className={styles.checkIcon} />
                   <div>
                     <strong>Unlimited Free Delivery</strong>
-                    <span>Get FREE deliveries on all orders above ₹99. No codes needed.</span>
+                    <span>Get FREE 10-minute deliveries on all orders above $5.00. No codes needed.</span>
                   </div>
                 </div>
 
                 <div className={styles.perkRow}>
                   <FiStar className={styles.checkIcon} />
                   <div>
-                    <strong>Extra 5% Member Savings</strong>
-                    <span>Deduct additional 5% off automatically on checkout for dairy, breads & fresh greens.</span>
+                    <strong>100% Waived Handling Fees</strong>
+                    <span>Handling and cold-chain packaging fees are completely waived at checkout.</span>
                   </div>
                 </div>
 
@@ -133,7 +226,7 @@ export default function FladoPassPage() {
                   <FiGift className={styles.checkIcon} />
                   <div>
                     <strong>Priority Flash Dispatches</strong>
-                    <span>Your grocery baskets are handled first at local darkstores. Priority rider matching.</span>
+                    <span>Your grocery baskets are handled first at local darkstores with priority rider matching.</span>
                   </div>
                 </div>
               </div>
@@ -150,21 +243,38 @@ export default function FladoPassPage() {
                   Your Flado Pass is Active!
                 </h3>
                 <p style={{ fontSize: '0.82rem', color: '#065F46', fontWeight: '750', margin: '0 0 24px 0' }}>
-                  Member benefits active. Expiry Date: <strong>{expiryDate}</strong>
+                  Active Plan: <strong>{activePlanName}</strong> | Benefits Active Until: <strong>{expiryDate}</strong>
                 </p>
+
+                {cancelAtPeriodEnd && (
+                  <div style={{
+                    backgroundColor: '#FEF3C7',
+                    border: '1px solid #FCD34D',
+                    borderRadius: '8px',
+                    padding: '10px 14px',
+                    fontSize: '0.8rem',
+                    color: '#92400E',
+                    marginBottom: '16px',
+                    fontWeight: '600'
+                  }}>
+                    ℹ️ Cancellation requested. Your VIP benefits remain active until {expiryDate}.
+                  </div>
+                )}
 
                 <div className={styles.activePerksGrid}>
                   <div className={styles.activePerkBadge}>🚀 Free Delivery Active</div>
-                  <div className={styles.activePerkBadge}>🔥 5% EXTRA Discount</div>
+                  <div className={styles.activePerkBadge}>🔥 Waived Handling Fees</div>
                   <div className={styles.activePerkBadge}>🛵 Speed Rider Match</div>
                 </div>
 
-                <button 
-                  onClick={handleDeactivatePass}
-                  className={styles.deactivateBtn}
-                >
-                  Cancel Subscription
-                </button>
+                {!cancelAtPeriodEnd && (
+                  <button 
+                    onClick={handleDeactivatePass}
+                    className={styles.deactivateBtn}
+                  >
+                    Cancel Renewal
+                  </button>
+                )}
               </div>
             ) : (
               <div className={styles.plansCard}>
@@ -185,13 +295,13 @@ export default function FladoPassPage() {
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.88rem', fontWeight: '850' }}>{plan.name}</span>
                           {plan.badge && (
-                            <span className={styles.popularBadge} style={{ backgroundColor: plan.id === 'annual' ? '#EF4444' : '#059669' }}>
+                            <span className={styles.popularBadge} style={{ backgroundColor: plan.id === 'ANNUAL' ? '#EF4444' : '#059669' }}>
                               {plan.badge}
                             </span>
                           )}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '12px' }}>
-                          <span style={{ fontSize: '1.5rem', fontWeight: '900' }}>₹{plan.price}</span>
+                          <span style={{ fontSize: '1.5rem', fontWeight: '900' }}>{plan.price}</span>
                           <span style={{ fontSize: '0.76rem', color: 'var(--color-text-secondary)', fontWeight: '700' }}>
                             {plan.savingsDesc}
                           </span>
@@ -209,7 +319,7 @@ export default function FladoPassPage() {
                 </button>
 
                 <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textAlign: 'center', marginTop: '14px', lineHeight: 1.4 }}>
-                  By activating, pass fees are debited mock from wallet tokens. Cancel anytime. Terms apply.
+                  Authoritative server subscription. Cancel anytime. Terms apply.
                 </p>
               </div>
             )}

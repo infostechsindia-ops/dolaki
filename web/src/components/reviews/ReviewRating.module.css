@@ -1,0 +1,90 @@
+.root {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+}
+
+.stars {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+}
+
+.star {
+  color: var(--color-star-empty, #d1d5db);
+  line-height: 1;
+}
+
+.starFull {
+  color: var(--color-star, #f59e0b);
+}
+
+.starHalf {
+  color: var(--color-star, #f59e0b);
+}
+
+.starEmpty {
+  color: var(--color-star-empty, #d1d5db);
+}
+
+.sm {
+  font-size: var(--font-size-sm, 0.875rem);
+}
+
+.md {
+  font-size: var(--font-size-md, 1rem);
+}
+
+.lg {
+  font-size: var(--font-size-xl, 1.25rem);
+}
+
+/* Interactive Radio Stars */
+.radioGroup {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+.radioItem {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 2px;
+  border-radius: var(--radius-sm, 0.25rem);
+  color: var(--color-star-empty, #d1d5db);
+  transition: color var(--transition-fast, 150ms ease), transform var(--transition-fast, 150ms ease);
+}
+
+.radioItem:hover,
+.radioItem:focus-visible {
+  color: var(--color-star, #f59e0b);
+  outline: none;
+}
+
+.radioItem:focus-visible {
+  box-shadow: var(--focus-ring, 0 0 0 3px rgba(99, 102, 241, 0.4));
+}
+
+.radioItemActive {
+  color: var(--color-star, #f59e0b);
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}

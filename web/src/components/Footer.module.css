@@ -1,298 +1,309 @@
 .footer {
-  background-color: #0B0F19;
-  color: #F8FAFC;
-  margin-top: auto;
-  border-top: 1px solid #1E293B;
+  background-color: var(--color-surface);
+  border-top: 1px solid var(--color-border);
+  color: var(--color-text-secondary);
   font-family: var(--font-body);
+  width: 100%;
 }
 
-.trustBadges {
-  padding: 40px 0;
-  border-bottom: 1px solid #1E293B;
-  background-color: #070B13;
+/* QUICK_COMMERCE Flado Theme assignment overrides */
+.footer.quickCommerce {
+  border-top: 2px solid var(--color-flado);
 }
 
-.badgesGrid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 24px;
+/* ===== TRUST BADGES SECTION ===== */
+.trustSection {
+  background-color: var(--color-disabled-bg);
+  border-bottom: 1px solid var(--color-border);
+  padding: var(--space-8) 0;
 }
 
-.badgeItem {
+.trustGrid {
+  /* Inherited responsive structure handled in component and below */
+}
+
+.trustItem {
   display: flex;
   align-items: flex-start;
-  gap: 16px;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
-.badgeIconWrapper {
-  background-color: rgba(124, 58, 237, 0.15);
-  border-radius: 14px;
-  padding: 12px;
+.trustIconWrapper {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  border: 1px solid rgba(124, 58, 237, 0.25);
 }
 
-.badgeIcon {
+.trustIcon {
+  font-size: var(--icon-size-lg);
   color: var(--color-primary);
-  font-size: 1.5rem;
 }
 
-.badgeText h4 {
-  font-size: 0.95rem;
+.footer.quickCommerce .trustIcon {
+  color: var(--color-flado);
+}
+
+.trustText h4 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-sm);
   font-weight: 700;
-  margin-bottom: 4px;
-  color: #FFFFFF;
+  color: var(--color-text-primary);
+  margin: 0 0 var(--space-1) 0;
+  line-height: 1.2;
 }
 
-.badgeText p {
-  font-size: 0.8rem;
-  color: #94A3B8;
-  line-height: 1.45;
+.trustText p {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin: 0;
+  overflow-wrap: break-word;
 }
 
+/* ===== MAIN FOOTER LINKS ===== */
 .footerMain {
-  padding: 60px 0;
+  padding: var(--space-12) 0;
 }
 
-.linksGrid {
+.footerGrid {
   display: grid;
-  grid-template-columns: 1.5fr repeat(2, 1fr) 1.5fr;
-  gap: 40px;
+  grid-template-columns: repeat(6, 1fr);
+  gap: var(--space-8);
 }
 
-.brandCol {
+.linksCol {
   display: flex;
   flex-direction: column;
-  gap: 16px;
-}
-
-.logo {
-  font-family: var(--font-heading);
-  font-size: 2rem;
-  font-weight: 900;
-  color: #FFFFFF;
-  letter-spacing: -0.03em;
-}
-
-.logoAccent {
-  background: var(--gradient-brand);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-}
-
-.brandDesc {
-  font-size: 0.88rem;
-  color: #94A3B8;
-  line-height: 1.6;
-}
-
-.appStoreLinks {
-  display: flex;
-  gap: 12px;
-  margin-top: 8px;
-}
-
-.appBadge {
-  display: inline-block;
-  height: 38px;
-  transition: var(--transition-bounce);
-}
-
-.appBadge:hover {
-  transform: translateY(-2px);
-  filter: brightness(1.1);
-}
-
-.appBadge img {
-  height: 100%;
-  width: auto;
+  gap: var(--space-4);
+  min-width: 0;
 }
 
 .linksCol h4 {
-  font-size: 1.05rem;
-  margin-bottom: 24px;
-  color: #FFFFFF;
   font-family: var(--font-heading);
+  font-size: var(--font-size-sm);
   font-weight: 700;
-  position: relative;
-  padding-bottom: 8px;
+  color: var(--color-text-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+  line-height: 1.2;
 }
 
-.linksCol h4::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 32px;
-  height: 2px;
-  background: var(--color-primary);
-  border-radius: var(--radius-full);
-}
-
-.linksCol ul {
+.linkList {
   list-style: none;
+  padding: 0;
+  margin: 0;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: var(--space-3);
 }
 
-.linksCol ul a {
-  font-size: 0.9rem;
-  color: #94A3B8;
-  font-weight: 500;
+.linkList a {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  outline: none;
+  transition: color 0.2s ease;
+  display: inline-block;
+  overflow-wrap: break-word;
 }
 
-.linksCol ul a:hover {
-  color: #FFFFFF;
-  padding-left: 6px;
+.linkList a:focus-visible,
+.linkList a:hover {
+  color: var(--color-primary);
 }
 
-.newsletterDesc {
-  font-size: 0.88rem;
-  color: #94A3B8;
-  line-height: 1.5;
-  margin-bottom: 16px;
+.footer.quickCommerce .linkList a:focus-visible,
+.footer.quickCommerce .linkList a:hover {
+  color: var(--color-flado);
+}
+
+/* Contact lists details */
+.contactList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.contactList li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+}
+
+.contactIcon {
+  font-size: var(--icon-size-md);
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+
+/* Newsletter section block styling */
+.newsletterSection {
+  margin-top: var(--space-4);
+  border-top: 1px dashed var(--color-border);
+  padding-top: var(--space-4);
+}
+
+.newsletterTitle {
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-2);
+  display: block;
 }
 
 .newsletterForm {
   display: flex;
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid #1E293B;
-  border-radius: var(--radius-full);
-  padding: 4px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xs);
   overflow: hidden;
-  margin-bottom: 20px;
+  background-color: var(--color-surface);
+  transition: border-color 0.2s ease;
+}
+
+.newsletterForm:focus-within {
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+}
+
+.footer.quickCommerce .newsletterForm:focus-within {
+  border-color: var(--color-flado);
 }
 
 .newsletterInput {
   flex: 1;
-  background: transparent;
   border: none;
-  padding: 8px 16px;
-  color: #FFFFFF;
-  font-size: 0.85rem;
+  padding: 0 var(--space-3);
+  height: var(--control-height-sm, 36px);
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  color: var(--color-text-primary);
+  background: transparent;
+  outline: none;
+  min-width: 0;
 }
 
-.newsletterInput::placeholder {
-  color: #64748B;
-}
-
-.newsletterButton {
-  background: var(--gradient-brand-vivid);
-  color: white;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
+.newsletterBtn {
+  width: var(--control-height-sm, 36px);
+  height: var(--control-height-sm, 36px);
+  border: none;
+  background-color: var(--color-primary-light);
+  color: var(--color-primary);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 0.95rem;
-  box-shadow: var(--shadow-brand);
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
-.newsletterButton:hover {
-  transform: scale(1.05);
+.footer.quickCommerce .newsletterBtn {
+  background-color: var(--color-flado-light);
+  color: var(--color-flado);
 }
 
-.subscriptionSuccess {
-  background: rgba(16, 185, 129, 0.1);
-  border: 1px solid rgba(16, 185, 129, 0.2);
-  color: #34D399;
-  padding: 10px 16px;
-  border-radius: var(--radius-md);
-  font-size: 0.85rem;
+.newsletterBtn:hover {
+  background-color: var(--color-primary);
+  color: white;
+}
+
+.footer.quickCommerce .newsletterBtn:hover {
+  background-color: var(--color-flado);
+  color: white;
+}
+
+.subSuccess {
+  font-size: var(--font-size-xs);
+  color: var(--color-success, #10B981);
   font-weight: 600;
-  margin-bottom: 20px;
-  text-align: center;
 }
 
-.contactDetails {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  font-size: 0.85rem;
-  color: #94A3B8;
-  border-top: 1px solid #1E293B;
-  padding-top: 16px;
-}
-
-.contactDetails strong {
-  color: #FFFFFF;
-}
-
+/* ===== FOOTER BOTTOM ===== */
 .footerBottom {
-  padding: 30px 0;
-  border-top: 1px solid #1E293B;
-  font-size: 0.85rem;
-  color: #64748B;
+  border-top: 1px solid var(--color-border);
+  padding: var(--space-6) 0;
+  background-color: var(--color-surface);
 }
 
 .bottomInner {
   display: flex;
+  align-items: center;
   justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-}
-
-.paymentMethods {
-  display: flex;
-  gap: 8px;
-  align-items: center;
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
-.paymentBadge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: var(--radius-xs);
-  padding: 4px 8px;
-  font-size: 0.65rem;
-  font-weight: 800;
-  letter-spacing: 0.05em;
-  color: #E2E8F0;
+.copyright {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  margin: 0;
+  line-height: 1.5;
 }
 
 .socials {
   display: flex;
-  gap: 20px;
+  align-items: center;
+  gap: var(--space-3);
 }
 
 .socials a {
-  color: #64748B;
-  font-weight: 500;
+  display: inline-block;
+  text-decoration: none;
+  outline: none;
 }
 
-.socials a:hover {
-  color: #FFFFFF;
+/* ===== RESPONSIVE MEDIA QUERIES ===== */
+@media (max-width: 1023px) {
+  .footerGrid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-8) var(--space-6);
+  }
+
+  .trustGrid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-6);
+  }
 }
 
-/* Responsive */
-@media (max-width: 1024px) {
-  .badgesGrid {
+@media (max-width: 767px) {
+  .footerGrid {
     grid-template-columns: repeat(2, 1fr);
   }
-  .linksGrid {
-    grid-template-columns: repeat(2, 1fr);
+}
+
+@media (max-width: 479px) {
+  .footerGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
   }
+
+  .trustGrid {
+    grid-template-columns: 1fr;
+    gap: var(--space-6);
+  }
+
   .bottomInner {
     flex-direction: column;
+    align-items: center;
     text-align: center;
-    gap: 20px;
   }
 }
 
-@media (max-width: 640px) {
-  .badgesGrid {
-    grid-template-columns: 1fr;
-  }
-  .linksGrid {
-    grid-template-columns: 1fr;
-  }
-  .appStoreLinks {
-    justify-content: center;
+/* Motion Guard */
+@media (prefers-reduced-motion: reduce) {
+  .linkList a, .newsletterForm, .newsletterBtn {
+    transition: none !important;
   }
 }

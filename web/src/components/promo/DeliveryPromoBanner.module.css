@@ -1,0 +1,71 @@
+.section {
+  width: 100%;
+  margin-bottom: var(--space-8);
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  background-color: var(--color-disabled-bg);
+  border-radius: var(--radius-md);
+  padding: var(--space-4) var(--space-6);
+  gap: var(--space-4);
+}
+
+.iconWrapper {
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.truckIcon {
+  font-size: var(--icon-size-md);
+  color: var(--color-primary);
+}
+
+.section.quickCommerce .truckIcon {
+  color: var(--color-flado);
+}
+
+.textMeta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
+}
+
+.message {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-sm);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+  line-height: 1.2;
+}
+
+.subMessage {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  line-height: 1.4;
+  margin: 2px 0 0 0;
+}
+
+/* Mobile alignment */
+@media (max-width: 599px) {
+  .container {
+    flex-direction: column;
+    text-align: center;
+    padding: var(--space-4);
+  }
+
+  .textMeta {
+    align-items: center;
+    text-align: center;
+  }
+}

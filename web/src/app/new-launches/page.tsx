@@ -3,9 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { FiAward, FiBell, FiTrendingUp, FiClock, FiStar, FiZap, FiChevronRight, FiPackage } from 'react-icons/fi';
-import { products } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 interface UpcomingDrop {
@@ -127,6 +127,8 @@ export default function NewLaunchesPage() {
   const [activeCategory, setActiveCategory] = useState('All');
   const [notifiedIds, setNotifiedIds] = useState<Set<string>>(new Set());
   const [heroIdx, setHeroIdx] = useState(0);
+  const [recentProducts, setRecentProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   // Auto-rotate hero
   useEffect(() => {
@@ -134,13 +136,37 @@ export default function NewLaunchesPage() {
     return () => clearInterval(id);
   }, []);
 
-  const recentProducts = [...products]
-    .filter(p => p.launchDate)
-    .sort((a, b) => new Date(b.launchDate!).getTime() - new Date(a.launchDate!).getTime());
+  useEffect(() => {
+    const loadNewLaunches = async () => {
+      setLoading(true);
+      try {
+        const cat = activeCategory !== 'All' ? `&category=${activeCategory.toLowerCase()}` : '';
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=24&sort=newest${cat}`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          setRecentProducts(list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          })));
+        }
+      } catch (e) {
+        console.error('Failed to fetch new launches:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadNewLaunches();
+  }, [activeCategory]);
 
-  const filteredProducts = activeCategory === 'All'
-    ? recentProducts
-    : recentProducts.filter(p => p.category.toLowerCase() === activeCategory.toLowerCase());
+  const filteredProducts = recentProducts;
 
   const featuredDrop = UPCOMING_DROPS[heroIdx];
 

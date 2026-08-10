@@ -133,7 +133,7 @@ export default function RegisterPage() {
             ifsc: cleanedIfsc
           }
         };
-        register(registrationData);
+        register(registrationData, password);
         router.push("/dashboard");
       } catch (err: any) {
         setError(err.message || "Registration failed. Please verify details.");

@@ -1,18 +1,66 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
-    "version": "1.0.0",
+    "name": "AuraMart Commerce OS",
+    "slug": "auramart",
+    "version": "2.0.0-rc.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "mobile",
+    "scheme": "auramart",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "supportsTablet": true,
+      "bundleIdentifier": "com.auramart.customer",
+      "buildNumber": "2.0.0",
+      "associatedDomains": [
+        "applinks:auramart.com",
+        "applinks:www.auramart.com"
+      ],
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "AuraMart uses your location to evaluate 10-minute Quick Commerce serviceability and locate darkstores near you.",
+        "NSCameraUsageDescription": "AuraMart requires camera access for barcode scanning, order verification, and proof-of-delivery photos.",
+        "NSPhotoLibraryUsageDescription": "AuraMart uses your photo library to allow uploading profile photos and product review images.",
+        "NSUserTrackingUsageDescription": "AuraMart uses tracking data to deliver personalized deals and security notifications.",
+        "UIBackgroundModes": [
+          "location",
+          "fetch",
+          "remote-notification"
+        ]
+      }
     },
     "android": {
+      "package": "com.auramart.customer",
+      "versionCode": 200001,
+      "permissions": [
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION",
+        "CAMERA",
+        "POST_NOTIFICATIONS",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE"
+      ],
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "auramart.com",
+              "pathPrefix": "/products"
+            },
+            {
+              "scheme": "auramart",
+              "host": "orders"
+            }
+          ],
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
+        }
+      ],
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#6366F1",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
@@ -28,7 +76,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#6366F1",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76

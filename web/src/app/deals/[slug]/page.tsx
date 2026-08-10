@@ -5,9 +5,21 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiClock, FiTag, FiCheck, FiCopy } from 'react-icons/fi';
 import { campaignsData } from '@/data/campaigns';
-import { products as allProducts, Product } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 interface CampaignPageProps {
   params: Promise<{
@@ -20,9 +32,39 @@ export default function CampaignPage({ params }: CampaignPageProps) {
   const campaign = campaignsData.find((c) => c.slug === slug);
   const [copied, setCopied] = useState(false);
   const [timeLeft, setTimeLeft] = useState({ days: 3, hours: 23, minutes: 59, seconds: 59 });
+  const [campaignProducts, setCampaignProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
 
   useEffect(() => {
     if (!campaign) return;
+
+    const loadProducts = async () => {
+      setLoadingProducts(true);
+      try {
+        const cat = campaign.productCategory && campaign.productCategory !== 'all' ? `&category=${campaign.productCategory}` : '';
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=24&sort=discount${cat}`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          setCampaignProducts(list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          })));
+        }
+      } catch (e) {
+        console.error('Deals page product load failed:', e);
+      } finally {
+        setLoadingProducts(false);
+      }
+    };
+    loadProducts();
 
     // Countdown logic
     const calculateTimeLeft = () => {
@@ -46,21 +88,6 @@ export default function CampaignPage({ params }: CampaignPageProps) {
 
     return () => clearInterval(timer);
   }, [campaign]);
-
-  if (!campaign) {
-    notFound();
-  }
-
-  const handleCopyCode = () => {
-    navigator.clipboard.writeText(campaign.couponCode);
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
-  };
-
-  // Filter products for this campaign
-  const campaignProducts = allProducts.filter(
-    (p) => p.category === campaign.productCategory
-  );
 
   return (
     <div className={styles.campaignPage}>

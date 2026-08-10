@@ -1,0 +1,101 @@
+global:
+  resolve_timeout: 5m
+  smtp_smarthost: '${SMTP_HOST}'
+  smtp_from: 'alerts@${DOMAIN}'
+  smtp_auth_username: '${SMTP_USER}'
+  smtp_auth_password: '${SMTP_PASS}'
+  smtp_require_tls: true
+
+templates:
+  - '/etc/alertmanager/templates/*.tmpl'
+
+route:
+  receiver: 'default-receiver'
+  group_by: ['alertname', 'severity', 'team']
+  group_wait: 30s
+  group_interval: 5m
+  repeat_interval: 4h
+  routes:
+    # Critical alerts — immediate notification
+    - match:
+        severity: critical
+      receiver: 'critical-receiver'
+      group_wait: 10s
+      repeat_interval: 1h
+      continue: true
+
+    # Database alerts
+    - match:
+        team: database
+      receiver: 'database-receiver'
+      group_wait: 30s
+
+    # Payment alerts — highest priority
+    - match:
+        team: payments
+      receiver: 'payments-receiver'
+      group_wait: 5s
+      repeat_interval: 30m
+
+    # Infrastructure alerts
+    - match:
+        team: infra
+      receiver: 'infra-receiver'
+
+inhibit_rules:
+  # If backend is down, inhibit API error rate alerts
+  - source_match:
+      alertname: BackendDown
+    target_match_re:
+      alertname: HighAPIErrorRate|SlowAPILatency
+    equal: ['instance']
+
+  # If host memory is critical, inhibit warning-level disk alerts
+  - source_match:
+      severity: critical
+      alertname: HostMemoryHigh
+    target_match:
+      severity: warning
+
+receivers:
+  - name: 'default-receiver'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '[AuraMart] {{ .GroupLabels.alertname }} — {{ .Status | toUpper }}'
+
+  - name: 'critical-receiver'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '🚨 [CRITICAL] AuraMart {{ .GroupLabels.alertname }}'
+    # Uncomment to add Slack webhook
+    # slack_configs:
+    #   - api_url: '${SLACK_WEBHOOK_URL}'
+    #     channel: '#auramart-alerts'
+    #     title: '🚨 CRITICAL: {{ .GroupLabels.alertname }}'
+    #     text: '{{ range .Alerts }}{{ .Annotations.description }}{{ end }}'
+    #     send_resolved: true
+
+  - name: 'database-receiver'
+    email_configs:
+      - to: '${ALERT_EMAIL_DBA:-${ALERT_EMAIL}}'
+        send_resolved: true
+        headers:
+          Subject: '[DB Alert] AuraMart {{ .GroupLabels.alertname }}'
+
+  - name: 'payments-receiver'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '💳 [PAYMENTS] AuraMart {{ .GroupLabels.alertname }}'
+
+  - name: 'infra-receiver'
+    email_configs:
+      - to: '${ALERT_EMAIL}'
+        send_resolved: true
+        headers:
+          Subject: '[Infra] AuraMart {{ .GroupLabels.alertname }}'

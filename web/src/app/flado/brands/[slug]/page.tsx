@@ -5,9 +5,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiChevronLeft, FiZap, FiInfo, FiPercent, FiAward } from 'react-icons/fi';
 import { brandsData } from '@/data/brands';
-import { products } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
 
 interface FladoBrandPageProps {
   params: Promise<{
@@ -15,7 +15,7 @@ interface FladoBrandPageProps {
   }>;
 }
 
-export default function FladoBrandPage({ params }: FladoBrandPageProps) {
+export default function FladoBrandStorePage({ params }: FladoBrandPageProps) {
   const { slug } = use(params);
   const [loading, setLoading] = useState(true);
   const [productList, setProductList] = useState<any[]>([]);
@@ -27,42 +27,32 @@ export default function FladoBrandPage({ params }: FladoBrandPageProps) {
 
   useEffect(() => {
     const loadProducts = async () => {
-      let items: any[] = [];
+      setLoading(true);
       try {
-        const res = await fetch('http://localhost:5000/api/products');
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?brand=${slug}&isQuickCommerce=true&limit=50`);
         if (res.ok) {
           const data = await res.json();
-          items = data.map((bp: any) => ({
-            ...bp,
-            name: bp.title || '',
-            price: bp.discountPrice ?? bp.basePrice,
-            originalPrice: bp.basePrice,
+          const list = data.data || [];
+          setProductList(list.map((bp: any) => ({
+            id: bp.id,
+            name: bp.title || bp.name || '',
+            price: bp.discountPrice ?? bp.basePrice ?? 0,
+            originalPrice: bp.basePrice ?? 0,
             image: bp.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
             rating: bp.rating ?? 4.5,
             reviewsCount: bp.reviewCount ?? 12,
-            isFlado: bp.isQuickCommerce ?? false,
+            isFlado: true,
             category: bp.category || 'groceries',
-            subCategory: bp.subCategory || '',
-            brand: bp.brand || ''
-          }));
-        } else {
-          items = products;
+            brand: brand.name
+          })));
         }
       } catch (e) {
-        console.log('Failed to load products for Flado brand page from API, using mock.', e);
-        items = products;
+        console.error('Failed to load products for Flado brand page from API.', e);
+      } finally {
+        setLoading(false);
       }
-      // Filter to this brand and isFlado
-      const brandItems = items.filter(
-        p => p.isFlado && 
-        (p.brand?.toLowerCase().trim() === brand.name.toLowerCase().trim() || 
-         p.brand?.toLowerCase().trim() === brand.slug.toLowerCase().trim() ||
-         p.name?.toLowerCase().includes(brand.name.toLowerCase()))
-      );
-      setProductList(brandItems);
-      setLoading(false);
     };
-
+    loadProducts();
     loadProducts();
   }, [slug]);
 

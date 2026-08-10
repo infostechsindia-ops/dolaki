@@ -1,0 +1,75 @@
+.wrapper {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  cursor: pointer;
+  user-select: none;
+  font-family: var(--font-body);
+}
+
+/* Visually hide native checkbox but keep it accessible */
+.checkbox {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.indicator {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-border-strong);
+  border-radius: var(--radius-xs);
+  background-color: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-composite);
+}
+
+/* Checked state via adjacent sibling selector */
+.checkbox:checked + .indicator {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.checkbox:checked + .indicator::after {
+  content: '';
+  display: block;
+  width: 4px;
+  height: 8px;
+  border: 2px solid white;
+  border-top: none;
+  border-left: none;
+  transform: rotate(45deg);
+  margin-top: -2px;
+}
+
+/* Focus ring on native input propagated to visual indicator */
+.checkbox:focus-visible + .indicator {
+  box-shadow: var(--focus-ring);
+}
+
+/* Disabled */
+.checkbox:disabled + .indicator {
+  background-color: var(--color-disabled-bg);
+  border-color: var(--color-disabled-border);
+  cursor: not-allowed;
+}
+
+.wrapper:has(.checkbox:disabled) {
+  cursor: not-allowed;
+  opacity: var(--opacity-disabled);
+}
+
+.label {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-primary);
+  line-height: 1.4;
+}

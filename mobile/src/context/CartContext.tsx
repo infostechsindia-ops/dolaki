@@ -1,7 +1,10 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Product } from '../utils/mockData';
-import { api } from '../utils/api';
+import { apiClient } from '../api/client';
+import { useAuthContext } from './AuthContext';
+
+export type SubstitutionPreferenceType = 'ALLOW_SUBSTITUTION' | 'CONTACT_ME' | 'NO_SUBSTITUTION';
 
 export interface CartItem {
   itemId: string; // combination of id, color, size
@@ -9,6 +12,67 @@ export interface CartItem {
   quantity: number;
   selectedColor?: string;
   selectedSize?: string;
+  variantId?: string;
+  sku?: string;
+  fulfillmentSourceId?: string;
+  substitutionPreference?: SubstitutionPreferenceType;
+}
+
+export interface FormattedCartItem {
+  id: string;
+  cartId: string;
+  sku: string;
+  variantId?: string;
+  productId?: string;
+  title: string;
+  image?: string;
+  quantity: number;
+  fulfillmentSourceId?: string;
+  unitPrice: number;
+  formattedUnitPrice: string;
+  formattedCompareAtPrice?: string;
+  lineTotal: number;
+  formattedLineTotal: string;
+  inStock: boolean;
+  stockStatus: 'IN_STOCK' | 'LOW_STOCK' | 'OUT_OF_STOCK';
+  isFlado?: boolean;
+  substitutionPreference: SubstitutionPreferenceType;
+  isStoreUnavailable?: boolean;
+  availabilityReason?: string;
+}
+
+export interface CheckoutEligibilityResult {
+  isEligible: boolean;
+  blockers: string[];
+}
+
+export interface CartResponseDto {
+  cartId: string;
+  customerId: string;
+  status: string;
+  items: FormattedCartItem[];
+  totalItems: number;
+  subtotal: number;
+  formattedSubtotal: string;
+  tax: number;
+  formattedTax: string;
+  shipping: number;
+  formattedShipping: string;
+  discount: number;
+  formattedDiscount: string;
+  grandTotal: number;
+  formattedGrandTotal: string;
+  hasOutofStockItems: boolean;
+  minimumBasketAmount?: number | null;
+  formattedMinimumBasketAmount?: string | null;
+  isMinimumBasketMet: boolean;
+  minimumBasketShortfall?: number | null;
+  formattedMinimumBasketShortfall?: string | null;
+  estimatedDeliveryEtaText?: string | null;
+  deliveryBadgeText?: string | null;
+  storeAvailabilityStatus: 'OPEN' | 'CLOSED' | 'UNAVAILABLE' | 'SERVICED';
+  storeName?: string | null;
+  checkoutEligibility: CheckoutEligibilityResult;
 }
 
 export interface Order {
@@ -27,6 +91,13 @@ export interface Order {
 
 interface CartContextType {
   cart: CartItem[];
+  authoritativeCart: CartResponseDto | null;
+  isLoadingCart: boolean;
+  cartError: string | null;
+  fetchAuthoritativeCart: () => Promise<CartResponseDto | null>;
+  updateCartItemQuantity: (itemId: string, quantity: number) => Promise<CartResponseDto | null>;
+  removeCartItem: (itemId: string) => Promise<CartResponseDto | null>;
+  updateSubstitutionPreference: (itemId: string, preference: SubstitutionPreferenceType) => Promise<CartResponseDto | null>;
   rewardWalletBalance: number;
   creditRewardWallet: (amount: number) => void;
   deductRewardWallet: (amount: number) => void;
@@ -64,12 +135,41 @@ const DEFAULT_ADDRESSES = [
 ];
 
 export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { isAuthenticated } = useAuthContext();
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [rewardWalletBalance, setRewardWalletBalance] = useState<number>(500); // Initial reward cash
+  const [authoritativeCart, setAuthoritativeCart] = useState<CartResponseDto | null>(null);
+  const [isLoadingCart, setIsLoadingCart] = useState<boolean>(false);
+  const [cartError, setCartError] = useState<string | null>(null);
+
+  const [rewardWalletBalance, setRewardWalletBalance] = useState<number>(500);
   const [addresses, setAddresses] = useState<string[]>(DEFAULT_ADDRESSES);
   const [selectedAddress, setSelectedAddress] = useState<string>(DEFAULT_ADDRESSES[0]);
   const [orders, setOrders] = useState<Order[]>([]);
   const [couponDiscount, setCouponDiscount] = useState<number>(0);
+
+  // Fetch Authoritative Cart from Backend
+  const fetchAuthoritativeCart = useCallback(async (): Promise<CartResponseDto | null> => {
+    if (!isAuthenticated) return null;
+    setIsLoadingCart(true);
+    setCartError(null);
+    try {
+      const data: CartResponseDto = await apiClient('/cart');
+      setAuthoritativeCart(data);
+      return data;
+    } catch (err: any) {
+      console.log('Authoritative cart fetch notice:', err?.message);
+      setCartError(err?.message || 'Failed to load cart');
+      return null;
+    } finally {
+      setIsLoadingCart(false);
+    }
+  }, [isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      fetchAuthoritativeCart();
+    }
+  }, [isAuthenticated, fetchAuthoritativeCart]);
 
   // Load initial state from AsyncStorage
   useEffect(() => {
@@ -98,6 +198,62 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     try {
       await AsyncStorage.setItem('@auramart_cart', JSON.stringify(newCart));
     } catch (e) { console.error(e); }
+  };
+
+  const updateCartItemQuantity = async (itemId: string, quantity: number): Promise<CartResponseDto | null> => {
+    if (quantity <= 0) {
+      return removeCartItem(itemId);
+    }
+    if (!isAuthenticated) {
+      updateQuantity(itemId, quantity);
+      return null;
+    }
+    try {
+      const data: CartResponseDto = await apiClient(`/cart/items/${itemId}`, {
+        method: 'PATCH',
+        body: JSON.stringify({ quantity }),
+      });
+      setAuthoritativeCart(data);
+      return data;
+    } catch (err: any) {
+      console.error('Failed to update cart item quantity:', err);
+      return null;
+    }
+  };
+
+  const removeCartItem = async (itemId: string): Promise<CartResponseDto | null> => {
+    if (!isAuthenticated) {
+      removeFromCart(itemId);
+      return null;
+    }
+    try {
+      const data: CartResponseDto = await apiClient(`/cart/items/${itemId}`, {
+        method: 'DELETE',
+      });
+      setAuthoritativeCart(data);
+      return data;
+    } catch (err: any) {
+      console.error('Failed to remove cart item:', err);
+      return null;
+    }
+  };
+
+  const updateSubstitutionPreference = async (
+    itemId: string,
+    preference: SubstitutionPreferenceType
+  ): Promise<CartResponseDto | null> => {
+    if (!isAuthenticated) return null;
+    try {
+      const data: CartResponseDto = await apiClient(`/cart/items/${itemId}/substitution`, {
+        method: 'PATCH',
+        body: JSON.stringify({ preference }),
+      });
+      setAuthoritativeCart(data);
+      return data;
+    } catch (err: any) {
+      console.error('Failed to update substitution preference:', err);
+      return null;
+    }
   };
 
   const creditRewardWallet = async (amount: number) => {
@@ -147,6 +303,23 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       saveCart(updatedCart);
       return updatedCart;
     });
+
+    if (isAuthenticated) {
+      apiClient('/cart/items', {
+        method: 'POST',
+        body: JSON.stringify({
+          sku: (product as any).sku || `SKU-${product.id}`,
+          quantity,
+          fulfillmentSourceId: (product as any).fulfillmentSourceId || (product.isFlado ? 'shop-darkstore-01' : undefined),
+        }),
+      }).then((res: any) => {
+        if (res && res.cartId) {
+          setAuthoritativeCart(res);
+        }
+      }).catch((e) => {
+        console.log('Authoritative add-to-cart notice:', e?.message);
+      });
+    }
   };
 
   const removeFromCart = (itemId: string) => {
@@ -175,9 +348,10 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
     setCart([]);
     saveCart([]);
     setCouponDiscount(0);
+    setAuthoritativeCart(null);
   };
 
-  // Calculations
+  // Calculations fallback
   const auraMartItems = cart.filter(item => !item.product.isFlado);
   const fladoItems = cart.filter(item => item.product.isFlado);
 
@@ -185,78 +359,31 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const fladoSubtotal = fladoItems.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
 
   const subtotal = auraMartSubtotal + fladoSubtotal;
-  const gst = Math.round(subtotal * 0.18); // 18% GST
-
-  // AuraMart Delivery: ₹40, free above ₹999
+  const gst = Math.round(subtotal * 0.18);
   const auraMartDelivery = auraMartSubtotal > 0 && auraMartSubtotal < 999 ? 40 : 0;
-  // Flado Delivery: ₹15 handling charge, free above ₹299
   const fladoDelivery = fladoSubtotal > 0 && fladoSubtotal < 299 ? 15 : 0;
   const deliveryFee = auraMartDelivery + fladoDelivery;
-
-  // Wallet + Coupon Discount
   const totalBeforeDiscount = subtotal + gst + deliveryFee;
-  // Let user use up to 10% of total via wallet, or coupon code
   const discount = Math.min(totalBeforeDiscount, couponDiscount);
   const total = Math.max(0, totalBeforeDiscount - discount);
 
-  const calculations = {
-    auraMartSubtotal,
-    fladoSubtotal,
-    subtotal,
-    gst,
-    auraMartDelivery,
-    fladoDelivery,
-    deliveryFee,
-    discount,
-    total
-  };
+  const placeOrder = async (isFladoOnly = false): Promise<string> => {
+    const targetItems = isFladoOnly ? fladoItems : cart;
+    if (targetItems.length === 0) throw new Error("Cart is empty");
 
-  const placeOrder = async (isFladoOnly?: boolean): Promise<string> => {
-    // Filter items to purchase
-    const itemsToOrder = cart.filter(item => 
-      isFladoOnly === undefined ? true : (isFladoOnly ? item.product.isFlado : !item.product.isFlado)
-    );
-
-    if (itemsToOrder.length === 0) {
-      throw new Error("No items in cart to order");
-    }
-
-    const orderSubtotal = itemsToOrder.reduce((acc, item) => acc + item.product.price * item.quantity, 0);
-    const orderGst = Math.round(orderSubtotal * 0.18);
-    
-    let orderDelivery = 0;
-    if (isFladoOnly === undefined) {
-      orderDelivery = deliveryFee;
-    } else if (isFladoOnly) {
-      orderDelivery = orderSubtotal < 299 ? 15 : 0;
-    } else {
-      orderDelivery = orderSubtotal < 999 ? 40 : 0;
-    }
-
-    const orderTotal = orderSubtotal + orderGst + orderDelivery - (isFladoOnly === undefined ? discount : 0);
-
-    // Call API helper to place order
-    const result = await api.placeOrder({
-      items: itemsToOrder,
-      subtotal: orderSubtotal,
-      gst: orderGst,
-      deliveryFee: orderDelivery,
-      total: orderTotal,
-      address: selectedAddress
-    });
-
+    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
     const newOrder: Order = {
-      id: result.orderId,
-      items: itemsToOrder,
-      subtotal: orderSubtotal,
-      gst: orderGst,
-      deliveryFee: orderDelivery,
-      total: orderTotal,
-      date: new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }),
+      id: orderId,
+      items: targetItems,
+      subtotal: isFladoOnly ? fladoSubtotal : subtotal,
+      gst: isFladoOnly ? Math.round(fladoSubtotal * 0.18) : gst,
+      deliveryFee: isFladoOnly ? fladoDelivery : deliveryFee,
+      total: isFladoOnly ? (fladoSubtotal + Math.round(fladoSubtotal * 0.18) + fladoDelivery) : total,
+      date: new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }),
       address: selectedAddress,
       status: 'placed',
       eta: isFladoOnly ? '10 mins' : '2-3 days',
-      isFlado: isFladoOnly ?? itemsToOrder.some(item => item.product.isFlado)
+      isFlado: isFladoOnly,
     };
 
     const updatedOrders = [newOrder, ...orders];
@@ -265,43 +392,53 @@ export const CartProvider: React.FC<{ children: React.ReactNode }> = ({ children
       await AsyncStorage.setItem('@auramart_orders', JSON.stringify(updatedOrders));
     } catch (e) { console.error(e); }
 
-    // Clear ordered items from cart
-    setCart(prevCart => {
-      const remainingItems = prevCart.filter(item => 
-        isFladoOnly === undefined ? false : (isFladoOnly ? !item.product.isFlado : item.product.isFlado)
-      );
-      saveCart(remainingItems);
-      return remainingItems;
-    });
-
-    // Deduct from coupon discount if unified order
-    if (isFladoOnly === undefined) {
-      setCouponDiscount(0);
+    if (isFladoOnly) {
+      setCart((prev) => prev.filter((item) => !item.product.isFlado));
+    } else {
+      clearCart();
     }
-
-    return newOrder.id;
+    return orderId;
   };
 
   return (
-    <CartContext.Provider value={{
-      cart,
-      rewardWalletBalance,
-      creditRewardWallet,
-      deductRewardWallet,
-      addresses,
-      selectedAddress,
-      addAddress,
-      setSelectedAddress: changeSelectedAddress,
-      addToCart,
-      removeFromCart,
-      updateQuantity,
-      clearCart,
-      orders,
-      placeOrder,
-      couponDiscount,
-      setCouponDiscount,
-      calculations
-    }}>
+    <CartContext.Provider
+      value={{
+        cart,
+        authoritativeCart,
+        isLoadingCart,
+        cartError,
+        fetchAuthoritativeCart,
+        updateCartItemQuantity,
+        removeCartItem,
+        updateSubstitutionPreference,
+        rewardWalletBalance,
+        creditRewardWallet,
+        deductRewardWallet,
+        addresses,
+        selectedAddress,
+        addAddress,
+        setSelectedAddress: changeSelectedAddress,
+        addToCart,
+        removeFromCart,
+        updateQuantity,
+        clearCart,
+        orders,
+        placeOrder,
+        couponDiscount,
+        setCouponDiscount,
+        calculations: {
+          auraMartSubtotal,
+          fladoSubtotal,
+          subtotal,
+          gst,
+          auraMartDelivery,
+          fladoDelivery,
+          deliveryFee,
+          discount,
+          total,
+        },
+      }}
+    >
       {children}
     </CartContext.Provider>
   );

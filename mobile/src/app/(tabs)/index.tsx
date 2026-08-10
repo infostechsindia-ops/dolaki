@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { 
   StyleSheet, 
   View, 
@@ -16,8 +16,11 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCart } from '../../context/CartContext';
+import { useAuthContext } from '../../context/AuthContext';
+import { useSurface } from '../../context/SurfaceContext';
+import { apiClient } from '../../api/client';
+import { LoadingView, ErrorStateView, EmptyStateView } from '../../components/common/StateViews';
 import { Product } from '../../utils/mockData';
-import { api } from '../../utils/api';
 
 const { width } = Dimensions.get('window');
 
@@ -283,9 +286,12 @@ const DEFAULT_MOBILE_CMS = {
 export default function HomeScreen() {
   const router = useRouter();
   const { addToCart, selectedAddress } = useCart();
+  const { user } = useAuthContext();
+  const { surface } = useSurface();
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [cmsConfig, setCmsConfig] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubTab, setActiveSubTab] = useState('For You');
@@ -294,30 +300,37 @@ export default function HomeScreen() {
   const [timeLeft, setTimeLeft] = useState({ hours: 3, minutes: 59, seconds: 59 });
   const [liveWatchers, setLiveWatchers] = useState(2847);
 
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
+    setError(null);
     try {
-      const prods = await api.getProducts();
+      const prodsData: any = await apiClient('/products', { skipAuthToken: true });
+      const prods = Array.isArray(prodsData) ? prodsData : (prodsData?.data || []);
       setAllProducts(prods);
 
-      const layout = await api.getSduiLayout();
+      const layout: any = await apiClient('/sdui/homepage', { skipAuthToken: true });
       if (layout && layout.sections) {
-        layout.sections.sort((a: any, b: any) => a.order - b.order);
+        layout.sections.sort((a: any, b: any) => (a.order || 0) - (b.order || 0));
         setCmsConfig(layout);
       } else {
         setCmsConfig(DEFAULT_MOBILE_CMS);
       }
-    } catch (e) {
-      console.error(e);
-      setCmsConfig(DEFAULT_MOBILE_CMS);
+    } catch (e: any) {
+      console.warn('Failed to load live SDUI layout / products:', e?.message || e);
+      if (process.env.EXPO_PUBLIC_ENABLE_DEMO_FIXTURES === 'true') {
+        setCmsConfig(DEFAULT_MOBILE_CMS);
+      } else {
+        setError(e?.message || 'Failed to connect to AuraMart servers.');
+        setCmsConfig(DEFAULT_MOBILE_CMS);
+      }
     } finally {
       setLoading(false);
       setRefreshing(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
     loadData();
-  }, []);
+  }, [loadData]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -419,11 +432,19 @@ export default function HomeScreen() {
   };
 
   if (loading && !refreshing) {
+    return <LoadingView message="Loading AuraMart Super-App..." />;
+  }
+
+  if (error && !refreshing && allProducts.length === 0) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color="#2563EB" />
-        <Text style={styles.loadingText}>Loading AuraMart Super-App...</Text>
-      </View>
+      <SafeAreaView style={styles.container}>
+        <ErrorStateView
+          title="Failed to Load Homepage"
+          message={error}
+          onRetry={loadData}
+          retryLabel="Reload Homepage"
+        />
+      </SafeAreaView>
     );
   }
 

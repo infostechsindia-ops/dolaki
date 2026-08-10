@@ -1,0 +1,26 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-3);
+  background-color: var(--color-disabled-bg);
+  border-radius: var(--radius-md);
+  width: 100%;
+}
+
+.infoRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.icon {
+  font-size: 16px;
+  color: var(--color-primary);
+  flex-shrink: 0;
+}
+
+.text {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}

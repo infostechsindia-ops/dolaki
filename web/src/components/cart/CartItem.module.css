@@ -1,0 +1,162 @@
+.item {
+  display: flex;
+  gap: var(--space-4);
+  padding: var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex: 1;
+  min-width: 0;
+}
+
+.topRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: var(--space-4);
+}
+
+.priceGroup {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.price {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-md);
+  font-weight: 800;
+  color: var(--color-text-primary);
+}
+
+.comparePrice {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  text-decoration: line-through;
+}
+
+.bottomRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.actionButtons {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.actionBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: none;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+}
+
+.actionBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.actionBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.wishlisted {
+  color: #ef4444;
+}
+
+.removeBtn:hover {
+  color: #ef4444;
+}
+
+@media (max-width: 480px) {
+  .item {
+    flex-direction: column;
+  }
+  .topRow {
+    flex-direction: column;
+    gap: var(--space-2);
+  }
+  .priceGroup {
+    align-items: flex-start;
+  }
+}
+
+.outOfStockItem {
+  opacity: 0.8;
+  border-color: var(--color-danger, #ef4444);
+}
+
+.stockBadge {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 700;
+  padding: var(--space-1, 4px) var(--space-2, 8px);
+  border-radius: var(--radius-sm, 4px);
+  width: fit-content;
+}
+
+.stockError {
+  background-color: #fef2f2;
+  color: #dc2626;
+  border: 1px solid #fca5a5;
+}
+
+.stockWarning {
+  background-color: #fffbeb;
+  color: #b45309;
+  border: 1px solid #fde68a;
+}
+
+.substitutionRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2, 8px);
+  margin-top: var(--space-1, 4px);
+  flex-wrap: wrap;
+}
+
+.subLabel {
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: 600;
+  color: var(--color-text-muted, #64748b);
+}
+
+.subSelect {
+  font-size: var(--font-size-xs, 0.75rem);
+  padding: 4px 8px;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: var(--radius-sm, 4px);
+  background-color: var(--color-surface, #ffffff);
+  color: var(--color-text-primary, #0f172a);
+  min-height: 36px;
+  cursor: pointer;
+  outline: none;
+}
+
+.subSelect:focus-visible {
+  box-shadow: var(--focus-ring);
+}

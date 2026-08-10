@@ -66,9 +66,10 @@ export default function MobileBrandStoreScreen() {
 
   const [loading, setLoading] = useState(true);
   const [products, setProducts] = useState<Product[]>([]);
+  const [brandDetail, setBrandDetail] = useState<{ name: string; story: string; primaryColor: string; accentColor: string; bannerUrl: string; logoUrl: string; tagline: string } | null>(null);
 
-  const brandInfo = BRANDS_REGISTRY[slug || ''] || {
-    name: 'Official Brand Store',
+  const defaultBrandInfo = BRANDS_REGISTRY[slug || ''] || {
+    name: slug ? (slug.charAt(0).toUpperCase() + slug.slice(1) + ' Store') : 'Official Brand Store',
     story: 'Bringing authentic direct brand products with platform warranty seals.',
     primaryColor: '#1F2937',
     accentColor: '#8B5CF6',
@@ -77,16 +78,31 @@ export default function MobileBrandStoreScreen() {
     tagline: 'Authenticity Guaranteed.'
   };
 
+  const brandInfo = brandDetail || defaultBrandInfo;
+
   useEffect(() => {
-    const loadBrandProducts = async () => {
+    const loadBrandData = async () => {
+      if (!slug) return;
       try {
-        const raw = await api.getProducts();
-        const matched = raw.filter(
-          (p) => p.brand && p.brand.toLowerCase() === (slug || '').toLowerCase()
-        );
-        setProducts(matched);
+        // Fetch live brand metadata
+        const liveBrand = await api.getBrandBySlug(slug);
+        if (liveBrand) {
+          setBrandDetail({
+            name: liveBrand.name,
+            story: liveBrand.description || defaultBrandInfo.story,
+            primaryColor: '#1F2937',
+            accentColor: '#8B5CF6',
+            bannerUrl: defaultBrandInfo.bannerUrl,
+            logoUrl: liveBrand.logoUrl || defaultBrandInfo.logoUrl,
+            tagline: `${liveBrand.name} Flagship Store`
+          });
+        }
+
+        // Fetch brand products
+        const brandProds = await api.getProductsByBrand(slug);
+        setProducts(brandProds);
       } catch (e) {
-        // Fallback
+        // Fallback to local filtering
         const matched = [...MOCK_PRODUCTS, ...fladoProductsData].filter(
           (p) => p.brand && p.brand.toLowerCase() === (slug || '').toLowerCase()
         );
@@ -96,7 +112,7 @@ export default function MobileBrandStoreScreen() {
       }
     };
 
-    loadBrandProducts();
+    loadBrandData();
   }, [slug]);
 
   const renderProduct = ({ item }: { item: Product }) => {

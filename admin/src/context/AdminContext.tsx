@@ -149,18 +149,96 @@ interface AdminContextType {
 const AdminContext = createContext<AdminContextType | undefined>(undefined);
 
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-  // Initial Mock Data
+  const DEFAULT_CATEGORIES: Category[] = [
+    { id: "C-1", name: "Groceries & Staples", slug: "groceries-staples", productCount: 45, status: "active" },
+    { id: "C-2", name: "Electronics", slug: "electronics", productCount: 38, status: "active" },
+    { id: "C-3", name: "Fashion", slug: "fashion", productCount: 52, status: "active" },
+    { id: "C-4", name: "Beauty & Care", slug: "beauty", productCount: 28, status: "active" },
+    { id: "C-5", name: "Home & Kitchen", slug: "home", productCount: 34, status: "active" },
+    { id: "C-6", name: "Sports & Fitness", slug: "sports", productCount: 19, status: "active" }
+  ];
+
+  const DEFAULT_VENDORS: Vendor[] = [
+    { id: "V-201", name: "Shree Balaji Traders", ownerName: "Rajesh Kumar", city: "New Delhi", rating: 4.7, status: "approved", revenue: 245000, productCount: 42 },
+    { id: "V-202", name: "Metro Cash & Carry", ownerName: "Sanjay Singhal", city: "Mumbai", rating: 4.5, status: "approved", revenue: 589000, productCount: 125 },
+    { id: "V-203", name: "Deluxe Grocery Hub", ownerName: "Amit Mehra", city: "Bengaluru", rating: 4.8, status: "approved", revenue: 312000, productCount: 38 },
+    { id: "V-204", name: "National Distributors", ownerName: "Harish Gupta", city: "Kolkata", rating: 4.2, status: "approved", revenue: 145000, productCount: 29 },
+    { id: "V-205", name: "South India Retail", ownerName: "Venkatesh Prasad", city: "Chennai", rating: 4.6, status: "approved", revenue: 418000, productCount: 76 }
+  ];
+
+  // Initial Data States with defaults to ensure dropdowns are never empty
   const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
+  const [categories, setCategories] = useState<Category[]>(DEFAULT_CATEGORIES);
   const [coupons, setCoupons] = useState<Coupon[]>([]);
   const [flashSales, setFlashSales] = useState<FlashSale[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
-  const [vendors, setVendors] = useState<Vendor[]>([]);
+  const [vendors, setVendors] = useState<Vendor[]>(DEFAULT_VENDORS);
   const [users, setUsers] = useState<User[]>([]);
   const [hubs, setHubs] = useState<FladoHub[]>([]);
   const [riders, setRiders] = useState<FladoRider[]>([]);
 
   useEffect(() => {
+    const API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000';
+
+    // Fetch Backend Categories
+    const loadCategoriesFromApi = async () => {
+      try {
+        const catUrl = `${API_BASE}/api/v1/categories?limit=100`;
+        console.log('[AdminContext] Fetching live categories:', catUrl);
+        const res = await fetch(catUrl);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || json || [];
+          if (Array.isArray(list) && list.length > 0) {
+            const mapped = list.map((c: any) => ({
+              id: c.id || `C-${c.slug}`,
+              name: c.name,
+              slug: c.slug || c.name.toLowerCase().replace(/\s+/g, '-'),
+              productCount: c.productCount || 0,
+              status: (c.status === 'ARCHIVED' ? 'inactive' : 'active') as "active" | "inactive"
+            }));
+            setCategories(mapped);
+          }
+        }
+      } catch (e) {
+        console.warn('[AdminContext] Error fetching backend categories:', e);
+      }
+    };
+
+    // Fetch Backend Vendors
+    const loadVendorsFromApi = async () => {
+      try {
+        const vendorUrl = `${API_BASE}/api/v1/vendors?limit=100`;
+        console.log('[AdminContext] Fetching live vendors:', vendorUrl);
+        const res = await fetch(vendorUrl);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || json || [];
+          if (Array.isArray(list) && list.length > 0) {
+            const mapped = list.map((v: any) => ({
+              id: v.id || `V-${v.name}`,
+              name: v.storeName || v.name || 'Official Store',
+              ownerName: v.ownerName || 'Manager',
+              city: v.city || 'Mumbai',
+              rating: v.rating ?? 4.5,
+              status: (v.status || 'approved').toLowerCase() as "approved" | "pending" | "suspended",
+              revenue: v.revenue || 150000,
+              productCount: v.productCount || 10
+            }));
+            setVendors(mapped);
+          }
+        }
+      } catch (e) {
+        console.warn('[AdminContext] Error fetching backend vendors:', e);
+      }
+    };
+
+    loadCategoriesFromApi();
+    loadVendorsFromApi();
+
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
+    if (!isDemo) return;
+
     // Populate realistic Indian ecommerce mock data on client mount
     setProducts([
       { id: "P-101", name: "Aashirvaad Shudh Chakki Atta 10kg", price: 460, category: "Groceries & Staples", vendor: "Shree Balaji Traders", stock: 120, rating: 4.8, status: "active", image: "/images/atta.jpg", sales: 340 },

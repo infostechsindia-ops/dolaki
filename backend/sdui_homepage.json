@@ -1,428 +1,575 @@
 {
-  "version": 11,
-  "lastUpdated": "2026-07-02T11:55:54.108Z",
-  "publishedBy": "Admin",
+  "version": 16,
+  "lastUpdated": "2026-08-08T02:30:00.000Z",
+  "publishedBy": "Admin CMS Master",
+  "status": "PUBLISHED",
   "sections": [
     {
-      "id": "top_announcement",
+      "id": "announcement-bar",
       "type": "top_announcement",
-      "visible": true,
-      "order": 0,
-      "config": {
-        "text": "🎉 Big Billion Aura Sale is Live! Flat 10% Off with HDFC Cards | Free Express Delivery on order above ₹499",
-        "link": "/deals",
-        "backgroundColor": "#ee4c3a",
-        "textColor": "#FFFFFF"
-      }
+      "title": "Top Announcement Ticker",
+      "subtitle": "Global Promotional Notification",
+      "enabled": true,
+      "sortOrder": 0,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#ee4c3a",
+      "textColor": "#FFFFFF",
+      "ctaPrimary": { "text": "Shop Mega Deals", "url": "/deals" },
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "LIVE SALE",
+      "priority": 100,
+      "theme": "LIGHT",
+      "startDate": "2026-08-01T00:00:00.000Z",
+      "endDate": "2026-12-31T23:59:59.000Z",
+      "visibilityRules": { "userSegment": "ALL", "platform": "ALL" },
+      "animation": "fade"
     },
     {
-      "id": "hero_banners",
+      "id": "hero-carousel",
       "type": "hero_banners",
-      "visible": true,
-      "order": 1,
       "title": "Hero Carousel",
-      "config": {
-        "autoPlayInterval": 4000,
-        "banners": [
-          {
-            "id": "b1",
-            "imageUrl": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80",
-            "title": "Musa Fashions",
-            "subtitle": "Unbelievable 50-70% discounts on Nike, Apple, Clinique & boAt!",
-            "ctaText": "Grab it",
-            "ctaUrl": "/deals",
-            "backgroundColor": "#9752ff"
-          },
-          {
-            "id": "b2",
-            "imageUrl": "https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80",
-            "title": "New Generation Sneakers",
-            "subtitle": "Steal deals on Nike & AuraWear starts at just ₹1,999!",
-            "ctaText": "View Kicks",
-            "ctaUrl": "/categories/fashion",
-            "backgroundColor": "#cbd71d"
-          },
-          {
-            "id": "b3",
-            "imageUrl": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200&auto=format&fit=crop&q=80",
-            "title": "The Premium Tech Hub",
-            "subtitle": "Noise Cancelling Earbuds & Smartwatches with AuraPay Cashbacks.",
-            "ctaText": "Browse Gadgets",
-            "ctaUrl": "/categories/electronics",
-            "backgroundColor": "#065F46"
-          }
-        ]
-      }
+      "subtitle": "Featured Seasonal Campaigns & Hero Announcements",
+      "enabled": true,
+      "sortOrder": 1,
+      "desktopImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&auto=format&fit=crop&q=80",
+      "tabletImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1024&auto=format&fit=crop&q=80",
+      "mobileImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80",
+      "videoUrl": null,
+      "gradientOverlay": "linear-gradient(135deg, rgba(15,23,42,0.85) 0%, rgba(15,23,42,0.3) 100%)",
+      "backgroundColor": "#0f172a",
+      "textColor": "#FFFFFF",
+      "ctaPrimary": { "text": "Shop Big Billion Sale", "url": "/deals" },
+      "ctaSecondary": { "text": "Explore Flado 10-Min", "url": "/flado" },
+      "collectionResolver": null,
+      "badge": "MEGA FESTIVAL",
+      "priority": 99,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "slide",
+      "slides": [
+        {
+          "id": "slide-1",
+          "title": "Big Billion Aura Sale",
+          "subtitle": "Unbelievable 50-70% discounts on Apple, Nike, Sony & L'Oréal!",
+          "desktopImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Shop Mega Deals",
+          "ctaUrl": "/deals",
+          "badge": "FLAT 70% OFF",
+          "gradientOverlay": "linear-gradient(90deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.2) 100%)",
+          "sortOrder": 1,
+          "enabled": true
+        },
+        {
+          "id": "slide-2",
+          "title": "Next Gen Sneakers Drop",
+          "subtitle": "Steal deals on Nike Air Force 1, Adidas Ultraboost & Puma Suede!",
+          "desktopImage": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Browse Kicks",
+          "ctaUrl": "/categories/shoes",
+          "badge": "NEW DROPS",
+          "gradientOverlay": "linear-gradient(90deg, rgba(20,20,30,0.85) 0%, rgba(0,0,0,0.3) 100%)",
+          "sortOrder": 2,
+          "enabled": true
+        },
+        {
+          "id": "slide-3",
+          "title": "Premium Tech Bonanza",
+          "subtitle": "Sony XM5, AirPods Pro & MacBook Air M3 with Instant Bank Cashbacks.",
+          "desktopImage": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1498049794561-7780e7231661?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Explore Gadgets",
+          "ctaUrl": "/categories/electronics",
+          "badge": "NO COST EMI",
+          "gradientOverlay": "linear-gradient(90deg, rgba(6,95,70,0.85) 0%, rgba(0,0,0,0.3) 100%)",
+          "sortOrder": 3,
+          "enabled": true
+        },
+        {
+          "id": "slide-4",
+          "title": "Flado 10-Minute Grocery",
+          "subtitle": "Farm-fresh organic fruits, milk, bread & daily staples delivered in 10 mins!",
+          "desktopImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Order on Flado",
+          "ctaUrl": "/flado",
+          "badge": "10 MIN EXPRESS",
+          "gradientOverlay": "linear-gradient(90deg, rgba(5,150,105,0.85) 0%, rgba(0,0,0,0.3) 100%)",
+          "sortOrder": 4,
+          "enabled": true
+        },
+        {
+          "id": "slide-5",
+          "title": "L'Oréal & Maybelline Beauty Fest",
+          "subtitle": "Plumping Hyaluronic Acid Serums, Matte Lipsticks & Skincare Essentials.",
+          "desktopImage": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Shop Glow Deals",
+          "ctaUrl": "/categories/beauty",
+          "badge": "BUY 1 GET 1",
+          "gradientOverlay": "linear-gradient(90deg, rgba(131,24,67,0.85) 0%, rgba(0,0,0,0.3) 100%)",
+          "sortOrder": 5,
+          "enabled": true
+        },
+        {
+          "id": "slide-6",
+          "title": "Home & Kitchen Appliances Fest",
+          "subtitle": "Up to 40% off Philips Digital Air Fryers & Bosch Front Load Washers.",
+          "desktopImage": "https://images.unsplash.com/photo-1585241645927-c7a8e5840c42?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1585241645927-c7a8e5840c42?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1585241645927-c7a8e5840c42?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Upgrade Kitchen",
+          "ctaUrl": "/categories/home",
+          "badge": "EXTRA ₹1,500 OFF",
+          "sortOrder": 6,
+          "enabled": true
+        },
+        {
+          "id": "slide-7",
+          "title": "Fossil & Titan Luxury Watches",
+          "subtitle": "Exquisite Skeleton Automatics & Smartwatches for Men & Women.",
+          "desktopImage": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Explore Watches",
+          "ctaUrl": "/categories/watches",
+          "badge": "PREMIUM PICKS",
+          "sortOrder": 7,
+          "enabled": true
+        },
+        {
+          "id": "slide-8",
+          "title": "AuraVIP Unlimited Free Delivery",
+          "subtitle": "Join AuraVIP Pass for 0 Delivery Fees on all orders + 10% Extra Cashback Coins!",
+          "desktopImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1600&auto=format&fit=crop&q=80",
+          "tabletImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1024&auto=format&fit=crop&q=80",
+          "mobileImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600&auto=format&fit=crop&q=80",
+          "ctaText": "Get VIP Pass",
+          "ctaUrl": "/flado/pass",
+          "badge": "VIP BENEFITS",
+          "sortOrder": 8,
+          "enabled": true
+        }
+      ]
     },
     {
-      "id": "category_grid",
+      "id": "trending-searches",
+      "type": "trending_searches",
+      "title": "Trending Searches",
+      "subtitle": "Popular search queries trending live right now",
+      "enabled": true,
+      "sortOrder": 2,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#F8FAFC",
+      "textColor": "#0F172A",
+      "ctaPrimary": null,
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "TRENDING NOW",
+      "priority": 95,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "fade",
+      "queries": [
+        "AirPods Pro",
+        "Nike Air Force 1",
+        "iPhone 15 Pro",
+        "Sony XM5",
+        "Amul Butter",
+        "Organic Bananas",
+        "Fossil Gen 6",
+        "L'Oreal HA Serum"
+      ]
+    },
+    {
+      "id": "featured-categories",
       "type": "category_grid",
-      "visible": true,
-      "order": 2,
-      "title": "Shop by Category",
-      "config": {
-        "categories": [
-          {
-            "name": "Electronics",
-            "slug": "electronics",
-            "icon": "📱",
-            "color": "#EDE9FE"
-          },
-          {
-            "name": "Fashion",
-            "slug": "fashion",
-            "icon": "👗",
-            "color": "#FCE7F3"
-          },
-          {
-            "name": "Beauty",
-            "slug": "beauty",
-            "icon": "💄",
-            "color": "#FEF3C7"
-          },
-          {
-            "name": "Home & Kitchen",
-            "slug": "home",
-            "icon": "🏠",
-            "color": "#D1FAE5"
-          },
-          {
-            "name": "Groceries",
-            "slug": "groceries",
-            "icon": "🛒",
-            "color": "#DBEAFE"
-          },
-          {
-            "name": "Sports",
-            "slug": "sports",
-            "icon": "⚽",
-            "color": "#FEE2E2"
-          },
-          {
-            "name": "Appliances",
-            "slug": "appliances",
-            "icon": "📺",
-            "color": "#E0E7FF"
-          },
-          {
-            "name": "Toys",
-            "slug": "toys",
-            "icon": "🎮",
-            "color": "#FEF9C3"
-          }
-        ]
-      }
+      "title": "Shop Top Categories",
+      "subtitle": "Explore our 24 master categories across Marketplace & Flado",
+      "enabled": true,
+      "sortOrder": 3,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#FFFFFF",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "View All Categories", "url": "/categories" },
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "EXPLORE",
+      "priority": 90,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "zoom",
+      "categories": [
+        { "name": "Electronics", "slug": "electronics", "icon": "💻", "color": "#EDE9FE" },
+        { "name": "Mobiles", "slug": "mobiles", "icon": "📱", "color": "#DBEAFE" },
+        { "name": "Laptops", "slug": "laptops", "icon": "🖥️", "color": "#E0E7FF" },
+        { "name": "Fashion", "slug": "fashion", "icon": "👗", "color": "#FCE7F3" },
+        { "name": "Men", "slug": "men", "icon": "👔", "color": "#FEF3C7" },
+        { "name": "Women", "slug": "women", "icon": "👚", "color": "#FDE68A" },
+        { "name": "Kids", "slug": "kids", "icon": "🧒", "color": "#FEE2E2" },
+        { "name": "Shoes", "slug": "shoes", "icon": "👟", "color": "#E0F2FE" },
+        { "name": "Beauty", "slug": "beauty", "icon": "💄", "color": "#FCE7F3" },
+        { "name": "Health", "slug": "health", "icon": "💊", "color": "#DCFCE7" },
+        { "name": "Home & Kitchen", "slug": "home", "icon": "🏠", "color": "#D1FAE5" },
+        { "name": "Furniture", "slug": "furniture", "icon": "🛋️", "color": "#FEF3C7" },
+        { "name": "Grocery", "slug": "groceries", "icon": "🛒", "color": "#DBEAFE" },
+        { "name": "Sports", "slug": "sports", "icon": "⚽", "color": "#FEE2E2" },
+        { "name": "Books", "slug": "books", "icon": "📚", "color": "#E0E7FF" },
+        { "name": "Toys", "slug": "toys", "icon": "🧸", "color": "#FEF3C7" },
+        { "name": "Baby", "slug": "baby", "icon": "🍼", "color": "#FCE7F3" },
+        { "name": "Pet Supplies", "slug": "pet-supplies", "icon": "🐶", "color": "#DCFCE7" },
+        { "name": "Office", "slug": "office", "icon": "📎", "color": "#E0F2FE" },
+        { "name": "Automotive", "slug": "automotive", "icon": "🚗", "color": "#F3F4F6" },
+        { "name": "Accessories", "slug": "accessories", "icon": "🕶️", "color": "#FEE2E2" },
+        { "name": "Travel", "slug": "travel", "icon": "🧳", "color": "#DBEAFE" },
+        { "name": "Jewellery", "slug": "jewellery", "icon": "💍", "color": "#FEF3C7" },
+        { "name": "Watches", "slug": "watches", "icon": "⌚", "color": "#EDE9FE" }
+      ]
     },
     {
-      "id": "sponsor_strip_1782990908202",
+      "id": "official-brand-stores",
       "type": "sponsor_strip",
-      "visible": true,
-      "order": 3,
-      "title": "Fresh Global",
-      "config": {
-        "title": "Sponsored Brands",
-        "brands": [
-          {
-            "name": "SBI Card 10% OFF",
-            "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100",
-            "discountText": "Flat 10% Off",
-            "slug": "new-slug"
-          },
-          {
-            "name": "New Sponsor",
-            "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100",
-            "discountText": "Flat 10% Off",
-            "slug": "new-slug"
-          }
-        ]
-      }
+      "title": "Official Brand Flagships",
+      "subtitle": "Directly from authorized brand flagship stores",
+      "enabled": true,
+      "sortOrder": 4,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#F1F5F9",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "All Brands", "url": "/brands" },
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "100% AUTHORIZED",
+      "priority": 85,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "slide",
+      "brands": [
+        { "name": "Apple", "logoUrl": "https://images.unsplash.com/photo-1611186871348-b1ce696e52c9?w=100", "discountText": "No Cost EMI", "slug": "apple" },
+        { "name": "Samsung", "logoUrl": "https://images.unsplash.com/photo-1610945265064-0e34e5519bbf?w=100", "discountText": "Flat ₹10,000 Off", "slug": "samsung" },
+        { "name": "Nike", "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100", "discountText": "Up to 40% Off", "slug": "nike" },
+        { "name": "Sony", "logoUrl": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=100", "discountText": "Free ANC Case", "slug": "sony" },
+        { "name": "Adidas", "logoUrl": "https://images.unsplash.com/photo-1518002171953-a080ee817e1f?w=100", "discountText": "Flat 30% Off", "slug": "adidas" },
+        { "name": "L'Oréal", "logoUrl": "https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100", "discountText": "Buy 1 Get 1", "slug": "loreal" }
+      ]
     },
     {
-      "id": "flash_sale",
+      "id": "flash-sale",
       "type": "flash_sale",
-      "visible": true,
-      "order": 4,
-      "title": "Flash Sale",
-      "config": {
-        "title": "⚡ Hourly Lightning Deals",
-        "subtitle": "Unmatched prices, closing real fast!",
-        "expiresAt": "2026-07-02T00:12:58.247Z",
-        "deals": [
-          {
-            "productId": "ele-1",
-            "label": "AuraPods Pro",
-            "discount": 30
-          },
-          {
-            "productId": "be-1",
-            "label": "Vit C Serum",
-            "discount": 33
-          },
-          {
-            "productId": "spo-1",
-            "label": "Match Football",
-            "discount": 33
-          },
-          {
-            "productId": "hom-1",
-            "label": "Smart Coffee Maker",
-            "discount": 37
-          }
-        ]
-      }
+      "title": "Hourly Flash Sale",
+      "subtitle": "Limited time lightning deals ending soon",
+      "enabled": true,
+      "sortOrder": 5,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#7F1D1D",
+      "textColor": "#FFFFFF",
+      "ctaPrimary": { "text": "View All Flash Deals", "url": "/deals" },
+      "ctaSecondary": null,
+      "collectionResolver": "FLASH_SALE",
+      "badge": "⚡ LIGHTNING",
+      "priority": 88,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": "2026-12-31T23:59:59.000Z",
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "hover",
+      "deals": [
+        { "productId": "prod-1", "label": "AirPods Pro 2", "discount": 20 },
+        { "productId": "prod-2", "label": "Sony XM5", "discount": 23 },
+        { "productId": "prod-4", "label": "boAt Airdopes", "discount": 62 },
+        { "productId": "flado-1", "label": "Organic Bananas", "discount": 26 }
+      ]
     },
     {
-      "id": "flado_banner",
+      "id": "todays-deals",
+      "type": "product_grid",
+      "title": "Today's Best Deals",
+      "subtitle": "Handpicked daily savings with deepest discounts",
+      "enabled": true,
+      "sortOrder": 6,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#FFFFFF",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "View All Deals", "url": "/deals" },
+      "ctaSecondary": null,
+      "collectionResolver": "TODAYS_DEALS",
+      "badge": "HANDPICKED",
+      "priority": 82,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "card_lift",
+      "productIds": ["prod-1", "prod-2", "prod-3", "prod-6", "prod-7", "prod-13"]
+    },
+    {
+      "id": "best-sellers",
+      "type": "product_grid",
+      "title": "Best Sellers",
+      "subtitle": "Most popular items loved by over 50,000+ customers",
+      "enabled": true,
+      "sortOrder": 7,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#F8FAFC",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "Shop Best Sellers", "url": "/collections/best-sellers" },
+      "ctaSecondary": null,
+      "collectionResolver": "BEST_SELLER",
+      "badge": "TOP RATED",
+      "priority": 80,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "scale",
+      "productIds": ["prod-1", "prod-6", "prod-7", "prod-13", "prod-16"]
+    },
+    {
+      "id": "new-arrivals",
+      "type": "product_grid",
+      "title": "Hot New Arrivals",
+      "subtitle": "Fresh releases in tech, fashion & beauty",
+      "enabled": true,
+      "sortOrder": 8,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#FFFFFF",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "Explore New Releases", "url": "/collections/new-arrivals" },
+      "ctaSecondary": null,
+      "collectionResolver": "NEWEST",
+      "badge": "JUST ARRIVED",
+      "priority": 78,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "fade",
+      "productIds": ["prod-8", "prod-9", "prod-10", "prod-11"]
+    },
+    {
+      "id": "trending-products",
+      "type": "product_grid",
+      "title": "🔥 Trending on AuraMart",
+      "subtitle": "Real-time viral favorites based on active demand",
+      "enabled": true,
+      "sortOrder": 9,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#FFFBEB",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "See All Trending", "url": "/collections/trending" },
+      "ctaSecondary": null,
+      "collectionResolver": "TRENDING",
+      "badge": "VIRAL",
+      "priority": 76,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "card_lift",
+      "productIds": ["prod-2", "prod-7", "prod-8", "prod-10"]
+    },
+    {
+      "id": "budget-picks",
+      "type": "product_grid",
+      "title": "Budget Picks under ₹1,999",
+      "subtitle": "High quality essentials at unbeatable prices",
+      "enabled": true,
+      "sortOrder": 10,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#F0FDF4",
+      "textColor": "#0F172A",
+      "ctaPrimary": { "text": "Explore Budget Store", "url": "/collections/budget-picks" },
+      "ctaSecondary": null,
+      "collectionResolver": "BUDGET_PICKS",
+      "badge": "GREAT VALUE",
+      "priority": 74,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "zoom",
+      "productIds": ["prod-4", "prod-13", "prod-14", "prod-15"]
+    },
+    {
+      "id": "premium-collection",
+      "type": "product_grid",
+      "title": "Luxury & Premium Collection",
+      "subtitle": "Flagship devices, automatic timepieces & haute fashion",
+      "enabled": true,
+      "sortOrder": 11,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#0F172A",
+      "textColor": "#F8FAFC",
+      "ctaPrimary": { "text": "Explore Luxury", "url": "/collections/premium-collection" },
+      "ctaSecondary": null,
+      "collectionResolver": "PREMIUM_COLLECTION",
+      "badge": "EXCLUSIVE",
+      "priority": 72,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "slide",
+      "productIds": ["prod-1", "prod-2", "prod-5", "prod-11", "prod-12"]
+    },
+    {
+      "id": "flado-quick-commerce",
       "type": "flado_banner",
-      "visible": true,
-      "order": 5,
-      "title": "Flado Quick Commerce Banner",
-      "config": {
-        "title": "⚡ Flado 10-Minute Delivery",
-        "subtitle": "Groceries, fresh fruits & daily essentials delivered instantly!",
-        "ctaText": "Order Now on Flado",
-        "ctaUrl": "/flado",
-        "backgroundColor": "#059669",
-        "accentColor": "#D1FAE5",
-        "imageUrl": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80",
-        "badgeText": "Instant Delivery: Bandra West"
-      }
+      "title": "Flado 10-Minute Express Grocery",
+      "subtitle": "Farm-fresh produce, milk, bread & essentials delivered instantly",
+      "enabled": true,
+      "sortOrder": 12,
+      "desktopImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&auto=format&fit=crop&q=80",
+      "tabletImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=800&auto=format&fit=crop&q=80",
+      "mobileImage": "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80",
+      "videoUrl": null,
+      "gradientOverlay": "linear-gradient(90deg, #059669 0%, #10B981 100%)",
+      "backgroundColor": "#059669",
+      "textColor": "#FFFFFF",
+      "ctaPrimary": { "text": "Order on Flado", "url": "/flado" },
+      "ctaSecondary": null,
+      "collectionResolver": "FLADO",
+      "badge": "10 MIN EXPRESS",
+      "priority": 70,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "fade"
     },
     {
-      "id": "sponsor_strip",
-      "type": "sponsor_strip",
-      "visible": true,
-      "order": 6,
-      "title": "Sponsored Brands",
-      "config": {
-        "title": "⭐ Featured Brand Deals",
-        "brands": [
-          {
-            "name": "Nike",
-            "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80",
-            "discountText": "Up to 40% Off",
-            "slug": "nike"
-          },
-          {
-            "name": "Sony",
-            "logoUrl": "https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=100&auto=format&fit=crop&q=80",
-            "discountText": "No Cost EMI",
-            "slug": "sony"
-          },
-          {
-            "name": "Dyson",
-            "logoUrl": "https://images.unsplash.com/photo-1558317374-067fb5f30001?w=100&auto=format&fit=crop&q=80",
-            "discountText": "Extra ₹1,500 Off",
-            "slug": "dyson"
-          },
-          {
-            "name": "LEGO",
-            "logoUrl": "https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=100&auto=format&fit=crop&q=80",
-            "discountText": "Flat 15% Off",
-            "slug": "lego"
-          },
-          {
-            "name": "Musa Noman",
-            "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100",
-            "discountText": "Flat 10% Off",
-            "slug": "Musa Noman"
-          }
-        ]
-      }
-    },
-    {
-      "id": "new_launches",
-      "type": "new_launches",
-      "visible": true,
-      "order": 7,
-      "title": "New Launches",
-      "config": {
-        "title": "🚀 Hot New Launches",
-        "subtitle": "Latest tech, fresh fashion, and new arrivals on the block",
-        "productIds": [
-          "toy-1",
-          "spo-2",
-          "ele-2"
-        ]
-      }
-    },
-    {
-      "id": "brand_spotlight",
-      "type": "brand_spotlight",
-      "visible": true,
-      "order": 8,
-      "title": "Official Brand Stores",
-      "config": {
-        "title": "🏆 Exclusive Brand Spotlight",
-        "subtitle": "Shop directly from officially authorized flagships",
-        "brands": [
-          {
-            "name": "Nike Premium Store",
-            "logoUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80",
-            "bannerUrl": "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80",
-            "slug": "new_launches",
-            "tagline": "Just Do It. Premium Sportswear Flagship Store.",
-            "badgeColor": "#111827"
-          },
-          {
-            "name": "boAt Official Store",
-            "logoUrl": "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=100&auto=format&fit=crop&q=80",
-            "bannerUrl": "https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=600&auto=format&fit=crop&q=80",
-            "slug": "boat",
-            "tagline": "Plug into Nirvana. Sleek sound tech & wear.",
-            "badgeColor": "#EF4444"
-          },
-          {
-            "name": "Clinique Organics",
-            "logoUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=100&auto=format&fit=crop&q=80",
-            "bannerUrl": "https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80",
-            "slug": "clinique",
-            "tagline": "Allergy tested. 100% Fragrance Free skin health.",
-            "badgeColor": "#047857"
-          }
-        ]
-      }
-    },
-    {
-      "id": "collection_cards",
-      "type": "collection_cards",
-      "visible": true,
-      "order": 9,
-      "title": "Curated Collections",
-      "config": {
-        "title": "🎨 Curated Lifestyle Collections",
-        "collections": [
-          {
-            "title": "The Monsoon Setup",
-            "subtitle": "Dry gear & rain protective wear",
-            "imageUrl": "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80",
-            "slug": "sports",
-            "tag": "Monsoon Sale"
-          },
-          {
-            "title": "Ultimate Desk Vibe",
-            "subtitle": "Ergonomic layouts & sound setups",
-            "imageUrl": "https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=600&auto=format&fit=crop&q=80",
-            "slug": "home",
-            "tag": "Work From Home"
-          },
-          {
-            "title": "Gen-Z Style Book",
-            "subtitle": "Trending street looks & oversized tees",
-            "imageUrl": "https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80",
-            "slug": "fashion",
-            "tag": "New Drops"
-          }
-        ]
-      }
-    },
-    {
-      "id": "trending_now",
-      "type": "trending_now",
-      "visible": true,
-      "order": 10,
-      "title": "Trending Now",
-      "config": {
-        "title": "🔥 Trending on AuraMart",
-        "subtitle": "Top trending items based on real-time clicks & purchases",
-        "productIds": [
-          "ele-1",
-          "fas-1",
-          "be-1",
-          "spo-1",
-          "app-1"
-        ]
-      }
-    },
-    {
-      "id": "look_book",
-      "type": "look_book",
-      "visible": true,
-      "order": 11,
-      "title": "AuraStudio Lookbook",
-      "config": {
-        "title": "📸 Style Studio & Lookbooks",
-        "subtitle": "Swipe for styling inspiration from top fashion influencers",
-        "items": [
-          {
-            "id": "l1",
-            "imageUrl": "https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400&auto=format&fit=crop&q=80",
-            "title": "Street Casual",
-            "tags": [
-              "Denim Jacket",
-              "Run Pro Sneakers"
-            ]
-          },
-          {
-            "id": "l2",
-            "imageUrl": "https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format&fit=crop&q=80",
-            "title": "Summer Breeze",
-            "tags": [
-              "Linen Dress",
-              "AuraGlow Serum"
-            ]
-          }
-        ]
-      }
-    },
-    {
-      "id": "promo_strip_1",
+      "id": "auravip-membership",
       "type": "promo_strip",
-      "visible": true,
-      "order": 12,
-      "config": {
-        "imageUrl": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80",
-        "title": "⚡ AuraPlus membership: Extra 5% coins on every purchase & unlimited free shipping! ⚡",
-        "ctaUrl": "/profile",
-        "backgroundColor": "#F59E0B",
-        "textColor": "#1E293B"
-      }
+      "title": "AuraVIP Membership Benefits",
+      "subtitle": "Unlimited zero delivery fees + 10% Extra Cashback Coins on every purchase",
+      "enabled": true,
+      "sortOrder": 13,
+      "desktopImage": "https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80",
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#D97706",
+      "textColor": "#FFFFFF",
+      "ctaPrimary": { "text": "Join AuraVIP Now", "url": "/flado/pass" },
+      "ctaSecondary": null,
+      "collectionResolver": "VIP_ONLY",
+      "badge": "VIP PASS",
+      "priority": 68,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "card_lift"
     },
     {
-      "id": "live_deal",
-      "type": "live_deal",
-      "visible": true,
-      "order": 13,
-      "title": "AuraLive Deal",
-      "config": {
-        "productId": "ele-1",
-        "productName": "AuraPods Pro ANC Earbuds",
-        "productImage": "https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80",
-        "originalPrice": 12999,
-        "livePrice": 8499,
-        "expiresAt": "2026-07-01T22:12:58.247Z",
-        "watchersCount": 3840,
-        "hostName": "Neha Malhotra"
-      }
+      "id": "trust-banner",
+      "type": "trust_banner",
+      "title": "AuraMart Guarantee & Trust Standards",
+      "subtitle": "Authentic products, 7-day easy returns & 256-bit encrypted checkout",
+      "enabled": true,
+      "sortOrder": 14,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#F8FAFC",
+      "textColor": "#0F172A",
+      "ctaPrimary": null,
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "TRUST GUARANTEE",
+      "priority": 50,
+      "theme": "LIGHT",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "fade"
     },
     {
-      "id": "live_deal_1782949260993",
-      "type": "live_deal",
-      "visible": true,
-      "order": 14,
-      "title": "abc",
-      "config": {
-        "productId": "",
-        "productName": "Loot now",
-        "productImage": "",
-        "originalPrice": 1000,
-        "livePrice": 500,
-        "hostName": "Flipkar",
-        "expiresAt": "2026-07-09T23:41:00.000Z"
-      }
-    },
-    {
-      "id": "promo_strip_1782992237690",
-      "type": "promo_strip",
-      "visible": true,
-      "order": 15,
-      "title": "Promo Strip",
-      "config": {
-        "title": "Promo banner strip text",
-        "ctaUrl": "/profile",
-        "backgroundColor": "#F59E0B",
-        "textColor": "#1E293B"
-      }
+      "id": "newsletter",
+      "type": "newsletter",
+      "title": "Subscribe for Exclusive Offers",
+      "subtitle": "Get ₹500 instant discount voucher on your first order!",
+      "enabled": true,
+      "sortOrder": 15,
+      "desktopImage": null,
+      "tabletImage": null,
+      "mobileImage": null,
+      "videoUrl": null,
+      "gradientOverlay": null,
+      "backgroundColor": "#1E293B",
+      "textColor": "#F8FAFC",
+      "ctaPrimary": { "text": "Subscribe Now", "url": "#newsletter" },
+      "ctaSecondary": null,
+      "collectionResolver": null,
+      "badge": "INSIDER OFFERS",
+      "priority": 40,
+      "theme": "DARK",
+      "startDate": null,
+      "endDate": null,
+      "visibilityRules": { "userSegment": "ALL" },
+      "animation": "fade"
     }
   ]
 }

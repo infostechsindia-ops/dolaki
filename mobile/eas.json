@@ -1,0 +1,108 @@
+{
+  "cli": {
+    "version": ">= 10.0.0"
+  },
+  "build": {
+    "development": {
+      "developmentClient": true,
+      "distribution": "internal",
+      "env": {
+        "EXPO_PUBLIC_API_URL": "http://localhost:3000/api/v1"
+      }
+    },
+    "customer": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "customer",
+        "EXPO_PUBLIC_API_URL": "https://api.auramart.com/api/v1"
+      }
+    },
+    "vendor": {
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "vendor",
+        "EXPO_PUBLIC_API_URL": "https://api.auramart.com/api/v1"
+      }
+    },
+    "rider": {
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "rider",
+        "EXPO_PUBLIC_API_URL": "https://api.auramart.com/api/v1"
+      }
+    },
+    "warehouse": {
+      "distribution": "store",
+      "android": {
+        "buildType": "app-bundle"
+      },
+      "env": {
+        "EXPO_PUBLIC_APP_VARIANT": "warehouse",
+        "EXPO_PUBLIC_API_URL": "https://api.auramart.com/api/v1"
+      }
+    },
+    "production": {
+      "distribution": "store",
+      "autoIncrement": true,
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://api.auramart.com/api/v1"
+      }
+    }
+  },
+  "submit": {
+    "customer": {
+      "ios": {
+        "appleId": "apps@auramart.com",
+        "ascAppId": "6470000001",
+        "appleTeamId": "AURA123456"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    },
+    "vendor": {
+      "ios": {
+        "appleId": "apps@auramart.com",
+        "ascAppId": "6470000002",
+        "appleTeamId": "AURA123456"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    },
+    "rider": {
+      "ios": {
+        "appleId": "apps@auramart.com",
+        "ascAppId": "6470000003",
+        "appleTeamId": "AURA123456"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    },
+    "warehouse": {
+      "ios": {
+        "appleId": "apps@auramart.com",
+        "ascAppId": "6470000004",
+        "appleTeamId": "AURA123456"
+      },
+      "android": {
+        "serviceAccountKeyPath": "./google-service-account.json",
+        "track": "internal"
+      }
+    }
+  }
+}

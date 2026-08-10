@@ -4,33 +4,66 @@ import React, { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { FiX, FiShoppingBag, FiArrowRight, FiInfo } from 'react-icons/fi';
-import { products as allProducts, Product } from '@/data/products';
 import { useCart } from '@/context/CartContext';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 function ComparePageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { addToCart } = useCart();
   const [comparedProducts, setComparedProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const idsParam = searchParams.get('ids');
-    let ids: string[] = [];
-    
-    if (idsParam) {
-      ids = idsParam.split(',').filter(Boolean);
-    }
+    const loadComparedProducts = async () => {
+      setLoading(true);
+      try {
+        const idsParam = searchParams.get('ids');
+        const ids = idsParam ? idsParam.split(',').filter(Boolean) : [];
 
-    if (ids.length > 0) {
-      const matched = allProducts.filter(p => ids.includes(p.id)).slice(0, 3);
-      setComparedProducts(matched);
-    } else {
-      // Fallback defaults: Apple vs Samsung vs OnePlus smartphones
-      const defaults = ['ele-2', 'ele-7', 'ele-8']; // Apple Watch vs Galaxy S24 vs OnePlus 12R
-      const matched = allProducts.filter(p => defaults.includes(p.id)).slice(0, 3);
-      setComparedProducts(matched);
-    }
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=20`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          const mapped = list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          }));
+
+          if (ids.length > 0) {
+            const matched = mapped.filter((p: any) => ids.includes(p.id)).slice(0, 3);
+            setComparedProducts(matched.length > 0 ? matched : mapped.slice(0, 3));
+          } else {
+            setComparedProducts(mapped.slice(0, 3));
+          }
+        }
+      } catch (e) {
+        console.error('Failed to load comparison products:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadComparedProducts();
   }, [searchParams]);
 
   const handleRemove = (id: string) => {

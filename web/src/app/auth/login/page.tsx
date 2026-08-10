@@ -4,6 +4,8 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import styles from './page.module.css';
 
+import { API_BASE_URL } from '@/lib/config';
+
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
@@ -18,7 +20,7 @@ export default function LoginPage() {
     setError('');
     
     try {
-      const res = await fetch('http://localhost:3000/auth/login', {
+      const res = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password })
@@ -26,17 +28,24 @@ export default function LoginPage() {
       
       if (res.ok) {
         const data = await res.json();
-        localStorage.setItem('aura_token', data.token || 'mock_token');
+        if (!data.token) {
+          setError('Authentication server failed to issue a valid session token.');
+          return;
+        }
+        localStorage.setItem('aura_token', data.token);
         localStorage.setItem('aura_user', JSON.stringify(data.user || { email }));
         router.push('/profile');
       } else {
-        setError('Invalid credentials');
+        if (res.status === 404) {
+          setError('Account not found. Please register.');
+        } else if (res.status === 401) {
+          setError('Invalid email or password.');
+        } else {
+          setError(`Server error (${res.status}): Unable to authenticate at this time.`);
+        }
       }
     } catch (err) {
-      // API might not exist, mock success for UI
-      localStorage.setItem('aura_token', 'mock_token_123');
-      localStorage.setItem('aura_user', JSON.stringify({ email }));
-      router.push('/profile');
+      setError('Connection failure: Unable to load authentication service. Please check if backend is running.');
     } finally {
       setLoading(false);
     }

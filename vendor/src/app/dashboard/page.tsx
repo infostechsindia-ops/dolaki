@@ -1,46 +1,115 @@
 "use client";
 
-import React from "react";
-import Link from "next/navigation";
+import React, { useEffect, useState, useCallback } from "react";
 import { useVendor } from "@/context/VendorContext";
 import styles from "./dashboard.module.css";
 import {
   TrendingUpIcon,
   PackageIcon,
   OrdersIcon,
-  PayoutsIcon,
   FladoIcon,
   PlusIcon
 } from "@/components/Icons";
 
+interface VendorDashboardSummaryDTO {
+  vendorId: string;
+  storeName: string;
+  isVerified: boolean;
+  performanceScore: number;
+  salesSummary: {
+    grossRevenueMinor: number;
+    formattedGrossRevenue: string;
+    totalOrdersCount: number;
+    avgOrderValueMinor: number;
+    formattedAvgOrderValue: string;
+    activeListingsCount: number;
+  };
+  ordersRequiringActionCount: number;
+  ordersRequiringAction: Array<{
+    id: string;
+    customerName: string;
+    totalAmountMinor: number;
+    formattedTotalAmount: string;
+    status: string;
+    createdAt: string;
+    itemCount: number;
+  }>;
+  lowStockAlertsCount: number;
+  lowStockAlerts: Array<{
+    id: string;
+    productId: string;
+    variantName?: string;
+    stockQuantity: number;
+  }>;
+  pendingShipmentsCount: number;
+  quickCommercePerformance: {
+    fladoListingsCount: number;
+    fladoActiveCount: number;
+  };
+  settlementSummary: {
+    unclearedBalanceMinor: number;
+    formattedUnclearedBalance: string;
+    settledBalanceMinor: number;
+    formattedSettledBalance: string;
+    commissionRatePercentage: number;
+    gstOnCommissionPercentage: number;
+  };
+}
+
 export default function DashboardOverview() {
   const { products, orders, payouts } = useVendor();
 
-  // Computations
+  const [liveSummary, setLiveSummary] = useState<VendorDashboardSummaryDTO | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchLiveDashboard = useCallback(async () => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    if (isDemo || !token) {
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/dashboard`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        }
+      });
+      if (!res.ok) {
+        throw new Error(`Failed to load live vendor dashboard (HTTP ${res.status})`);
+      }
+      let data = await res.json();
+      if (data && typeof data === "object" && "data" in data) {
+        data = data.data;
+      }
+      setLiveSummary(data);
+    } catch (err: any) {
+      setError(err?.message || "Failed to fetch live vendor metrics");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveDashboard();
+  }, [fetchLiveDashboard]);
+
+  // Fallback context calculations for demo mode
   const activeProducts = products.filter(p => p.status === "active").length;
   const pendingOrders = orders.filter(o => o.status === "pending");
-  const processedOrders = orders.filter(o => o.status !== "pending");
-  
-  // Calculate total gross sales
   const totalSales = orders.reduce((sum, order) => sum + order.totalAmount, 0);
   const avgOrderValue = orders.length > 0 ? Math.round(totalSales / orders.length) : 0;
-  
-  // Outstanding payout balance calculation (processing payouts)
   const outstandingPayout = payouts
     .filter(p => p.status === "processing")
     .reduce((sum, p) => sum + p.netSettlement, 0);
 
-  // Sales trend data (mocked for last 6 months for chart display)
-  const monthlyTrends = [
-    { month: "Jan", sales: 28000, height: "35%" },
-    { month: "Feb", sales: 34000, height: "42%" },
-    { month: "Mar", sales: 48000, height: "60%" },
-    { month: "Apr", sales: 42000, height: "52%" },
-    { month: "May", sales: 65000, height: "80%" },
-    { month: "Jun", sales: totalSales, height: "100%", current: true }
-  ];
-
-  // Formatting currency
   const formatINR = (val: number) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -49,8 +118,34 @@ export default function DashboardOverview() {
     }).format(val);
   };
 
+  const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+
+  if (loading) {
+    return (
+      <div style={{ padding: "3rem", textAlign: "center", color: "var(--text-secondary)" }}>
+        <p style={{ fontWeight: 700 }}>Loading Authoritative Vendor Dashboard...</p>
+      </div>
+    );
+  }
+
+  // Display live summary if available, else fallback to context metrics
+  const displayRevenue = liveSummary ? liveSummary.salesSummary.formattedGrossRevenue : formatINR(totalSales);
+  const displayTotalOrders = liveSummary ? liveSummary.salesSummary.totalOrdersCount : orders.length;
+  const displayActionOrdersCount = liveSummary ? liveSummary.ordersRequiringActionCount : pendingOrders.length;
+  const displayAOV = liveSummary ? liveSummary.salesSummary.formattedAvgOrderValue : formatINR(avgOrderValue);
+  const displayActiveListings = liveSummary ? liveSummary.salesSummary.activeListingsCount : activeProducts;
+  const displayUnclearedBalance = liveSummary ? liveSummary.settlementSummary.formattedUnclearedBalance : formatINR(outstandingPayout);
+  const displayFladoCount = liveSummary ? liveSummary.quickCommercePerformance.fladoListingsCount : products.filter(p => p.listOnFlado).length;
+  const displayLowStockCount = liveSummary ? liveSummary.lowStockAlertsCount : products.filter(p => p.stock <= 5).length;
+
   return (
     <div className="animate-fade-in">
+      {error && (
+        <div style={{ backgroundColor: "#FEF2F2", borderLeft: "4px solid #EF4444", color: "#991B1B", padding: "1rem", marginBottom: "1.5rem", borderRadius: "4px", fontSize: "0.875rem" }}>
+          <strong>Dashboard Warning:</strong> {error}. Showing cached store data.
+        </div>
+      )}
+
       {/* Welcome Section */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.5rem" }}>
         <div>
@@ -71,10 +166,9 @@ export default function DashboardOverview() {
             <span>GROSS REVENUE</span>
             <TrendingUpIcon size={16} className={styles.trendUp} />
           </div>
-          <div className={styles.statValue}>{formatINR(totalSales)}</div>
+          <div className={styles.statValue}>{displayRevenue}</div>
           <div className={styles.statTrend}>
-            <span className={styles.trendUp}>+14.2%</span>
-            <span style={{ color: "var(--text-light)" }}>from last month</span>
+            <span style={{ color: "var(--text-light)" }}>Authoritative backend total</span>
           </div>
         </div>
 
@@ -83,10 +177,9 @@ export default function DashboardOverview() {
             <span>TOTAL ORDERS</span>
             <OrdersIcon size={16} style={{ color: "var(--primary-green)" }} />
           </div>
-          <div className={styles.statValue}>{orders.length}</div>
+          <div className={styles.statValue}>{displayTotalOrders}</div>
           <div className={styles.statTrend}>
-            <span className={styles.trendUp}>+{pendingOrders.length} pending</span>
-            <span style={{ color: "var(--text-light)" }}>awaiting pack</span>
+            <span className={styles.trendUp}>+{displayActionOrdersCount} pending action</span>
           </div>
         </div>
 
@@ -95,10 +188,9 @@ export default function DashboardOverview() {
             <span>AVG ORDER VALUE</span>
             <span style={{ fontSize: "0.75rem", color: "var(--primary-green)", fontWeight: 700 }}>AOV</span>
           </div>
-          <div className={styles.statValue}>{formatINR(avgOrderValue)}</div>
+          <div className={styles.statValue}>{displayAOV}</div>
           <div className={styles.statTrend}>
-            <span className={styles.trendUp}>+5.8%</span>
-            <span style={{ color: "var(--text-light)" }}>basket optimization</span>
+            <span style={{ color: "var(--text-light)" }}>Basket performance</span>
           </div>
         </div>
 
@@ -107,58 +199,30 @@ export default function DashboardOverview() {
             <span>ACTIVE LISTINGS</span>
             <PackageIcon size={16} style={{ color: "var(--primary-green)" }} />
           </div>
-          <div className={styles.statValue}>{activeProducts}</div>
+          <div className={styles.statValue}>{displayActiveListings}</div>
           <div className={styles.statTrend}>
             <span className={styles.trendUp}>
-              {products.filter(p => p.listOnFlado).length} on Flado
+              {displayFladoCount} on Flado
             </span>
             <span style={{ color: "var(--text-light)" }}>quick commerce</span>
           </div>
         </div>
       </div>
 
-      {/* Main Grid: Sales Trends & Pending Orders */}
-      <div className={styles.dashboardMainGrid}>
-        {/* Sales Chart Block */}
-        <div className={styles.dashboardBlock}>
-          <div className={styles.blockTitle}>
-            <span>Sales Growth Trend (INR)</span>
-            <div className={styles.fladoLiveBadge}>
-              <TrendingUpIcon size={12} />
-              <span>MoM Upward</span>
-            </div>
+      {/* Action Banners & Low Stock Alerts */}
+      {displayLowStockCount > 0 && (
+        <div style={{ backgroundColor: "#FFFBEB", borderWidth: "1px", borderColor: "#FCD34D", borderRadius: "8px", padding: "12px 16px", marginBottom: "1.5rem", flexDirection: "row", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <span style={{ fontWeight: 700, color: "#92400E", fontSize: "0.875rem" }}>Low Stock Alert: </span>
+            <span style={{ color: "#B45309", fontSize: "0.875rem" }}>{displayLowStockCount} inventory items have 5 or fewer units remaining. Re-stock soon to avoid SLA penalties.</span>
           </div>
-          <div className={styles.chartContainer}>
-            {monthlyTrends.map((trend) => (
-              <div key={trend.month} className={styles.chartBarWrapper}>
-                <div
-                  className={styles.chartBar}
-                  style={{
-                    height: trend.height,
-                    background: trend.current
-                      ? "linear-gradient(180deg, var(--primary-green) 0%, rgba(16, 185, 129, 0.4) 100%)"
-                      : "linear-gradient(180deg, var(--primary-dark-green) 0%, rgba(6, 78, 59, 0.3) 100%)"
-                  }}
-                >
-                  <span className={styles.chartBarTooltip}>{formatINR(trend.sales)}</span>
-                </div>
-                <span className={styles.chartBarLabel} style={{ fontWeight: trend.current ? 700 : 500 }}>
-                  {trend.month}
-                </span>
-              </div>
-            ))}
-          </div>
-          <div style={{ marginTop: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <span style={{ fontSize: "0.75rem", color: "var(--text-secondary)" }}>
-              Data updated just now. Next settlement cycle triggers tomorrow.
-            </span>
-            <a href="/dashboard/payouts" style={{ fontSize: "0.8125rem", color: "var(--primary-green)", fontWeight: 700, textDecoration: "underline" }}>
-              View Payout Ledger
-            </a>
-          </div>
+          <a href="/dashboard/inventory" style={{ color: "#D97706", fontWeight: 800, fontSize: "0.8125rem", textDecoration: "underline" }}>Update Stock &rarr;</a>
         </div>
+      )}
 
-        {/* Payout & Flado Panel Summary */}
+      {/* Main Grid: Settlement & Flado Panel Summary */}
+      <div className={styles.dashboardMainGrid}>
+        {/* Payout & Settlement Block */}
         <div className={styles.dashboardBlock} style={{ display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
           <div>
             <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--text-primary)" }}>
@@ -170,10 +234,10 @@ export default function DashboardOverview() {
                 UNCLEARED BALANCE
               </span>
               <span style={{ fontSize: "1.5rem", fontWeight: 800, color: "var(--primary-dark-green)", display: "block" }}>
-                {formatINR(outstandingPayout)}
+                {displayUnclearedBalance}
               </span>
               <span style={{ fontSize: "0.7rem", color: "var(--text-light)", display: "block", marginTop: "0.25rem" }}>
-                Will settle into your bank on next payout cycle.
+                Will settle into your registered bank account on next payout cycle.
               </span>
             </div>
 
@@ -185,10 +249,6 @@ export default function DashboardOverview() {
               <div style={{ display: "flex", justifyContent: "space-between" }}>
                 <span>GST on Commission:</span>
                 <span style={{ fontWeight: 600 }}>18%</span>
-              </div>
-              <div style={{ display: "flex", justifyContent: "space-between", borderTop: "1px dashed var(--border-color)", paddingTop: "0.5rem" }}>
-                <span>Platform charge:</span>
-                <span style={{ fontWeight: 600, color: "var(--primary-green)" }}>Free Promo</span>
               </div>
             </div>
           </div>
@@ -206,18 +266,50 @@ export default function DashboardOverview() {
             </a>
           </div>
         </div>
+
+        {/* Quick Actions Panel */}
+        <div className={styles.dashboardBlock}>
+          <h3 style={{ fontSize: "1rem", fontWeight: 700, marginBottom: "0.75rem", color: "var(--text-primary)" }}>
+            Vendor Action Quick Links
+          </h3>
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", marginTop: "1rem" }}>
+            <a href="/dashboard/orders" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", textDecoration: "none" }}>
+              <div>
+                <span style={{ fontWeight: 700, color: "#111827", display: "block", fontSize: "0.875rem" }}>Pack Pending Orders ({displayActionOrdersCount})</span>
+                <span style={{ color: "#6B7280", fontSize: "0.75rem" }}>Review orders awaiting packing & dispatch</span>
+              </div>
+              <span style={{ color: "#6366F1", fontWeight: 800 }}>&rarr;</span>
+            </a>
+
+            <a href="/dashboard/inventory" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", textDecoration: "none" }}>
+              <div>
+                <span style={{ fontWeight: 700, color: "#111827", display: "block", fontSize: "0.875rem" }}>Catalog & Stock Management</span>
+                <span style={{ color: "#6B7280", fontSize: "0.75rem" }}>Update stock, prices, or add new variants</span>
+              </div>
+              <span style={{ color: "#6366F1", fontWeight: 800 }}>&rarr;</span>
+            </a>
+
+            <a href="/dashboard/payouts" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px", backgroundColor: "#F9FAFB", borderRadius: "8px", border: "1px solid #E5E7EB", textDecoration: "none" }}>
+              <div>
+                <span style={{ fontWeight: 700, color: "#111827", display: "block", fontSize: "0.875rem" }}>Payout Settlement History</span>
+                <span style={{ color: "#6B7280", fontSize: "0.75rem" }}>View net settlements and bank transfers</span>
+              </div>
+              <span style={{ color: "#6366F1", fontWeight: 800 }}>&rarr;</span>
+            </a>
+          </div>
+        </div>
       </div>
 
       {/* Pending Orders Table Block */}
-      <div className={styles.dashboardBlock}>
+      <div className={styles.dashboardBlock} style={{ marginTop: "1.5rem" }}>
         <div className={styles.blockTitle}>
-          <span>Pending Orders awaiting Packing ({pendingOrders.length})</span>
+          <span>Pending Orders awaiting Packing ({displayActionOrdersCount})</span>
           <a href="/dashboard/orders" style={{ fontSize: "0.8125rem", color: "var(--primary-green)", fontWeight: 700 }}>
             Go to Fulfillment Screen &rarr;
           </a>
         </div>
 
-        {pendingOrders.length === 0 ? (
+        {displayActionOrdersCount === 0 ? (
           <div style={{ padding: "3rem 1.5rem", textAlign: "center", color: "var(--text-secondary)" }}>
             <PackageIcon size={40} style={{ color: "var(--text-light)", marginBottom: "0.75rem" }} />
             <p style={{ fontWeight: 600 }}>All caught up! No pending orders to pack.</p>
@@ -230,42 +322,18 @@ export default function DashboardOverview() {
                 <tr>
                   <th>Order ID</th>
                   <th>Customer</th>
-                  <th>Destination</th>
-                  <th>Items Details</th>
                   <th>Value</th>
-                  <th>Payment</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
-                {pendingOrders.map((order) => (
+                {(liveSummary ? liveSummary.ordersRequiringAction : pendingOrders.map(o => ({ id: o.id, customerName: o.customerName, formattedTotalAmount: formatINR(o.totalAmount), status: o.status }))).map((order) => (
                   <tr key={order.id}>
                     <td style={{ fontWeight: 700, color: "var(--primary-dark-green)" }}>{order.id}</td>
+                    <td><div style={{ fontWeight: 600 }}>{order.customerName}</div></td>
+                    <td style={{ fontWeight: 700 }}>{order.formattedTotalAmount}</td>
                     <td>
-                      <div style={{ fontWeight: 600 }}>{order.customerName}</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>{order.customerPhone}</div>
-                    </td>
-                    <td>
-                      <div>{order.city}</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>PIN {order.pincode}</div>
-                    </td>
-                    <td>
-                      <div style={{ fontSize: "0.8125rem" }}>
-                        {order.items.map((item, idx) => (
-                          <div key={idx}>
-                            {item.productName} <span style={{ fontWeight: 700 }}>x{item.quantity}</span>
-                          </div>
-                        ))}
-                      </div>
-                    </td>
-                    <td style={{ fontWeight: 700 }}>{formatINR(order.totalAmount)}</td>
-                    <td>
-                      <span className={`badge ${order.paymentMethod === "COD" ? "badge-warning" : "badge-success"}`}>
-                        {order.paymentMethod}
-                      </span>
-                    </td>
-                    <td>
-                      <span className="badge badge-info" style={{ textTransform: "uppercase" }}>Awaiting Pack</span>
+                      <span className="badge badge-info" style={{ textTransform: "uppercase" }}>{order.status}</span>
                     </td>
                   </tr>
                 ))}

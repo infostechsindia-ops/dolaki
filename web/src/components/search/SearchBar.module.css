@@ -1,0 +1,40 @@
+.searchBarForm {
+  width: 100%;
+}
+
+.inputContainer {
+  position: relative;
+  width: 100%;
+  display: flex;
+  align-items: center;
+}
+
+.customSearchInput {
+  width: 100%;
+}
+
+.loadingSpinner {
+  position: absolute;
+  right: var(--space-12, 48px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-primary);
+  pointer-events: none;
+}
+
+.spinIcon {
+  animation: spin 1s linear infinite;
+  font-size: var(--font-size-md);
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinIcon {
+    animation: none !important;
+  }
+}

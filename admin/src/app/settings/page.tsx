@@ -13,8 +13,8 @@ export default function SettingsPage() {
   const [minOrder, setMinOrder] = useState("99");
   const [maxDistance, setMaxDistance] = useState("6");
   
-  const [razorpayKey, setRazorpayKey] = useState("rzp_live_A9b0x82c8928c0");
-  const [paytmMerchantId, setPaytmMerchantId] = useState("MID_982309480");
+  const [razorpayKey, setRazorpayKey] = useState("");
+  const [paytmMerchantId, setPaytmMerchantId] = useState("");
   
   // Toggles
   const [razorpayActive, setRazorpayActive] = useState(true);

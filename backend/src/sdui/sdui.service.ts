@@ -1,11 +1,16 @@
 import { Injectable } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+import { AuditService } from '../audit/audit.service';
 
 @Injectable()
 export class SduiService {
+  constructor(private readonly auditService: AuditService) {}
   private readonly configPath = path.join(process.cwd(), 'sdui_homepage.json');
-  private readonly fladoConfigPath = path.join(process.cwd(), 'sdui_flado.json');
+  private readonly fladoConfigPath = path.join(
+    process.cwd(),
+    'sdui_flado.json',
+  );
 
   // Default configuration corresponding to AuraMart 2.0 SDUI Specs (Flipkart/Noon layout)
   private readonly defaultConfig = {
@@ -23,8 +28,8 @@ export class SduiService {
           text: '🎉 Big Billion Aura Sale is Live! Flat 10% Off with HDFC Cards | Free Express Delivery on order above ₹499',
           link: '/deals',
           backgroundColor: '#7C3AED',
-          textColor: '#FFFFFF'
-        }
+          textColor: '#FFFFFF',
+        },
       },
       // 2. Hero Banners Carousel
       {
@@ -38,33 +43,38 @@ export class SduiService {
           banners: [
             {
               id: 'b1',
-              imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
               title: 'Epic Brand Drops',
-              subtitle: 'Unbelievable 50-70% discounts on Nike, Apple, Clinique & boAt!',
+              subtitle:
+                'Unbelievable 50-70% discounts on Nike, Apple, Clinique & boAt!',
               ctaText: 'Explore Offers',
               ctaUrl: '/deals',
-              backgroundColor: '#4C1D95'
+              backgroundColor: '#4C1D95',
             },
             {
               id: 'b2',
-              imageUrl: 'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=1200&auto=format&fit=crop&q=80',
               title: 'New Generation Sneakers',
               subtitle: 'Steal deals on Nike & AuraWear starts at just ₹1,999!',
               ctaText: 'View Kicks',
               ctaUrl: '/categories/fashion',
-              backgroundColor: '#1D4ED8'
+              backgroundColor: '#1D4ED8',
             },
             {
               id: 'b3',
-              imageUrl: 'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1498049794561-7780e7231661?w=1200&auto=format&fit=crop&q=80',
               title: 'The Premium Tech Hub',
-              subtitle: 'Noise Cancelling Earbuds & Smartwatches with AuraPay Cashbacks.',
+              subtitle:
+                'Noise Cancelling Earbuds & Smartwatches with AuraPay Cashbacks.',
               ctaText: 'Browse Gadgets',
               ctaUrl: '/categories/electronics',
-              backgroundColor: '#065F46'
-            }
-          ]
-        }
+              backgroundColor: '#065F46',
+            },
+          ],
+        },
       },
       // 3. Category Grid Icons
       {
@@ -75,16 +85,36 @@ export class SduiService {
         title: 'Shop by Category',
         config: {
           categories: [
-            { name: 'Electronics', slug: 'electronics', icon: '📱', color: '#EDE9FE' },
+            {
+              name: 'Electronics',
+              slug: 'electronics',
+              icon: '📱',
+              color: '#EDE9FE',
+            },
             { name: 'Fashion', slug: 'fashion', icon: '👗', color: '#FCE7F3' },
             { name: 'Beauty', slug: 'beauty', icon: '💄', color: '#FEF3C7' },
-            { name: 'Home & Kitchen', slug: 'home', icon: '🏠', color: '#D1FAE5' },
-            { name: 'Groceries', slug: 'groceries', icon: '🛒', color: '#DBEAFE' },
+            {
+              name: 'Home & Kitchen',
+              slug: 'home',
+              icon: '🏠',
+              color: '#D1FAE5',
+            },
+            {
+              name: 'Groceries',
+              slug: 'groceries',
+              icon: '🛒',
+              color: '#DBEAFE',
+            },
             { name: 'Sports', slug: 'sports', icon: '⚽', color: '#FEE2E2' },
-            { name: 'Appliances', slug: 'appliances', icon: '📺', color: '#E0E7FF' },
-            { name: 'Toys', slug: 'toys', icon: '🎮', color: '#FEF9C3' }
-          ]
-        }
+            {
+              name: 'Appliances',
+              slug: 'appliances',
+              icon: '📺',
+              color: '#E0E7FF',
+            },
+            { name: 'Toys', slug: 'toys', icon: '🎮', color: '#FEF9C3' },
+          ],
+        },
       },
       // 4. Flash Sale Strip
       {
@@ -101,9 +131,9 @@ export class SduiService {
             { productId: 'ele-1', label: 'AuraPods Pro', discount: 30 },
             { productId: 'be-1', label: 'Vit C Serum', discount: 33 },
             { productId: 'spo-1', label: 'Match Football', discount: 33 },
-            { productId: 'hom-1', label: 'Smart Coffee Maker', discount: 37 }
-          ]
-        }
+            { productId: 'hom-1', label: 'Smart Coffee Maker', discount: 37 },
+          ],
+        },
       },
       // 5. Flado Quick Commerce Gate
       {
@@ -114,14 +144,16 @@ export class SduiService {
         title: 'Flado Quick Commerce Banner',
         config: {
           title: '⚡ Flado 10-Minute Delivery',
-          subtitle: 'Groceries, fresh fruits & daily essentials delivered instantly!',
+          subtitle:
+            'Groceries, fresh fruits & daily essentials delivered instantly!',
           ctaText: 'Order Now on Flado',
           ctaUrl: '/flado',
           backgroundColor: '#059669',
           accentColor: '#D1FAE5',
-          imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80',
-          badgeText: 'Instant Delivery: Bandra West'
-        }
+          imageUrl:
+            'https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&auto=format&fit=crop&q=80',
+          badgeText: 'Instant Delivery: Bandra West',
+        },
       },
       // 6. Sponsored Brand Logos Strip
       {
@@ -133,12 +165,36 @@ export class SduiService {
         config: {
           title: '⭐ Featured Brand Deals',
           brands: [
-            { name: 'Nike', logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80', discountText: 'Up to 40% Off', slug: 'nike' },
-            { name: 'Sony', logoUrl: 'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=100&auto=format&fit=crop&q=80', discountText: 'No Cost EMI', slug: 'sony' },
-            { name: 'Dyson', logoUrl: 'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=100&auto=format&fit=crop&q=80', discountText: 'Extra ₹1,500 Off', slug: 'dyson' },
-            { name: 'LEGO', logoUrl: 'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=100&auto=format&fit=crop&q=80', discountText: 'Flat 15% Off', slug: 'lego' }
-          ]
-        }
+            {
+              name: 'Nike',
+              logoUrl:
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Up to 40% Off',
+              slug: 'nike',
+            },
+            {
+              name: 'Sony',
+              logoUrl:
+                'https://images.unsplash.com/photo-1546435770-a3e426bf472b?w=100&auto=format&fit=crop&q=80',
+              discountText: 'No Cost EMI',
+              slug: 'sony',
+            },
+            {
+              name: 'Dyson',
+              logoUrl:
+                'https://images.unsplash.com/photo-1558317374-067fb5f30001?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Extra ₹1,500 Off',
+              slug: 'dyson',
+            },
+            {
+              name: 'LEGO',
+              logoUrl:
+                'https://images.unsplash.com/photo-1560169897-fc0cdbdfa4d5?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Flat 15% Off',
+              slug: 'lego',
+            },
+          ],
+        },
       },
       // 7. New Launches Section
       {
@@ -150,8 +206,8 @@ export class SduiService {
         config: {
           title: '🚀 Hot New Launches',
           subtitle: 'Latest tech, fresh fashion, and new arrivals on the block',
-          productIds: ['toy-1', 'spo-2', 'ele-2']
-        }
+          productIds: ['toy-1', 'spo-2', 'ele-2'],
+        },
       },
       // 8. Brand Spotlight mall cards
       {
@@ -166,30 +222,36 @@ export class SduiService {
           brands: [
             {
               name: 'Nike Premium Store',
-              logoUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80',
-              bannerUrl: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
+              logoUrl:
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=100&auto=format&fit=crop&q=80',
+              bannerUrl:
+                'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=600&auto=format&fit=crop&q=80',
               slug: 'nike',
               tagline: 'Just Do It. Premium Sportswear Flagship Store.',
-              badgeColor: '#111827'
+              badgeColor: '#111827',
             },
             {
               name: 'boAt Official Store',
-              logoUrl: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=100&auto=format&fit=crop&q=80',
-              bannerUrl: 'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=600&auto=format&fit=crop&q=80',
+              logoUrl:
+                'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=100&auto=format&fit=crop&q=80',
+              bannerUrl:
+                'https://images.unsplash.com/photo-1593079831268-3381b0db4a77?w=600&auto=format&fit=crop&q=80',
               slug: 'boat',
               tagline: 'Plug into Nirvana. Sleek sound tech & wear.',
-              badgeColor: '#EF4444'
+              badgeColor: '#EF4444',
             },
             {
               name: 'Clinique Organics',
-              logoUrl: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=100&auto=format&fit=crop&q=80',
-              bannerUrl: 'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80',
+              logoUrl:
+                'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=100&auto=format&fit=crop&q=80',
+              bannerUrl:
+                'https://images.unsplash.com/photo-1601049541289-9b1b7bbbfe19?w=600&auto=format&fit=crop&q=80',
               slug: 'clinique',
               tagline: 'Allergy tested. 100% Fragrance Free skin health.',
-              badgeColor: '#047857'
-            }
-          ]
-        }
+              badgeColor: '#047857',
+            },
+          ],
+        },
       },
       // 9. Curated Collection Cards
       {
@@ -201,11 +263,32 @@ export class SduiService {
         config: {
           title: '🎨 Curated Lifestyle Collections',
           collections: [
-            { title: 'The Monsoon Setup', subtitle: 'Dry gear & rain protective wear', imageUrl: 'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80', slug: 'sports', tag: 'Monsoon Sale' },
-            { title: 'Ultimate Desk Vibe', subtitle: 'Ergonomic layouts & sound setups', imageUrl: 'https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=600&auto=format&fit=crop&q=80', slug: 'home', tag: 'Work From Home' },
-            { title: 'Gen-Z Style Book', subtitle: 'Trending street looks & oversized tees', imageUrl: 'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80', slug: 'fashion', tag: 'New Drops' }
-          ]
-        }
+            {
+              title: 'The Monsoon Setup',
+              subtitle: 'Dry gear & rain protective wear',
+              imageUrl:
+                'https://images.unsplash.com/photo-1508098682722-e99c43a406b2?w=600&auto=format&fit=crop&q=80',
+              slug: 'sports',
+              tag: 'Monsoon Sale',
+            },
+            {
+              title: 'Ultimate Desk Vibe',
+              subtitle: 'Ergonomic layouts & sound setups',
+              imageUrl:
+                'https://images.unsplash.com/photo-1505797149-43b0069ec26b?w=600&auto=format&fit=crop&q=80',
+              slug: 'home',
+              tag: 'Work From Home',
+            },
+            {
+              title: 'Gen-Z Style Book',
+              subtitle: 'Trending street looks & oversized tees',
+              imageUrl:
+                'https://images.unsplash.com/photo-1576995853123-5a10305d93c0?w=600&auto=format&fit=crop&q=80',
+              slug: 'fashion',
+              tag: 'New Drops',
+            },
+          ],
+        },
       },
       // 10. Trending Now products
       {
@@ -217,8 +300,8 @@ export class SduiService {
         config: {
           title: '🔥 Trending on AuraMart',
           subtitle: 'Top trending items based on real-time clicks & purchases',
-          productIds: ['ele-1', 'fas-1', 'be-1', 'spo-1', 'app-1']
-        }
+          productIds: ['ele-1', 'fas-1', 'be-1', 'spo-1', 'app-1'],
+        },
       },
       // 11. Myntra-Style Lookbook/Studio Section
       {
@@ -229,12 +312,25 @@ export class SduiService {
         title: 'AuraStudio Lookbook',
         config: {
           title: '📸 Style Studio & Lookbooks',
-          subtitle: 'Swipe for styling inspiration from top fashion influencers',
+          subtitle:
+            'Swipe for styling inspiration from top fashion influencers',
           items: [
-            { id: 'l1', imageUrl: 'https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400&auto=format&fit=crop&q=80', title: 'Street Casual', tags: ['Denim Jacket', 'Run Pro Sneakers'] },
-            { id: 'l2', imageUrl: 'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format&fit=crop&q=80', title: 'Summer Breeze', tags: ['Linen Dress', 'AuraGlow Serum'] }
-          ]
-        }
+            {
+              id: 'l1',
+              imageUrl:
+                'https://images.unsplash.com/photo-1516257984-b1b4d707412e?w=400&auto=format&fit=crop&q=80',
+              title: 'Street Casual',
+              tags: ['Denim Jacket', 'Run Pro Sneakers'],
+            },
+            {
+              id: 'l2',
+              imageUrl:
+                'https://images.unsplash.com/photo-1595777457583-95e059d581b8?w=400&auto=format&fit=crop&q=80',
+              title: 'Summer Breeze',
+              tags: ['Linen Dress', 'AuraGlow Serum'],
+            },
+          ],
+        },
       },
       // 12. Mid-Page Strip Promo Banner
       {
@@ -243,12 +339,14 @@ export class SduiService {
         visible: true,
         order: 11,
         config: {
-          imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
-          title: '⚡ AuraPlus membership: Extra 5% coins on every purchase & unlimited free shipping! ⚡',
+          imageUrl:
+            'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
+          title:
+            '⚡ AuraPlus membership: Extra 5% coins on every purchase & unlimited free shipping! ⚡',
           ctaUrl: '/profile',
           backgroundColor: '#F59E0B',
-          textColor: '#1E293B'
-        }
+          textColor: '#1E293B',
+        },
       },
       // 13. AuraLive Deal Card (active by default)
       {
@@ -260,13 +358,14 @@ export class SduiService {
         config: {
           productId: 'ele-1',
           productName: 'AuraPods Pro ANC Earbuds',
-          productImage: 'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80',
+          productImage:
+            'https://images.unsplash.com/photo-1590658268037-6bf12165a8df?w=600&auto=format&fit=crop&q=80',
           originalPrice: 12999,
           livePrice: 8499,
           expiresAt: new Date(Date.now() + 2 * 60 * 60 * 1000).toISOString(),
           watchersCount: 3840,
-          hostName: 'Neha Malhotra'
-        }
+          hostName: 'Neha Malhotra',
+        },
       },
       {
         id: 'electronics_strip',
@@ -276,11 +375,12 @@ export class SduiService {
         title: '⚡ Top Tech & Electronics',
         config: {
           title: '⚡ Top Tech & Electronics',
-          subtitle: 'Laptops, smartphones, audio & wearables from authorized brand flagships',
+          subtitle:
+            'Laptops, smartphones, audio & wearables from authorized brand flagships',
           productIds: ['ele-1', 'ele-2', 'ele-5', 'ele-6', 'ele-7', 'ele-13'],
           ctaText: 'View All Electronics',
-          ctaUrl: '/categories/electronics'
-        }
+          ctaUrl: '/categories/electronics',
+        },
       },
       {
         id: 'fashion_strip',
@@ -290,11 +390,12 @@ export class SduiService {
         title: '👗 Trending Fashion & Footwear',
         config: {
           title: '👗 Trending Fashion & Footwear',
-          subtitle: 'Denim jackets, summer dresses, ethnic silk sherwanis & pro sneakers',
+          subtitle:
+            'Denim jackets, summer dresses, ethnic silk sherwanis & pro sneakers',
           productIds: ['fas-1', 'fas-2', 'fas-3', 'fas-4', 'fas-5'],
           ctaText: 'View All Fashion',
-          ctaUrl: '/categories/fashion'
-        }
+          ctaUrl: '/categories/fashion',
+        },
       },
       {
         id: 'beauty_strip',
@@ -304,11 +405,12 @@ export class SduiService {
         title: '💄 Beauty & Skincare Bestsellers',
         config: {
           title: '💄 Beauty & Skincare Bestsellers',
-          subtitle: 'Brightening vitamin C serums, barrier relief creams & matte lipsticks',
+          subtitle:
+            'Brightening vitamin C serums, barrier relief creams & matte lipsticks',
           productIds: ['be-1', 'be-2', 'be-3', 'be-4'],
           ctaText: 'View All Beauty',
-          ctaUrl: '/categories/beauty'
-        }
+          ctaUrl: '/categories/beauty',
+        },
       },
       {
         id: 'home_strip',
@@ -318,32 +420,92 @@ export class SduiService {
         title: '🏠 Home & Kitchen Upgrades',
         config: {
           title: '🏠 Home & Kitchen Upgrades',
-          subtitle: 'Smart drip coffee makers, copper motor blenders, armchairs & shelves',
+          subtitle:
+            'Smart drip coffee makers, copper motor blenders, armchairs & shelves',
           productIds: ['hom-1', 'hom-2', 'hom-3', 'hom-4'],
           ctaText: 'View All Home',
-          ctaUrl: '/categories/home'
-        }
-      }
-    ]
+          ctaUrl: '/categories/home',
+        },
+      },
+    ],
   };
 
-  async getHomepageLayout() {
+  private revisions: Array<{ version: number; timestamp: string; publishedBy: string; config: any }> = [];
+  private analyticsMetrics: Record<string, { views: number; clicks: number; orders: number; revenue: number }> = {};
+
+  async getHomepageLayout(context?: { userSegment?: string; platform?: string; theme?: string }) {
+    let layout: any;
     try {
       if (fs.existsSync(this.configPath)) {
         const fileContent = fs.readFileSync(this.configPath, 'utf8');
-        return JSON.parse(fileContent);
+        layout = JSON.parse(fileContent);
+      } else {
+        layout = this.defaultConfig;
       }
     } catch (e) {
-      console.error('Failed to read SDUI homepage config file, serving default.', e);
+      console.error(
+        'Failed to read SDUI homepage config file, serving default.',
+        e,
+      );
+      layout = this.defaultConfig;
     }
-    return this.defaultConfig;
+
+    // Apply Personalization & Visibility Rules
+    if (layout?.sections && Array.isArray(layout.sections)) {
+      const now = new Date().toISOString();
+      const filteredSections = layout.sections.filter((sec: any) => {
+        if (sec.enabled === false || sec.visible === false) return false;
+        if (sec.startDate && sec.startDate > now) return false;
+        if (sec.endDate && sec.endDate < now) return false;
+
+        if (sec.visibilityRules) {
+          const rules = sec.visibilityRules;
+          if (rules.userSegment && rules.userSegment !== 'ALL' && context?.userSegment && rules.userSegment !== context.userSegment) {
+            return false;
+          }
+          if (rules.platform && rules.platform !== 'ALL' && context?.platform && rules.platform !== context.platform) {
+            return false;
+          }
+        }
+        return true;
+      });
+
+      return {
+        ...layout,
+        sections: filteredSections.sort((a: any, b: any) => (a.sortOrder ?? a.order ?? 0) - (b.sortOrder ?? b.order ?? 0)),
+      };
+    }
+
+    return layout;
   }
 
   async saveHomepageLayout(config: any) {
     try {
       config.lastUpdated = new Date().toISOString();
       config.version = (config.version || 0) + 1;
-      fs.writeFileSync(this.configPath, JSON.stringify(config, null, 2), 'utf8');
+
+      // Save revision snapshot
+      this.revisions.unshift({
+        version: config.version,
+        timestamp: config.lastUpdated,
+        publishedBy: config.publishedBy || 'Admin',
+        config: JSON.parse(JSON.stringify(config)),
+      });
+      if (this.revisions.length > 20) this.revisions.pop();
+
+      fs.writeFileSync(
+        this.configPath,
+        JSON.stringify(config, null, 2),
+        'utf8',
+      );
+      await this.auditService.log({
+        actorId: 'ADMIN',
+        actorRole: 'SUPER_ADMIN',
+        action: 'SDUI_LAYOUT_SAVE',
+        resourceType: 'SduiLayout',
+        resourceId: 'homepage',
+        details: { version: config.version },
+      });
       return { success: true, config };
     } catch (e) {
       console.error('Failed to save SDUI homepage config file.', e);
@@ -351,27 +513,80 @@ export class SduiService {
     }
   }
 
+  async getRevisions() {
+    return {
+      total: this.revisions.length,
+      data: this.revisions.map((r) => ({
+        version: r.version,
+        timestamp: r.timestamp,
+        publishedBy: r.publishedBy,
+      })),
+    };
+  }
+
+  async restoreRevision(version: number) {
+    const rev = this.revisions.find((r) => r.version === Number(version));
+    if (!rev) {
+      throw new Error(`Revision v${version} not found`);
+    }
+    return this.saveHomepageLayout(rev.config);
+  }
+
+  async recordAnalyticsEvent(event: { sectionId: string; eventType: 'view' | 'click' | 'order'; revenuePaise?: number }) {
+    const sId = event.sectionId || 'unknown';
+    if (!this.analyticsMetrics[sId]) {
+      this.analyticsMetrics[sId] = { views: 0, clicks: 0, orders: 0, revenue: 0 };
+    }
+    const metric = this.analyticsMetrics[sId];
+    if (event.eventType === 'view') metric.views += 1;
+    if (event.eventType === 'click') metric.clicks += 1;
+    if (event.eventType === 'order') {
+      metric.orders += 1;
+      metric.revenue += (event.revenuePaise || 0) / 100;
+    }
+    return { success: true, sectionId: sId, metric };
+  }
+
+  async getAnalyticsSummary() {
+    const summary = Object.entries(this.analyticsMetrics).map(([sectionId, m]) => ({
+      sectionId,
+      views: m.views,
+      clicks: m.clicks,
+      ctrPercent: m.views > 0 ? Math.round((m.clicks / m.views) * 1000) / 10 : 0,
+      orders: m.orders,
+      revenue: m.revenue,
+      formattedRevenue: `₹${m.revenue.toLocaleString('en-IN')}`,
+    }));
+    return { data: summary };
+  }
+
   async getCategoryLayout(categorySlug: string) {
     return {
       category: categorySlug,
-      themeColor: categorySlug === 'fashion' ? '#8B5CF6' : categorySlug === 'electronics' ? '#3B82F6' : '#10B981',
+      themeColor:
+        categorySlug === 'fashion'
+          ? '#8B5CF6'
+          : categorySlug === 'electronics'
+            ? '#3B82F6'
+            : '#10B981',
       sections: [
         {
           id: `${categorySlug}-hero`,
           type: 'BANNER',
           config: {
             title: `Exclusive ${categorySlug} Collection`,
-            imageUrl: 'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600'
-          }
+            imageUrl:
+              'https://images.unsplash.com/photo-1523381210434-271e8be1f52b?w=600',
+          },
         },
         {
           id: `${categorySlug}-grid`,
           type: 'PRODUCT_GRID',
           config: {
-            columns: 2
-          }
-        }
-      ]
+            columns: 2,
+          },
+        },
+      ],
     };
   }
 
@@ -395,8 +610,8 @@ export class SduiService {
           ctaText: 'Grab Deals →',
           ctaUrl: '/flado',
           backgroundColor: '#FF4500',
-          textColor: '#FFFFFF'
-        }
+          textColor: '#FFFFFF',
+        },
       },
       // 2. Hero Banners Carousel (Full Bleed)
       {
@@ -410,36 +625,41 @@ export class SduiService {
           banners: [
             {
               id: 'fb1',
-              imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&auto=format&fit=crop&q=80',
               title: 'Monsoon Mega Fresh Sale!',
-              subtitle: '100% Organic Vegetables & Daily Dairy delivered in 10 mins.',
+              subtitle:
+                '100% Organic Vegetables & Daily Dairy delivered in 10 mins.',
               ctaText: 'Shop Fresh',
               ctaUrl: '/flado',
               backgroundColor: '#059669',
-              badgeText: '10 MIN EXPRESS'
+              badgeText: '10 MIN EXPRESS',
             },
             {
               id: 'fb2',
-              imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80',
               title: 'Artisanal Bakery & Milk',
-              subtitle: 'Fresh sourdough loaves & A2 Desi Cow Milk delivered daily.',
+              subtitle:
+                'Fresh sourdough loaves & A2 Desi Cow Milk delivered daily.',
               ctaText: 'Explore Bakery',
               ctaUrl: '/flado',
               backgroundColor: '#065F46',
-              badgeText: 'FARM DIRECT'
+              badgeText: 'FARM DIRECT',
             },
             {
               id: 'fb3',
-              imageUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=1200&auto=format&fit=crop&q=80',
+              imageUrl:
+                'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=1200&auto=format&fit=crop&q=80',
               title: 'Instant Kirana & Grocery',
               subtitle: 'Atta, Rice, Dal & Spices at wholesale prices.',
               ctaText: 'Stock Up',
               ctaUrl: '/flado',
               backgroundColor: '#1E3A8A',
-              badgeText: 'BEST VALUE'
-            }
-          ]
-        }
+              badgeText: 'BEST VALUE',
+            },
+          ],
+        },
       },
       // 3. Full Size Replaceable Promo Strip Banner #1 (Admin Replaceable)
       {
@@ -449,12 +669,14 @@ export class SduiService {
         order: 2,
         title: 'Full Size Promo Strip #1',
         config: {
-          imageUrl: 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
-          title: '⚡ Craving snacks? Chilled beverages & chips delivered in 10 minutes! ⚡',
+          imageUrl:
+            'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=1200&auto=format&fit=crop&q=80',
+          title:
+            '⚡ Craving snacks? Chilled beverages & chips delivered in 10 minutes! ⚡',
           ctaUrl: '/flado',
           backgroundColor: '#10B981',
-          textColor: '#FFFFFF'
-        }
+          textColor: '#FFFFFF',
+        },
       },
       // 4. Quick Category Grid (12 Emoji Chips)
       {
@@ -465,20 +687,40 @@ export class SduiService {
         title: 'Quick Categories Grid',
         config: {
           categories: [
-            { name: 'Veggies', slug: 'fruits-vegetables', icon: '🥬', color: '#ECFDF5' },
-            { name: 'Dairy & Milk', slug: 'dairy-bread-eggs', icon: '🥛', color: '#EFF6FF' },
+            {
+              name: 'Veggies',
+              slug: 'fruits-vegetables',
+              icon: '🥬',
+              color: '#ECFDF5',
+            },
+            {
+              name: 'Dairy & Milk',
+              slug: 'dairy-bread-eggs',
+              icon: '🥛',
+              color: '#EFF6FF',
+            },
             { name: 'Fresh Meat', slug: 'meat', icon: '🥩', color: '#FEF2F2' },
             { name: 'Pharmacy', slug: 'medical', icon: '💊', color: '#F0FDF4' },
             { name: 'Kirana', slug: 'kirana', icon: '🛒', color: '#FEF3C7' },
             { name: 'Bakery', slug: 'bakery', icon: '🍞', color: '#FFFBEB' },
-            { name: 'Restaurant', slug: 'restaurant', icon: '🍕', color: '#FFF1F2' },
+            {
+              name: 'Restaurant',
+              slug: 'restaurant',
+              icon: '🍕',
+              color: '#FFF1F2',
+            },
             { name: 'Fashion', slug: 'fashion', icon: '👗', color: '#F5F3FF' },
             { name: 'Books', slug: 'books', icon: '📚', color: '#EEF2FF' },
             { name: 'Tools', slug: 'tools', icon: '🔧', color: '#F1F5F9' },
             { name: 'Beauty', slug: 'beauty', icon: '🧴', color: '#FDF2F8' },
-            { name: 'Household', slug: 'household', icon: '🏠', color: '#ECFDF5' }
-          ]
-        }
+            {
+              name: 'Household',
+              slug: 'household',
+              icon: '🏠',
+              color: '#ECFDF5',
+            },
+          ],
+        },
       },
       // 5. Trending Products Shelf
       {
@@ -490,8 +732,8 @@ export class SduiService {
         config: {
           title: '🔥 Trending Now Near You',
           subCategory: 'Trending',
-          badgeText: 'MOST POPULAR'
-        }
+          badgeText: 'MOST POPULAR',
+        },
       },
       // 6. Full Size Replaceable Promo Strip Banner #2 (Admin Replaceable)
       {
@@ -501,12 +743,14 @@ export class SduiService {
         order: 5,
         title: 'Full Size Promo Strip #2',
         config: {
-          imageUrl: 'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&auto=format&fit=crop&q=80',
-          title: '🛒 Monthly Ration Special: Get Flat ₹150 OFF on orders above ₹999 with code RATION150',
+          imageUrl:
+            'https://images.unsplash.com/photo-1542838132-92c53300491e?w=1200&auto=format&fit=crop&q=80',
+          title:
+            '🛒 Monthly Ration Special: Get Flat ₹150 OFF on orders above ₹999 with code RATION150',
           ctaUrl: '/flado',
           backgroundColor: '#7C3AED',
-          textColor: '#FFFFFF'
-        }
+          textColor: '#FFFFFF',
+        },
       },
       // 7. Featured Local Shops Near You
       {
@@ -517,8 +761,9 @@ export class SduiService {
         title: 'Local Shops Near You',
         config: {
           title: '🏪 Verified Local Kirana Stores',
-          subtitle: 'Support neighborhood shopkeepers in Muzaffarpur & Maunath Bhanjan'
-        }
+          subtitle:
+            'Support neighborhood shopkeepers in Muzaffarpur & Maunath Bhanjan',
+        },
       },
       // 8. Category Spotlight: Fresh Veggies
       {
@@ -529,8 +774,8 @@ export class SduiService {
         title: 'Fresh Vegetables & Fruits Shelf',
         config: {
           title: '🥬 Fresh Vegetables & Fruits',
-          subCategory: 'Fruits & Vegetables'
-        }
+          subCategory: 'Fruits & Vegetables',
+        },
       },
       // 9. Category Spotlight: Dairy & Bread
       {
@@ -541,8 +786,8 @@ export class SduiService {
         title: 'Dairy & Bread Shelf',
         config: {
           title: '🥛 Dairy, Milk & Fresh Bread',
-          subCategory: 'Dairy & Bread'
-        }
+          subCategory: 'Dairy & Bread',
+        },
       },
       // 10. AuraCoins Loyalty Cash Back Hook Strip
       {
@@ -554,8 +799,8 @@ export class SduiService {
         config: {
           title: '✨ Earn 1% AuraCoins on Every Order',
           subtitle: 'Redeem 100 coins = ₹10 discount at checkout!',
-          buttonText: 'View Wallet →'
-        }
+          buttonText: 'View Wallet →',
+        },
       },
       // 11. Full Size Replaceable Promo Strip Banner #3 (Admin Campaign Replaceable)
       {
@@ -565,12 +810,14 @@ export class SduiService {
         order: 10,
         title: 'Full Size Promo Strip #3',
         config: {
-          imageUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80',
-          title: '🥐 Evening Tea & Snacks Combo: Biscuit + Tea Powder at Flat ₹49!',
+          imageUrl:
+            'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=1200&auto=format&fit=crop&q=80',
+          title:
+            '🥐 Evening Tea & Snacks Combo: Biscuit + Tea Powder at Flat ₹49!',
           ctaUrl: '/flado',
           backgroundColor: '#D97706',
-          textColor: '#FFFFFF'
-        }
+          textColor: '#FFFFFF',
+        },
       },
       // 12. Sponsor Brand Logos Row
       {
@@ -582,12 +829,36 @@ export class SduiService {
         config: {
           title: '⭐ Partner Brands Spotlights',
           brands: [
-            { name: 'Amul', logoUrl: 'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=100&auto=format&fit=crop&q=80', discountText: 'Up to 20% Off', slug: 'groceries' },
-            { name: 'Lay\'s', logoUrl: 'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=100&auto=format&fit=crop&q=80', discountText: 'Flat 10% Off', slug: 'groceries' },
-            { name: 'Patanjali', logoUrl: 'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100&auto=format&fit=crop&q=80', discountText: 'Organic Pure', slug: 'beauty' },
-            { name: 'Britannia', logoUrl: 'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&auto=format&fit=crop&q=80', discountText: 'Buy 2 Get 1', slug: 'groceries' }
-          ]
-        }
+            {
+              name: 'Amul',
+              logoUrl:
+                'https://images.unsplash.com/photo-1563636619-e9143da7973b?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Up to 20% Off',
+              slug: 'groceries',
+            },
+            {
+              name: "Lay's",
+              logoUrl:
+                'https://images.unsplash.com/photo-1566478989037-eec170784d0b?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Flat 10% Off',
+              slug: 'groceries',
+            },
+            {
+              name: 'Patanjali',
+              logoUrl:
+                'https://images.unsplash.com/photo-1620916566398-39f1143ab7be?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Organic Pure',
+              slug: 'beauty',
+            },
+            {
+              name: 'Britannia',
+              logoUrl:
+                'https://images.unsplash.com/photo-1509440159596-0249088772ff?w=100&auto=format&fit=crop&q=80',
+              discountText: 'Buy 2 Get 1',
+              slug: 'groceries',
+            },
+          ],
+        },
       },
       // 13. Curated Meal Combos / Bundles
       {
@@ -599,10 +870,26 @@ export class SduiService {
         config: {
           title: '🍱 Curated Saver Bundles',
           bundles: [
-            { name: 'Morning Breakfast Bundle', items: ['A2 Milk 1L', 'Brown Bread 400g', 'Butter 100g'], price: 120, originalPrice: 155, discountText: 'Save ₹35' },
-            { name: 'Party Snack Pack', items: ['Lay\'s Potato Chips x2', 'Coca Cola 750ml', 'Salted Peanuts'], price: 140, originalPrice: 185, discountText: 'Save ₹45' }
-          ]
-        }
+            {
+              name: 'Morning Breakfast Bundle',
+              items: ['A2 Milk 1L', 'Brown Bread 400g', 'Butter 100g'],
+              price: 120,
+              originalPrice: 155,
+              discountText: 'Save ₹35',
+            },
+            {
+              name: 'Party Snack Pack',
+              items: [
+                "Lay's Potato Chips x2",
+                'Coca Cola 750ml',
+                'Salted Peanuts',
+              ],
+              price: 140,
+              originalPrice: 185,
+              discountText: 'Save ₹45',
+            },
+          ],
+        },
       },
       // 14. Recently Ordered (Personalized Repeat Orders)
       {
@@ -613,8 +900,8 @@ export class SduiService {
         title: 'Recently Ordered Shelf',
         config: {
           title: '🔄 Order Again',
-          subtitle: 'Your usual essentials delivered in 10 minutes'
-        }
+          subtitle: 'Your usual essentials delivered in 10 minutes',
+        },
       },
       // 15. New Arrivals at Local Shops
       {
@@ -625,10 +912,10 @@ export class SduiService {
         title: 'New Arrivals Shelf',
         config: {
           title: '✨ Fresh Additions at Local Shops',
-          badgeText: 'JUST ARRIVED'
-        }
-      }
-    ]
+          badgeText: 'JUST ARRIVED',
+        },
+      },
+    ],
   };
 
   async getFladoLayout() {
@@ -638,7 +925,10 @@ export class SduiService {
         return JSON.parse(fileContent);
       }
     } catch (e) {
-      console.error('Failed to read SDUI Flado config file, serving default.', e);
+      console.error(
+        'Failed to read SDUI Flado config file, serving default.',
+        e,
+      );
     }
     return this.defaultFladoConfig;
   }
@@ -647,7 +937,19 @@ export class SduiService {
     try {
       config.lastUpdated = new Date().toISOString();
       config.version = (config.version || 0) + 1;
-      fs.writeFileSync(this.fladoConfigPath, JSON.stringify(config, null, 2), 'utf8');
+      fs.writeFileSync(
+        this.fladoConfigPath,
+        JSON.stringify(config, null, 2),
+        'utf8',
+      );
+      await this.auditService.log({
+        actorId: 'ADMIN',
+        actorRole: 'SUPER_ADMIN',
+        action: 'SDUI_LAYOUT_SAVE',
+        resourceType: 'SduiLayout',
+        resourceId: 'flado',
+        details: { version: config.version },
+      });
       return { success: true, config };
     } catch (e) {
       console.error('Failed to save SDUI Flado config file.', e);

@@ -1,0 +1,179 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  width: 100%;
+}
+
+.qtyRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.qtyLabel {
+  font-size: var(--font-size-sm);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+.qtyStepper {
+  display: flex;
+  align-items: center;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  background-color: var(--color-surface);
+}
+
+.qtyBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  color: var(--color-text-primary);
+  outline: none;
+  transition: background-color 0.15s ease;
+}
+
+.qtyBtn:hover:not(:disabled) {
+  background-color: var(--color-disabled-bg);
+}
+
+.qtyBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.qtyBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.qtyValue {
+  min-width: 40px;
+  text-align: center;
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.primaryActions {
+  display: flex;
+  gap: var(--space-3);
+}
+
+.addToCartBtn,
+.buyNowBtn {
+  flex: 1;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-md);
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  cursor: pointer;
+  outline: none;
+  border: 2px solid transparent;
+  transition: background-color 0.15s ease, opacity 0.15s ease;
+}
+
+.addToCartBtn {
+  background-color: var(--color-surface);
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.addToCartBtn:hover:not(:disabled) {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.addToCartBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.buyNowBtn {
+  background-color: var(--color-primary);
+  color: #ffffff;
+}
+
+.buyNowBtn:hover:not(:disabled) {
+  opacity: 0.9;
+}
+
+.buyNowBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.fladoCart {
+  border-color: var(--color-flado, #10B981);
+  color: var(--color-flado, #10B981);
+}
+
+.fladoCart:hover:not(:disabled) {
+  background-color: var(--color-flado, #10B981);
+  color: #ffffff;
+}
+
+.fladoBuy {
+  background-color: var(--color-flado, #10B981);
+}
+
+.addToCartBtn:disabled,
+.buyNowBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.secondaryActions {
+  display: flex;
+  gap: var(--space-4);
+}
+
+.iconBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  cursor: pointer;
+  outline: none;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s ease;
+}
+
+.iconBtn:hover {
+  color: var(--color-text-primary);
+}
+
+.iconBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.wishlisted {
+  color: #ef4444;
+}
+
+.stockStatus {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2, 6px);
+  font-size: var(--font-size-sm, 0.875rem);
+  font-weight: 600;
+}
+
+.inStock {
+  color: var(--color-success, #16a34a);
+}
+
+.outOfStock {
+  color: var(--color-danger, #dc2626);
+}

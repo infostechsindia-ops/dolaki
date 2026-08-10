@@ -373,3 +373,148 @@
   border-bottom: 1px solid var(--border);
   padding-bottom: 0.75rem;
 }
+
+/* ─── FEAT-003 Brand Management Additions ───────────────────────────────────── */
+
+.statsRow {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.statCard {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-card, #fff);
+  border: 1px solid var(--border, #E2E8F0);
+  border-radius: 10px;
+  padding: 10px 18px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--text-main, #1E293B);
+}
+
+.filtersRow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-secondary, #64748B);
+  cursor: pointer;
+  user-select: none;
+}
+
+.badgeSuccess {
+  display: inline-flex;
+  align-items: center;
+  background: #ECFDF5;
+  color: #059669;
+  border: 1px solid rgba(5, 150, 105, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.badgeDanger {
+  display: inline-flex;
+  align-items: center;
+  background: #FEF2F2;
+  color: #DC2626;
+  border: 1px solid rgba(220, 38, 38, 0.2);
+  border-radius: 20px;
+  padding: 3px 10px;
+  font-size: 0.72rem;
+  font-weight: 800;
+}
+
+.actionBtnSuccess {
+  color: #059669 !important;
+}
+
+.actionBtnSuccess:hover {
+  background: #ECFDF5 !important;
+  border-color: #059669 !important;
+}
+
+.productImagePlaceholder {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: var(--bg-secondary, #F1F5F9);
+  border: 1px solid var(--border, #E2E8F0);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-light, #94A3B8);
+  flex-shrink: 0;
+}
+
+.errorBanner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FEF2F2;
+  border: 1px solid rgba(220, 38, 38, 0.25);
+  border-radius: 8px;
+  color: #DC2626;
+  padding: 10px 16px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 16px;
+}
+
+@keyframes skeletonPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.skeletonRow {
+  animation: skeletonPulse 1.4s ease-in-out infinite;
+}
+
+.skeletonLine {
+  background: var(--border, #E2E8F0);
+  border-radius: 6px;
+  height: 14px;
+  display: block;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.spinning {
+  animation: spin 1s linear infinite;
+}
+
+.textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border, #CBD5E1);
+  border-radius: 8px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  outline: none;
+  resize: vertical;
+  font-family: inherit;
+  color: var(--text-main, #1E293B);
+  background: white;
+  transition: border-color 0.2s ease;
+}
+
+.textarea:focus {
+  border-color: var(--primary, #7C3AED);
+}

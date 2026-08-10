@@ -1,0 +1,58 @@
+.root {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md, 1rem);
+  font-size: var(--font-size-xs, 0.75rem);
+  color: var(--color-gray-500, #6b7280);
+}
+
+.helpfulBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+  padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-sm, 0.25rem);
+  background: var(--color-white, #ffffff);
+  color: var(--color-gray-700, #374151);
+  font-size: var(--font-size-xs, 0.75rem);
+  font-weight: var(--font-weight-medium, 500);
+  cursor: pointer;
+  transition: all var(--transition-fast, 150ms ease);
+}
+
+.helpfulBtn:hover {
+  background-color: var(--color-gray-50, #f9fafb);
+  border-color: var(--color-gray-400, #9ca3af);
+}
+
+.helpfulBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px rgba(99, 102, 241, 0.4));
+}
+
+.helpfulBtnActive {
+  border-color: var(--color-primary, #7c3aed);
+  color: var(--color-primary, #7c3aed);
+  background-color: var(--color-primary-50, #f5f3ff);
+}
+
+.reportBtn {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-gray-500, #6b7280);
+  font-size: var(--font-size-xs, 0.75rem);
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.reportBtn:hover {
+  color: var(--color-danger, #dc2626);
+}
+
+.reportBtn:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px rgba(99, 102, 241, 0.4));
+}

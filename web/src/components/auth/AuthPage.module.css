@@ -1,0 +1,66 @@
+.page {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  min-height: 80vh;
+  padding: var(--space-6) 0;
+}
+
+.container {
+  display: flex;
+  width: 100%;
+  max-width: 1040px;
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+.sideColumn {
+  width: 45%;
+  flex-shrink: 0;
+}
+
+.formColumn {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8);
+  min-width: 0;
+}
+
+.formCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-6);
+  width: 100%;
+  max-width: 420px;
+}
+
+.activeFormWrap {
+  width: 100%;
+}
+
+@media (max-width: 991px) {
+  .sideColumn {
+    width: 40%;
+  }
+}
+
+@media (max-width: 767px) {
+  .container {
+    flex-direction: column;
+  }
+
+  .sideColumn {
+    width: 100%;
+    display: none; /* Hide side panel on mobile or collapse */
+  }
+
+  .formColumn {
+    padding: var(--space-6) var(--space-4);
+  }
+}

@@ -1,418 +1,221 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { 
-  FiTrash2, 
-  FiZap, 
-  FiTruck, 
-  FiArrowRight, 
-  FiPercent, 
-  FiShoppingBag, 
-  FiInfo, 
-  FiClock, 
-  FiLock,
-  FiShare2,
-  FiCheckCircle
-} from 'react-icons/fi';
 import { useCart } from '@/context/CartContext';
-import { products } from '@/data/products';
-import styles from './page.module.css';
+import CartPage from '@/components/cart/CartPage';
+import { CartItemData, SubstitutionPreferenceType } from '@/components/cart/CartItem';
+import { API_BASE_URL } from '@/lib/config';
 
 function CartContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+
   const {
     cart,
     addToCart,
     removeFromCart,
     updateQuantity,
+    updateSubstitutionPreference,
+    formattedSubtotal,
+    formattedTax,
+    formattedShipping,
+    formattedGrandTotal,
     subtotal,
     gst,
     deliveryFee,
     totalPrice,
-    fladoItems,
-    standardItems
+    isMinimumBasketMet,
+    formattedMinimumBasketShortfall,
+    formattedMinimumBasketAmount,
+    estimatedDeliveryEtaText,
+    storeAvailabilityStatus,
+    storeName,
+    checkoutEligibility,
   } = useCart();
 
-  const [promoCode, setPromoCode] = useState('');
-  const [promoDiscount, setPromoDiscount] = useState(0);
-  const [promoApplied, setPromoApplied] = useState(false);
-  const [promoError, setPromoError] = useState('');
-
-  // Selected delivery slots
-  const [standardSlot, setStandardSlot] = useState<'standard' | 'priority'>('standard');
-  const [fladoSlot, setFladoSlot] = useState<'instant' | 'next-hour'>('instant');
-
-  // Wishlist share feedback states
-  const [sharedAlert, setSharedAlert] = useState(false);
-  const [wishlistCopied, setWishlistCopied] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [removedItem, setRemovedItem] = useState<{
+    item: CartItemData;
+    product: any;
+  } | null>(null);
+  const [undoNotification, setUndoNotification] = useState<{
+    message: string;
+    onUndo: () => void;
+  } | null>(null);
 
   // Read query params on mount to load shared wishlist items
   useEffect(() => {
     const sharedItemsParam = searchParams.get('sharedItems');
     if (sharedItemsParam) {
       const itemIds = sharedItemsParam.split(',');
-      let importedCount = 0;
-
-      itemIds.forEach(id => {
-        const product = products.find(p => p.id === id);
-        if (product) {
-          // Check if it's already in the cart to avoid duplicate incrementing on landing
-          const exists = cart.some(item => item.product.id === id);
-          if (!exists) {
-            addToCart(product, 1);
-            importedCount++;
+      itemIds.forEach(async (id) => {
+        try {
+          const res = await fetch(`${API_BASE_URL}/api/v1/products/${id}`);
+          if (res.ok) {
+            const product = await res.json();
+            const exists = cart.some((item) => item.product.id === id);
+            if (!exists) {
+              addToCart({
+                id: product.id,
+                name: product.title || product.name || '',
+                price: product.discountPrice ?? product.basePrice ?? 0,
+                originalPrice: product.basePrice ?? 0,
+                image: product.imageUrl || '',
+                rating: product.rating ?? 4.5,
+                reviewsCount: product.reviewCount ?? 12,
+                category: product.category,
+                brand: product.brand?.name || ''
+              }, 1);
+            }
           }
+        } catch (e) {
+          console.error('Failed to load shared item:', e);
         }
       });
-
-      if (importedCount > 0) {
-        setSharedAlert(true);
-        // Clear url search parameters without page refresh
-        const newUrl = window.location.pathname;
-        window.history.replaceState({}, '', newUrl);
-        setTimeout(() => setSharedAlert(false), 4000);
-      }
+      const newUrl = window.location.pathname;
+      window.history.replaceState({}, '', newUrl);
     }
   }, [searchParams, cart, addToCart]);
 
-  const handleApplyPromo = (e: React.FormEvent) => {
-    e.preventDefault();
-    setPromoError('');
-    if (promoCode.toUpperCase() === 'AURA100') {
-      if (subtotal > 500) {
-        setPromoDiscount(100);
-        setPromoApplied(true);
-      } else {
-        setPromoError('Minimum order value for AURA100 is ₹500.');
-      }
-    } else if (promoCode.toUpperCase() === 'FLADO50') {
-      if (fladoItems.length > 0) {
-        setPromoDiscount(50);
-        setPromoApplied(true);
-      } else {
-        setPromoError('Coupon FLADO50 is only valid if you have Flado groceries in your cart.');
-      }
-    } else {
-      setPromoError('Invalid coupon code. Try AURA100 or FLADO50.');
+  const handleQuantityChange = async (id: string, newQty: number) => {
+    setIsLoading(true);
+    try {
+      await updateQuantity(id, newQty);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSubstitutionChange = async (id: string, preference: SubstitutionPreferenceType) => {
+    setIsLoading(true);
+    try {
+      await updateSubstitutionPreference(id, preference);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRemoveItem = async (id: string) => {
+    const target = cart.find((i) => i.id === id || i.product.id === id);
+    if (target) {
+      setRemovedItem({
+        item: {
+          id: target.id || target.product.id,
+          title: target.product.name,
+          image: target.product.image || target.product.images?.[0] || '',
+          price: target.formattedUnitPrice || `$${target.product.price.toFixed(2)}`,
+          quantity: target.quantity,
+        },
+        product: target.product,
+      });
+
+      setUndoNotification({
+        message: `Removed "${target.product.name}" from cart`,
+        onUndo: () => {
+          if (target.product) {
+            addToCart(target.product, target.quantity, target.sku, target.fulfillmentSourceId);
+          }
+          setUndoNotification(null);
+          setRemovedItem(null);
+        },
+      });
+
+      setTimeout(() => {
+        setUndoNotification(null);
+      }, 5000);
+    }
+
+    setIsLoading(true);
+    try {
+      await removeFromCart(id);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleProceedToCheckout = () => {
-    localStorage.setItem('auramart_discount', promoDiscount.toString());
+    if (!checkoutEligibility.isEligible) {
+      return;
+    }
     router.push('/checkout');
   };
 
-  const handleShareWishlist = () => {
-    if (cart.length === 0) return;
-    const productIds = cart.map(item => item.product.id).join(',');
-    const shareUrl = `${window.location.origin}/cart?sharedItems=${productIds}`;
-    
-    navigator.clipboard.writeText(shareUrl);
-    setWishlistCopied(true);
-    setTimeout(() => setWishlistCopied(false), 3000);
+  const handleContinueShopping = () => {
+    router.push('/');
   };
 
-  // Adjust fees based on chosen slots
-  const prioritySurcharge = standardSlot === 'priority' ? 49 : 0;
-  const deliveryCost = deliveryFee + prioritySurcharge;
+  // Convert cart items to CartItemData list
+  const cartItems: CartItemData[] = cart.map((item) => {
+    const isOut = item.inStock === false;
+    return {
+      id: item.id || item.product.id,
+      title: item.product.name,
+      image: item.product.image || item.product.images?.[0] || 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=800',
+      price: item.formattedLineTotal || `$${(item.product.price * item.quantity).toFixed(2)}`,
+      compareAtPrice: item.product.originalPrice
+        ? `$${(item.product.originalPrice * item.quantity).toFixed(2)}`
+        : undefined,
+      brand: item.product.brand,
+      seller: item.product.isFlado ? 'Flado Darkstore' : 'AuraMart Warehouse',
+      sku: item.sku || item.product.id,
+      quantity: item.quantity,
+      inStock: !isOut,
+      stockStatus: item.stockStatus || (isOut ? 'OUT_OF_STOCK' : 'IN_STOCK'),
+      stockMessage: isOut ? 'Out of Stock - Please remove to proceed to checkout' : undefined,
+      substitutionPreference: item.substitutionPreference || 'ALLOW_SUBSTITUTION',
+      isStoreUnavailable: item.isStoreUnavailable,
+      availabilityReason: item.availabilityReason,
+      isFlado: item.product.isFlado,
+    };
+  });
 
-  // Split CGST and SGST
-  const cgst = Number((gst / 2).toFixed(2));
-  const sgst = Number((gst / 2).toFixed(2));
+  const hasOutofStockItems = cart.some((i) => i.inStock === false);
+  const isFladoCart = cart.some((i) => i.product.isFlado);
 
-  const finalTotal = Math.max(0, subtotal + gst + deliveryCost - promoDiscount);
-
-  if (cart.length === 0) {
-    return (
-      <div className={styles.emptyCartContainer}>
-        <div className="container">
-          <div className={styles.emptyCard}>
-            <FiShoppingBag className={styles.emptyIcon} />
-            <h2>Your Shopping Cart is Empty</h2>
-            <p>Looks like you haven't added anything to your cart yet. Explore our premium catalog or order groceries now!</p>
-            <div className={styles.emptyActions}>
-              <Link href="/" className="btn-primary">
-                Browse AuraMart
-              </Link>
-              <Link href="/flado" className="btn-secondary" style={{ color: 'var(--color-flado)', borderColor: 'var(--color-flado-light)' }}>
-                Order Groceries
-              </Link>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Authoritative prices rendered verbatim
+  const formattedSubtotalStr = formattedSubtotal || `$${subtotal.toFixed(2)}`;
+  const formattedTaxStr = formattedTax || `$${gst.toFixed(2)}`;
+  const formattedShippingStr = formattedShipping || (deliveryFee === 0 ? 'FREE' : `$${deliveryFee.toFixed(2)}`);
+  const formattedGrandTotalStr = formattedGrandTotal || `$${totalPrice.toFixed(2)}`;
 
   return (
-    <div className={styles.cartPage}>
-      <div className="container">
-        
-        {sharedAlert && (
-          <div className={styles.sharedImportAlert}>
-            <FiCheckCircle />
-            <span>Shared wishlist items loaded successfully into your basket! 🎁</span>
-          </div>
-        )}
-
-        <h1 className={styles.pageTitle}>Review Your Shopping Cart</h1>
-        <div className={styles.cartGrid}>
-          {/* Left Column: Split Bags */}
-          <div className={styles.itemsColumn}>
-            {/* Bag 1: Flado Items (10-Min Delivery) */}
-            {fladoItems.length > 0 && (
-              <div className={`${styles.bagCard} ${styles.fladoBag}`}>
-                <div className={styles.bagHeader}>
-                  <div className={styles.bagHeaderTitle}>
-                    <FiZap className={styles.zapIcon} />
-                    <h3>Flado Instant Basket</h3>
-                  </div>
-                  <span className={styles.bagETA}>Fulfilled in ~10 Mins</span>
-                </div>
-                
-                {/* Flado Slot Picker */}
-                <div className={styles.slotPickerSection}>
-                  <h4>Choose Delivery Speed:</h4>
-                  <div className={styles.slotsGrid}>
-                    <button 
-                      onClick={() => setFladoSlot('instant')}
-                      className={`${styles.slotBtn} ${fladoSlot === 'instant' ? styles.activeSlotFlado : ''}`}
-                    >
-                      <FiZap />
-                      <div>
-                        <strong>Instant Delivery</strong>
-                        <span>ETA: 10 mins (FREE)</span>
-                      </div>
-                    </button>
-                    <button 
-                      onClick={() => setFladoSlot('next-hour')}
-                      className={`${styles.slotBtn} ${fladoSlot === 'next-hour' ? styles.activeSlotFlado : ''}`}
-                    >
-                      <FiClock />
-                      <div>
-                        <strong>Scheduled Hour</strong>
-                        <span>Next slot: Tomorrow morning</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.bagItemsList}>
-                  {fladoItems.map((item) => (
-                    <div key={item.product.id} className={styles.cartItem}>
-                      <img src={item.product.image || (item.product.images && item.product.images[0]) || ''} alt={item.product.name} className={styles.itemImg} />
-                      <div className={styles.itemDetails}>
-                        <h4>{item.product.name}</h4>
-                        <p className={styles.itemSubcat}>{item.product.subCategory}</p>
-                        <div className={styles.qtyRow}>
-                          <div className={styles.qtySelector}>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>-</button>
-                            <span>{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
-                          </div>
-                          <button onClick={() => removeFromCart(item.product.id)} className={styles.removeBtn} aria-label="Remove item">
-                            <FiTrash2 /> Remove
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.priceCol}>
-                        <span className={styles.itemPrice}>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
-                        <span className={styles.itemUnitprice}>₹{item.product.price}/unit</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Bag 2: Standard Shipping Items */}
-            {standardItems.length > 0 && (
-              <div className={`${styles.bagCard} ${styles.standardBag}`}>
-                <div className={styles.bagHeader}>
-                  <div className={styles.bagHeaderTitle}>
-                    <FiTruck className={styles.truckIcon} />
-                    <h3>AuraMart Standard Shipment</h3>
-                  </div>
-                  <span className={styles.bagETA}>Fulfilled in 2-3 Days</span>
-                </div>
-
-                {/* Standard Slot Picker */}
-                <div className={styles.slotPickerSection}>
-                  <h4>Choose Courier Priority:</h4>
-                  <div className={styles.slotsGrid}>
-                    <button 
-                      onClick={() => setStandardSlot('standard')}
-                      className={`${styles.slotBtn} ${standardSlot === 'standard' ? styles.activeSlotStandard : ''}`}
-                    >
-                      <FiTruck />
-                      <div>
-                        <strong>Standard Courier</strong>
-                        <span>ETA: 2-3 Business Days (FREE)</span>
-                      </div>
-                    </button>
-                    <button 
-                      onClick={() => setStandardSlot('priority')}
-                      className={`${styles.slotBtn} ${standardSlot === 'priority' ? styles.activeSlotStandard : ''}`}
-                    >
-                      <FiZap />
-                      <div>
-                        <strong>Premium Priority Air</strong>
-                        <span>ETA: Next Day Delivery (+₹49)</span>
-                      </div>
-                    </button>
-                  </div>
-                </div>
-
-                <div className={styles.bagItemsList}>
-                  {standardItems.map((item) => (
-                    <div key={item.product.id} className={styles.cartItem}>
-                      <img src={item.product.image || (item.product.images && item.product.images[0]) || ''} alt={item.product.name} className={styles.itemImg} />
-                      <div className={styles.itemDetails}>
-                        <h4>{item.product.name}</h4>
-                        <p className={styles.itemSubcat}>{item.product.subCategory}</p>
-                        <div className={styles.qtyRow}>
-                          <div className={styles.qtySelector}>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity - 1)}>-</button>
-                            <span>{item.quantity}</span>
-                            <button onClick={() => updateQuantity(item.product.id, item.quantity + 1)}>+</button>
-                          </div>
-                          <button onClick={() => removeFromCart(item.product.id)} className={styles.removeBtn} aria-label="Remove item">
-                            <FiTrash2 /> Remove
-                          </button>
-                        </div>
-                      </div>
-                      <div className={styles.priceCol}>
-                        <span className={styles.itemPrice}>₹{(item.product.price * item.quantity).toLocaleString('en-IN')}</span>
-                        <span className={styles.itemUnitprice}>₹{item.product.price}/unit</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Right Column: Pricing Summary */}
-          <div className={styles.summaryColumn}>
-            
-            {/* Social Share Cart as Wishlist Block */}
-            <div className={styles.summaryCard} style={{ border: wishlistCopied ? '1px dashed var(--color-success)' : '1px dashed var(--color-border)' }}>
-              <h3 className={styles.summaryTitle} style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <FiShare2 /> Squad Shopping
-              </h3>
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginBottom: '14px', lineHeight: 1.4, fontWeight: 550 }}>
-                Share your active cart items with friends or family so they can easily buy or view them!
-              </p>
-              <button 
-                onClick={handleShareWishlist}
-                className={styles.shareWishlistBtn}
-              >
-                {wishlistCopied ? 'Wishlist Link Copied! 🎁' : 'Share Cart as Wishlist 📤'}
-              </button>
-            </div>
-
-            {/* Coupon Code Block */}
-            <div className={styles.summaryCard}>
-              <h3 className={styles.summaryTitle}>Apply Coupon Code</h3>
-              <form onSubmit={handleApplyPromo} className={styles.promoForm}>
-                <input
-                  type="text"
-                  placeholder="Enter code (AURA100 or FLADO50)"
-                  value={promoCode}
-                  onChange={(e) => setPromoCode(e.target.value)}
-                  className={styles.promoInput}
-                  disabled={promoApplied}
-                />
-                <button type="submit" className={styles.promoBtn} disabled={promoApplied}>
-                  Apply
-                </button>
-              </form>
-              {promoApplied && (
-                <div className={styles.promoSuccess}>
-                  <FiPercent className={styles.discountIcon} />
-                  <span>Coupon applied! You saved ₹{promoDiscount}.</span>
-                  <button
-                    onClick={() => {
-                      setPromoApplied(false);
-                      setPromoDiscount(0);
-                    }}
-                    className={styles.removePromo}
-                  >
-                    Remove
-                  </button>
-                </div>
-              )}
-              {promoError && <p className={styles.promoError}>{promoError}</p>}
-            </div>
-
-            {/* Price Calculations */}
-            <div className={styles.summaryCard}>
-              <h3 className={styles.summaryTitle}>Order Price Summary</h3>
-              <div className={styles.breakdownList}>
-                <div className={styles.calcRow}>
-                  <span>Cart Subtotal</span>
-                  <span>₹{subtotal.toLocaleString('en-IN')}</span>
-                </div>
-                <div className={styles.calcRow}>
-                  <span>CGST (9%)</span>
-                  <span>₹{cgst.toLocaleString('en-IN')}</span>
-                </div>
-                <div className={styles.calcRow}>
-                  <span>SGST (9%)</span>
-                  <span>₹{sgst.toLocaleString('en-IN')}</span>
-                </div>
-                <div className={styles.calcRow}>
-                  <span>Delivery Convenience Fee</span>
-                  <span>{deliveryCost === 0 ? 'FREE' : `₹${deliveryCost}`}</span>
-                </div>
-                {promoApplied && (
-                  <div className={`${styles.calcRow} ${styles.discountText}`}>
-                    <span>Coupon Discount</span>
-                    <span>- ₹{promoDiscount}</span>
-                  </div>
-                )}
-                <div className={styles.divider}></div>
-                <div className={`${styles.calcRow} ${styles.finalTotalRow}`}>
-                  <span>Grand Total</span>
-                  <span>₹{finalTotal.toLocaleString('en-IN')}</span>
-                </div>
-              </div>
-              <button 
-                onClick={handleProceedToCheckout} 
-                className={styles.checkoutBtn}
-              >
-                Proceed to Checkout <FiArrowRight />
-              </button>
-
-              {/* Secure Trust Emblem */}
-              <div className={styles.securePaymentStrip}>
-                <FiLock className={styles.lockIcon} />
-                <span>100% Encrypted Transactions</span>
-              </div>
-
-              <div className={styles.termsBox}>
-                <FiInfo className={styles.infoIcon} />
-                <p>Orders are automatically split depending on product darkstore locations. Standard packages require custom delivery partners, while Groceries are fulfilled immediately by nearby local riders.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+    <div style={{ padding: '24px 16px', maxWidth: '1280px', margin: '0 auto' }}>
+      <CartPage
+        items={cartItems}
+        onQuantityChange={handleQuantityChange}
+        onRemoveItem={handleRemoveItem}
+        onSubstitutionChange={handleSubstitutionChange}
+        isLoading={isLoading}
+        hasOutofStockItems={hasOutofStockItems}
+        undoNotification={undoNotification}
+        surface={isFladoCart ? 'QUICK_COMMERCE' : 'MARKETPLACE'}
+        isMinimumBasketMet={isMinimumBasketMet}
+        formattedMinimumBasketShortfall={formattedMinimumBasketShortfall}
+        formattedMinimumBasketAmount={formattedMinimumBasketAmount}
+        estimatedDeliveryEtaText={estimatedDeliveryEtaText}
+        storeAvailabilityStatus={storeAvailabilityStatus}
+        storeName={storeName}
+        summary={{
+          itemCount: cartItems.length,
+          priceSummary: {
+            subtotal: formattedSubtotalStr,
+            tax: formattedTaxStr,
+            shipping: formattedShippingStr,
+            grandTotal: formattedGrandTotalStr,
+          },
+          disabled: !checkoutEligibility.isEligible,
+          onCheckout: handleProceedToCheckout,
+        }}
+        onContinueShopping={handleContinueShopping}
+      />
     </div>
   );
 }
 
-export default function CartPage() {
+export default function CartPageRoute() {
   return (
-    <Suspense fallback={
-      <div className={styles.loadingWrapper}>
-        <div className={styles.spinner}></div>
-        <p>Loading Cart details...</p>
-      </div>
-    }>
+    <Suspense fallback={<div style={{ padding: 32, textAlign: 'center' }}>Loading Cart...</div>}>
       <CartContent />
     </Suspense>
   );

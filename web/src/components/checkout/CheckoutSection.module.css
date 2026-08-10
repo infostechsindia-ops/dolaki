@@ -1,0 +1,99 @@
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  padding: var(--space-5);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  width: 100%;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-3);
+  padding-bottom: var(--space-3);
+  border-bottom: 1px solid var(--color-border);
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.stepNum {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background-color: var(--color-primary);
+  color: #ffffff;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+}
+
+.heading {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-lg);
+  font-weight: 800;
+  color: var(--color-text-primary);
+  margin: 0;
+}
+
+.actionBtn {
+  background: none;
+  border: none;
+  font-family: var(--font-body);
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  color: var(--color-primary);
+  cursor: pointer;
+  outline: none;
+  padding: var(--space-1);
+  border-radius: var(--radius-sm);
+  transition: opacity 0.15s ease;
+}
+
+.actionBtn:hover {
+  opacity: 0.8;
+}
+
+.actionBtn:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.content {
+  width: 100%;
+}
+
+/* CMD-043 — Inline validation states */
+
+/** Green border when section selection is complete */
+.complete {
+  border-color: #a7f3d0;
+  background-color: var(--color-surface);
+}
+
+/** Red border when section has a validation error */
+.error {
+  border-color: #fca5a5;
+  background-color: #fff8f8;
+}
+
+/** Inline error message rendered below section content */
+.errorMessage {
+  margin: 0;
+  padding: var(--space-2) var(--space-3);
+  background-color: #fef2f2;
+  border: 1px solid #fca5a5;
+  border-radius: var(--radius-sm);
+  color: #dc2626;
+  font-size: var(--font-size-xs);
+  font-weight: 600;
+  line-height: 1.4;
+}

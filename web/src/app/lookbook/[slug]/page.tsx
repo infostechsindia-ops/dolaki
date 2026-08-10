@@ -4,8 +4,8 @@ import React, { use, useState, useRef } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiShoppingCart, FiHeart, FiChevronRight, FiCamera, FiEye } from 'react-icons/fi';
-import { products as allProducts } from '@/data/products';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
 
 interface Hotspot { top: string; left: string; productId: string; label?: string; }
 interface LookbookSlide { imageUrl: string; title: string; hotspots: Hotspot[]; }
@@ -137,9 +137,39 @@ export default function LookbookPage({ params }: LookbookPageProps) {
   const [activeSlide, setActiveSlide] = useState(0);
   const [activeHotspot, setActiveHotspot] = useState<string | null>(null);
   const [wishlist, setWishlist] = useState<Set<string>>(new Set());
+  const [productsMap, setProductsMap] = useState<Map<string, any>>(new Map());
   const containerRef = useRef<HTMLDivElement>(null);
 
   if (!lookbook) notFound();
+
+  React.useEffect(() => {
+    const loadProducts = async () => {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=50`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          const map = new Map<string, any>();
+          list.forEach((p: any) => {
+            map.set(p.id, {
+              id: p.id,
+              name: p.title || p.name || 'Product',
+              brand: p.brand?.name || 'AuraBrand',
+              price: p.discountPrice ?? p.basePrice ?? 0,
+              originalPrice: p.basePrice ?? 0,
+              image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+              rating: p.rating ?? 4.5,
+              reviewsCount: p.reviewCount ?? 12,
+            });
+          });
+          setProductsMap(map);
+        }
+      } catch (e) {
+        console.error('Failed to load lookbook products:', e);
+      }
+    };
+    loadProducts();
+  }, [slug]);
 
   const currentSlide = lookbook.slides[activeSlide];
 
@@ -210,7 +240,7 @@ export default function LookbookPage({ params }: LookbookPageProps) {
 
             {/* Hotspot pins */}
             {currentSlide.hotspots.map((hs) => {
-              const product = allProducts.find(p => p.id === hs.productId);
+              const product = productsMap.get(hs.productId) || Array.from(productsMap.values())[0];
               const isOpen = activeHotspot === `${activeSlide}-${hs.productId}`;
 
               return (

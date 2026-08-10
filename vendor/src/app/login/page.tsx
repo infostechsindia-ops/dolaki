@@ -49,7 +49,7 @@ export default function LoginPage() {
     // Simulate API delay
     setTimeout(() => {
       try {
-        login(email, storeName || "My AuraMart Store");
+        login(email, password, storeName || "My AuraMart Store");
         router.push("/dashboard");
       } catch (err: any) {
         setError(err.message || "Something went wrong. Please try again.");

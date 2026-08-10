@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../utils/api';
 
 type Transaction = {
   id: string;
@@ -18,32 +19,49 @@ export default function WalletScreen() {
   const [balance, setBalance] = useState(0);
   const [coins, setCoins] = useState(0);
   const [loading, setLoading] = useState(true);
-
-  // Mock transactions since API may not have history
-  const [transactions] = useState<Transaction[]>([
-    { id: 'tx-1', title: 'Cashback from Order #ORD-123', date: '2026-07-20 15:30', amount: 50, type: 'CREDIT' },
-    { id: 'tx-2', title: 'Used in Order #ORD-121', date: '2026-07-18 10:15', amount: 120, type: 'DEBIT' },
-    { id: 'tx-3', title: 'Added Money', date: '2026-07-15 09:00', amount: 500, type: 'CREDIT' },
-    { id: 'tx-4', title: 'Coins Converted', date: '2026-07-10 14:20', amount: 25, type: 'CREDIT' },
-    { id: 'tx-5', title: 'Used in Order #ORD-089', date: '2026-07-01 18:45', amount: 300, type: 'DEBIT' },
-  ]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const isDemo = process.env.EXPO_PUBLIC_ENABLE_DEMO_FIXTURES === 'true';
 
   useEffect(() => {
     const fetchWallet = async () => {
       try {
         const token = await AsyncStorage.getItem('aura_token');
-        const res = await fetch('http://localhost:3000/users/wallet', {
+        const res = await fetch(`${BASE_URL}/users/wallet`, {
           headers: { Authorization: `Bearer ${token}` }
         });
         if (res.ok) {
           const data = await res.json();
-          setBalance(data.balance || 450);
-          setCoins(data.coins || 1280);
+          setBalance(data.balance || 0);
+          setCoins(data.rewardPoints || 0);
         } else {
-          setBalance(450); setCoins(1280);
+          setBalance(isDemo ? 450 : 0);
+          setCoins(isDemo ? 1280 : 0);
+        }
+
+        const txRes = await fetch(`${BASE_URL}/users/wallet/transactions`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (txRes.ok) {
+          const txList = await txRes.json();
+          setTransactions(txList.map((tx: any, idx: number) => ({
+            id: tx.id || `tx-${idx}`,
+            title: tx.description || tx.desc,
+            date: tx.createdAt ? new Date(tx.createdAt).toLocaleDateString() : '',
+            amount: tx.amount,
+            type: tx.type || 'CREDIT'
+          })));
+        } else if (isDemo) {
+          setTransactions([
+            { id: 'tx-1', title: 'Cashback from Order #ORD-123', date: '2026-07-20 15:30', amount: 50, type: 'CREDIT' },
+            { id: 'tx-2', title: 'Used in Order #ORD-121', date: '2026-07-18 10:15', amount: 120, type: 'DEBIT' },
+            { id: 'tx-3', title: 'Added Money', date: '2026-07-15 09:00', amount: 500, type: 'CREDIT' },
+            { id: 'tx-4', title: 'Coins Converted', date: '2026-07-10 14:20', amount: 25, type: 'CREDIT' },
+            { id: 'tx-5', title: 'Used in Order #ORD-089', date: '2026-07-01 18:45', amount: 300, type: 'DEBIT' },
+          ]);
         }
       } catch (e) {
-        setBalance(450); setCoins(1280);
+        setBalance(isDemo ? 450 : 0);
+        setCoins(isDemo ? 1280 : 0);
       } finally {
         setLoading(false);
       }
@@ -73,6 +91,14 @@ export default function WalletScreen() {
       </View>
 
       <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        {!isDemo && (
+          <View style={{ backgroundColor: '#FEF3C7', padding: 12, borderRadius: 8, marginHorizontal: 16, marginTop: 12, borderWidth: 1, borderColor: '#F59E0B', marginBottom: 12 }}>
+            <Text style={{ color: '#B45309', fontWeight: 'bold', fontSize: 13 }}>Wallet Ledger Under Construction</Text>
+            <Text style={{ color: '#B45309', fontSize: 11, marginTop: 4 }}>
+              Wallet balances and transactions are mock-blocked in production. Immutable ledger systems are under construction (scheduled for CMD-117).
+            </Text>
+          </View>
+        )}
         {/* Balances */}
         <View style={styles.cardsContainer}>
           <View style={styles.walletCard}>

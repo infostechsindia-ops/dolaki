@@ -1,349 +1,447 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Modal, ActivityIndicator, Alert, Image, Dimensions } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  ActivityIndicator,
+  Alert,
+} from 'react-native';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useCart } from '../context/CartContext';
+import { useSurface } from '../context/SurfaceContext';
+import { apiClient } from '../api/client';
+import { LoadingView, ErrorStateView } from '../components/common/StateViews';
 
-const { width, height } = Dimensions.get('window');
+export interface DeliveryOptionDto {
+  id: string;
+  label: string;
+  description?: string;
+  etaText?: string;
+  priceCents: number;
+  formattedPrice: string;
+  isEligible: boolean;
+  isSelected: boolean;
+}
 
-type PaymentMethod = 'upi' | 'card' | 'wallet' | 'cod';
+export interface PaymentMethodDto {
+  id: string;
+  type: 'UPI' | 'CARD' | 'COD' | 'WALLET';
+  label: string;
+  description?: string;
+  isEligible: boolean;
+  isSelected: boolean;
+  uneligibleReason?: string;
+}
+
+export interface CheckoutPreviewResponseDto {
+  cartId: string;
+  customerId: string;
+  addresses: any[];
+  selectedAddress: any | null;
+  deliveryOptions: DeliveryOptionDto[];
+  selectedDeliveryOption: DeliveryOptionDto | null;
+  paymentMethods: PaymentMethodDto[];
+  selectedPaymentMethod: string | null;
+  items: any[];
+  totalItems: number;
+  subtotal: number;
+  formattedSubtotal: string;
+  tax: number;
+  formattedTax: string;
+  shipping: number;
+  formattedShipping: string;
+  discount: number;
+  formattedDiscount: string;
+  grandTotal: number;
+  formattedGrandTotal: string;
+  minimumBasketAmount?: number | null;
+  isMinimumBasketMet: boolean;
+  formattedMinimumBasketShortfall?: string | null;
+  storeAvailabilityStatus: 'OPEN' | 'CLOSED' | 'UNAVAILABLE' | 'SERVICED';
+  storeName?: string | null;
+  checkoutEligibility: {
+    isEligible: boolean;
+    blockers: string[];
+  };
+}
 
 export default function CheckoutScreen() {
   const router = useRouter();
-  const { 
-    cart, 
-    calculations, 
-    addresses, 
-    selectedAddress, 
-    setSelectedAddress, 
-    placeOrder, 
-    rewardWalletBalance, 
-    deductRewardWallet 
-  } = useCart();
+  const { surface } = useSurface();
+  const { clearCart, selectedAddress: defaultAddressString } = useCart();
+  const insets = useSafeAreaInsets();
+  const bottomInsetPadding = Math.max(12, insets.bottom + 8);
 
-  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>('upi');
-  const [showRazorpay, setShowRazorpay] = useState(false);
-  const [razorpayStatus, setRazorpayStatus] = useState<'processing' | 'success' | 'failed'>('processing');
-  const [placedOrderId, setPlacedOrderId] = useState<string>('');
-  const [fladoSlot, setFladoSlot] = useState<'asap' | 'scheduled'>('asap');
-  const [riderTip, setRiderTip] = useState(0);
+  const [preview, setPreview] = useState<CheckoutPreviewResponseDto | null>(null);
+  const [loadingPreview, setLoadingPreview] = useState<boolean>(true);
+  const [previewError, setPreviewError] = useState<string | null>(null);
 
-  const isFladoOnly = cart.every(item => item.product.isFlado);
+  const [selectedAddressId, setSelectedAddressId] = useState<string | undefined>(undefined);
+  const [selectedDeliveryOptionId, setSelectedDeliveryOptionId] = useState<string | undefined>(undefined);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<string>('UPI');
 
-  const codFee = paymentMethod === 'cod' ? Math.min(Math.round(calculations.total * 0.01), 10) : 0;
-  const totalPayable = calculations.total + riderTip + codFee;
+  const [isPlacingOrder, setIsPlacingOrder] = useState<boolean>(false);
+  const [placementError, setPlacementError] = useState<string | null>(null);
 
-  const handlePayment = async () => {
-    // If wallet option is chosen, verify balance
-    if (paymentMethod === 'wallet' && rewardWalletBalance < totalPayable) {
-      Alert.alert('Insufficient Balance', 'Your reward wallet cash is lower than the payable amount. Please select UPI or Card.');
+  // Stable Idempotency Key for current checkout session
+  const idempotencyKeyRef = useRef<string>(`idemp-order-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`);
+
+  // Authoritative Checkout Preview Fetcher
+  const fetchCheckoutPreview = useCallback(async (opts?: {
+    addressId?: string;
+    deliveryOptionId?: string;
+    paymentMethod?: string;
+  }) => {
+    setLoadingPreview(true);
+    setPreviewError(null);
+    try {
+      const data: CheckoutPreviewResponseDto = await apiClient('/checkout/preview', {
+        method: 'POST',
+        body: JSON.stringify({
+          addressId: opts?.addressId ?? selectedAddressId,
+          deliveryOptionId: opts?.deliveryOptionId ?? selectedDeliveryOptionId,
+          paymentMethod: opts?.paymentMethod ?? selectedPaymentMethod,
+        }),
+      });
+      setPreview(data);
+      if (data.selectedAddress?.id && !selectedAddressId) {
+        setSelectedAddressId(data.selectedAddress.id);
+      }
+      if (data.selectedDeliveryOption?.id && !selectedDeliveryOptionId) {
+        setSelectedDeliveryOptionId(data.selectedDeliveryOption.id);
+      }
+      if (data.selectedPaymentMethod && !selectedPaymentMethod) {
+        setSelectedPaymentMethod(data.selectedPaymentMethod);
+      }
+    } catch (err: any) {
+      setPreviewError(err?.message || 'Failed to generate checkout preview');
+    } finally {
+      setLoadingPreview(false);
+    }
+  }, [selectedAddressId, selectedDeliveryOptionId, selectedPaymentMethod]);
+
+  useEffect(() => {
+    fetchCheckoutPreview();
+  }, [fetchCheckoutPreview]);
+
+  const handleSelectAddress = (addressId: string) => {
+    setSelectedAddressId(addressId);
+    fetchCheckoutPreview({ addressId });
+  };
+
+  const handleSelectDeliveryOption = (deliveryOptionId: string) => {
+    setSelectedDeliveryOptionId(deliveryOptionId);
+    fetchCheckoutPreview({ deliveryOptionId });
+  };
+
+  const handleSelectPaymentMethod = (paymentMethod: string) => {
+    setSelectedPaymentMethod(paymentMethod);
+    fetchCheckoutPreview({ paymentMethod });
+  };
+
+  // Authoritative Order Placement Pipeline (CMD-045/CMD-046)
+  const handlePlaceOrder = async () => {
+    if (!preview || !preview.checkoutEligibility.isEligible) {
+      Alert.alert('Checkout Blocked', preview?.checkoutEligibility.blockers?.[0] || 'Requirements not met');
       return;
     }
 
-    setShowRazorpay(true);
-    setRazorpayStatus('processing');
+    setIsPlacingOrder(true);
+    setPlacementError(null);
 
-    // Simulate payment gateway delay (2.5 seconds)
-    setTimeout(async () => {
-      try {
-        // Place the order in Context order history and clear cart
-        const orderId = await placeOrder();
-        setPlacedOrderId(orderId);
+    const idempotencyKey = idempotencyKeyRef.current;
 
-        // Deduct from reward wallet if selected
-        if (paymentMethod === 'wallet') {
-          deductRewardWallet(totalPayable);
-        }
+    try {
+      // Step 1: Create PaymentIntent (Exact backend CreatePaymentIntentDto contract)
+      const intentRes: any = await apiClient('/payments/intents', {
+        method: 'POST',
+        headers: {
+          'X-Idempotency-Key': idempotencyKey,
+        },
+        body: JSON.stringify({
+          addressId: selectedAddressId || preview.selectedAddress?.id,
+          deliveryOptionId: selectedDeliveryOptionId || preview.selectedDeliveryOption?.id,
+          paymentMethod: selectedPaymentMethod,
+        }),
+      });
 
-        setRazorpayStatus('success');
+      const paymentIntentId = intentRes.id || intentRes.paymentIntentId;
 
-        // Redirect to tracking page after showing success animation
-        setTimeout(() => {
-          setShowRazorpay(false);
-          router.replace(`/tracking/${orderId}`);
-        }, 2000);
-      } catch (error) {
-        setRazorpayStatus('failed');
-        console.error(error);
+      // Step 2: Confirm Payment Intent if required (CARD / UPI) using exact backend route POST /payments/intents/:id/confirm
+      if (selectedPaymentMethod !== 'COD' && intentRes.status !== 'COD_PENDING') {
+        await apiClient(`/payments/intents/${paymentIntentId}/confirm`, {
+          method: 'POST',
+          body: JSON.stringify({
+            paymentMethod: selectedPaymentMethod,
+          }),
+        });
       }
-    }, 2500);
+
+      // Step 3: Authoritative Order Placement with Idempotency Guard
+      const orderRes: any = await apiClient('/orders/place', {
+        method: 'POST',
+        headers: {
+          'X-Idempotency-Key': idempotencyKey,
+        },
+        body: JSON.stringify({
+          paymentIntentId,
+          addressId: selectedAddressId || preview.selectedAddress?.id || 'addr-default',
+        }),
+      });
+
+      const orderId = orderRes.id || orderRes.orderNumber || 'ORD-SUCCESS';
+
+      // Step 4: Clear Local Cart State & Route to Order Details (Preserving backend server cart state)
+      clearCart();
+      router.replace(`/orders/${orderId}`);
+    } catch (err: any) {
+      setPlacementError(err?.message || 'Failed to place order. Please try again.');
+      Alert.alert('Order Placement Error', err?.message || 'Payment/order processing failed');
+    } finally {
+      setIsPlacingOrder(false);
+    }
   };
+
+  if (loadingPreview && !preview) {
+    return <LoadingView message="Preparing authoritative checkout preview..." />;
+  }
+
+  if (previewError && !preview) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <ErrorStateView
+          title="Checkout Unavailable"
+          message={previewError}
+          onRetry={() => fetchCheckoutPreview()}
+          retryLabel="Retry Preview"
+        />
+      </SafeAreaView>
+    );
+  }
+
+  const isEligible = preview?.checkoutEligibility?.isEligible ?? false;
+  const blockers = preview?.checkoutEligibility?.blockers || [];
+  const primaryBlocker = blockers[0] || 'Cart requirements not met';
 
   return (
     <SafeAreaView style={styles.container}>
       {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
+        <TouchableOpacity
+          onPress={() => router.back()}
+          style={styles.backBtn}
+          accessibilityRole="button"
+          accessibilityLabel="Go back to cart"
+        >
           <Ionicons name="arrow-back" size={24} color="#1F2937" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Order Checkout</Text>
-        <View style={{ width: 24 }} />
+        <View style={{ width: 44 }} />
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Step 1: Address Picker */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>1. Select Delivery Address</Text>
-          <View style={styles.addressesContainer}>
-            {addresses.map((addr, idx) => {
-              const isSelected = selectedAddress === addr;
-              return (
-                <TouchableOpacity 
-                  key={idx}
-                  style={[styles.addressOption, isSelected && styles.selectedAddressOption]}
-                  onPress={() => setSelectedAddress(addr)}
-                  activeOpacity={0.8}
-                >
-                  <View style={[styles.radioButton, isSelected && styles.radioButtonSelected]}>
-                    {isSelected && <View style={styles.radioDot} />}
-                  </View>
-                  <Text style={styles.addressText}>{addr}</Text>
-                </TouchableOpacity>
-              );
-            })}
-          </View>
-        </View>
-
-        {/* Step 1B: Choose Delivery Speed (Flado items only) */}
-        {cart.some(item => item.product.isFlado) && (
-          <View style={styles.sectionCard}>
-            <Text style={styles.sectionTitle}>1.5 Choose Delivery Time Slot</Text>
-            <View style={{ flexDirection: 'row', gap: 10, marginBottom: 4 }}>
-              <TouchableOpacity
-                style={[styles.slotOptionBtn, fladoSlot === 'asap' && styles.slotOptionBtnActive]}
-                onPress={() => setFladoSlot('asap')}
-              >
-                <Text style={[styles.slotOptionText, fladoSlot === 'asap' && styles.slotOptionTextActive]}>⚡ ASAP (10 min)</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.slotOptionBtn, fladoSlot === 'scheduled' && styles.slotOptionBtnActive]}
-                onPress={() => setFladoSlot('scheduled')}
-              >
-                <Text style={[styles.slotOptionText, fladoSlot === 'scheduled' && styles.slotOptionTextActive]}>📅 Tomorrow Morning</Text>
-              </TouchableOpacity>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        keyboardShouldPersistTaps="handled"
+        contentContainerStyle={[styles.scrollContent, { paddingBottom: 110 + insets.bottom }]}
+      >
+        {/* Blocker Notification Banner if Ineligible */}
+        {!isEligible && (
+          <View style={styles.blockerBanner}>
+            <Ionicons name="alert-circle" size={20} color="#DC2626" />
+            <View style={styles.blockerContent}>
+              <Text style={styles.blockerTitle}>Checkout Cannot Proceed</Text>
+              {blockers.map((b, idx) => (
+                <Text key={idx} style={styles.blockerText}>• {b}</Text>
+              ))}
             </View>
           </View>
         )}
 
-        {/* Step 1C: Delivery Partner Tip Selection */}
+        {/* Error placement banner */}
+        {placementError && (
+          <View style={styles.blockerBanner}>
+            <Ionicons name="warning" size={20} color="#DC2626" />
+            <Text style={styles.blockerText}>{placementError}</Text>
+          </View>
+        )}
+
+        {/* Step 1: Saved Addresses Section */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>1.6 Support Delivery Partner Tip</Text>
-          <Text style={{ fontSize: 11, color: '#6B7280', marginBottom: 10, fontWeight: '600' }}>
-            100% of tips go directly to the rider. Show appreciation for their fast service.
-          </Text>
-          <View style={{ flexDirection: 'row', gap: 8, flexWrap: 'wrap' }}>
-            {[0, 10, 20, 30].map(tip => (
+          <View style={styles.sectionHeader}>
+            <Ionicons name="location" size={18} color="#6366F1" />
+            <Text style={styles.sectionTitle}>1. Delivery Address</Text>
+          </View>
+
+          {preview?.addresses && preview.addresses.length > 0 ? (
+            preview.addresses.map((addr: any) => {
+              const isSelected = selectedAddressId === addr.id || preview.selectedAddress?.id === addr.id;
+              return (
+                <TouchableOpacity
+                  key={addr.id}
+                  style={[styles.optionRow, isSelected && styles.optionRowSelected]}
+                  onPress={() => handleSelectAddress(addr.id)}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select address ${addr.addressLine1 || addr.name || addr.id}`}
+                >
+                  <Ionicons
+                    name={isSelected ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={isSelected ? "#6366F1" : "#9CA3AF"}
+                  />
+                  <View style={styles.optionDetails}>
+                    <Text style={styles.optionTitle}>{addr.name || 'Delivery Address'}</Text>
+                    <Text style={styles.optionSub}>{addr.addressLine1 || addr.pincode || defaultAddressString}</Text>
+                  </View>
+                </TouchableOpacity>
+              );
+            })
+          ) : (
+            <View style={styles.addressFallbackBox}>
+              <Ionicons name="location-outline" size={20} color="#4B5563" />
+              <Text style={styles.addressFallbackText}>{defaultAddressString}</Text>
+            </View>
+          )}
+        </View>
+
+        {/* Step 2: Delivery Option Selection */}
+        {preview?.deliveryOptions && preview.deliveryOptions.length > 0 && (
+          <View style={styles.sectionCard}>
+            <View style={styles.sectionHeader}>
+              <MaterialCommunityIcons name="truck-delivery" size={18} color="#6366F1" />
+              <Text style={styles.sectionTitle}>2. Delivery Mode & Speed</Text>
+            </View>
+
+            {preview.deliveryOptions.map((opt) => {
+              const isSelected = selectedDeliveryOptionId === opt.id || opt.isSelected;
+              return (
+                <TouchableOpacity
+                  key={opt.id}
+                  style={[styles.optionRow, isSelected && styles.optionRowSelected, !opt.isEligible && styles.optionDisabled]}
+                  onPress={() => opt.isEligible && handleSelectDeliveryOption(opt.id)}
+                  disabled={!opt.isEligible}
+                  accessibilityRole="button"
+                  accessibilityLabel={`Select delivery option ${opt.label}`}
+                >
+                  <Ionicons
+                    name={isSelected ? "radio-button-on" : "radio-button-off"}
+                    size={20}
+                    color={isSelected ? "#6366F1" : "#9CA3AF"}
+                  />
+                  <View style={styles.optionDetails}>
+                    <Text style={styles.optionTitle}>{opt.label}</Text>
+                    {opt.etaText ? <Text style={styles.etaBadge}>{opt.etaText}</Text> : null}
+                  </View>
+                  <Text style={styles.optionPrice}>{opt.formattedPrice}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        )}
+
+        {/* Step 3: Payment Method Selection */}
+        <View style={styles.sectionCard}>
+          <View style={styles.sectionHeader}>
+            <Ionicons name="card" size={18} color="#6366F1" />
+            <Text style={styles.sectionTitle}>3. Payment Method</Text>
+          </View>
+
+          {(preview?.paymentMethods || [
+            { id: 'UPI', type: 'UPI', label: 'UPI Payment', isEligible: true, isSelected: true },
+            { id: 'CARD', type: 'CARD', label: 'Credit / Debit Card', isEligible: true, isSelected: false },
+            { id: 'COD', type: 'COD', label: 'Cash on Delivery (COD)', isEligible: true, isSelected: false },
+          ]).map((pm: any) => {
+            const isSelected = selectedPaymentMethod === pm.id || pm.isSelected;
+            return (
               <TouchableOpacity
-                key={tip}
-                style={[styles.tipBtn, riderTip === tip && styles.tipBtnActive]}
-                onPress={() => setRiderTip(tip)}
+                key={pm.id}
+                style={[styles.optionRow, isSelected && styles.optionRowSelected, !pm.isEligible && styles.optionDisabled]}
+                onPress={() => pm.isEligible && handleSelectPaymentMethod(pm.id)}
+                disabled={!pm.isEligible}
+                accessibilityRole="button"
+                accessibilityLabel={`Select payment method ${pm.label}`}
               >
-                <Text style={[styles.tipBtnText, riderTip === tip && styles.tipBtnTextActive]}>
-                  {tip === 0 ? 'No Tip' : `₹${tip}`}
-                </Text>
+                <Ionicons
+                  name={isSelected ? "radio-button-on" : "radio-button-off"}
+                  size={20}
+                  color={isSelected ? "#6366F1" : "#9CA3AF"}
+                />
+                <View style={styles.optionDetails}>
+                  <Text style={styles.optionTitle}>{pm.label}</Text>
+                  {pm.description ? <Text style={styles.optionSub}>{pm.description}</Text> : null}
+                  {!pm.isEligible && pm.uneligibleReason && (
+                    <Text style={styles.uneligibleText}>{pm.uneligibleReason}</Text>
+                  )}
+                </View>
               </TouchableOpacity>
-            ))}
-          </View>
+            );
+          })}
         </View>
 
-        {/* Step 2: Payment Method */}
+        {/* Step 4: Authoritative Order Summary */}
         <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>2. Choose Payment Method</Text>
-          
-          <TouchableOpacity 
-            style={[styles.paymentOption, paymentMethod === 'upi' && styles.selectedPaymentOption]}
-            onPress={() => setPaymentMethod('upi')}
-          >
-            <Ionicons name="logo-bitcoin" size={22} color="#059669" />
-            <View style={styles.paymentTextCol}>
-              <Text style={styles.paymentName}>Razorpay UPI (Google Pay, PhonePe)</Text>
-              <Text style={styles.paymentDesc}>Pay securely via instant mobile UPI</Text>
-            </View>
-            <View style={[styles.radioButton, paymentMethod === 'upi' && styles.radioButtonSelected]}>
-              {paymentMethod === 'upi' && <View style={styles.radioDot} />}
-            </View>
-          </TouchableOpacity>
+          <Text style={styles.summaryTitle}>4. Authoritative Bill Summary</Text>
 
-          <TouchableOpacity 
-            style={[styles.paymentOption, paymentMethod === 'card' && styles.selectedPaymentOption]}
-            onPress={() => setPaymentMethod('card')}
-          >
-            <Ionicons name="card" size={22} color="#8B5CF6" />
-            <View style={styles.paymentTextCol}>
-              <Text style={styles.paymentName}>Razorpay Card (Visa, MasterCard, RuPay)</Text>
-              <Text style={styles.paymentDesc}>Credit/Debit cards processed securely</Text>
-            </View>
-            <View style={[styles.radioButton, paymentMethod === 'card' && styles.radioButtonSelected]}>
-              {paymentMethod === 'card' && <View style={styles.radioDot} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity 
-            style={[styles.paymentOption, paymentMethod === 'wallet' && styles.selectedPaymentOption]}
-            onPress={() => setPaymentMethod('wallet')}
-          >
-            <Ionicons name="wallet" size={22} color="#D97706" />
-            <View style={styles.paymentTextCol}>
-              <Text style={styles.paymentName}>Use Reward Wallet Balance (₹{rewardWalletBalance})</Text>
-              <Text style={styles.paymentDesc}>Deduct directly from earned arcade cash</Text>
-            </View>
-            <View style={[styles.radioButton, paymentMethod === 'wallet' && styles.radioButtonSelected]}>
-              {paymentMethod === 'wallet' && <View style={styles.radioDot} />}
-            </View>
-          </TouchableOpacity>
-
-          <TouchableOpacity
-            style={[styles.paymentOption, paymentMethod === 'cod' && styles.selectedPaymentOption]}
-            onPress={() => setPaymentMethod('cod')}
-          >
-            <Ionicons name="cash-outline" size={22} color="#6B7280" />
-            <View style={styles.paymentTextCol}>
-              <Text style={styles.paymentName}>Cash on Delivery (COD)</Text>
-              <Text style={styles.paymentDesc}>Pay cash when your order arrives</Text>
-            </View>
-            <View style={[styles.radioButton, paymentMethod === 'cod' && styles.radioButtonSelected]}>
-              {paymentMethod === 'cod' && <View style={styles.radioDot} />}
-            </View>
-          </TouchableOpacity>
-
-          {/* COD Warning Banner */}
-          {paymentMethod === 'cod' && (
-            <View style={styles.codWarningBanner}>
-              <Text style={styles.codWarningTitle}>⚠️ COD Fee applies</Text>
-              <Text style={styles.codWarningText}>
-                You are paying ₹{Math.min(Math.round(calculations.total * 0.01), 10)} extra as COD Fee. Pay online to remove this fee.
-              </Text>
-            </View>
-          )}
-        </View>
-
-        {/* Step 3: Billing & Items Summary */}
-        <View style={styles.sectionCard}>
-          <Text style={styles.sectionTitle}>3. Order & Billing Summary</Text>
-          
-          <View style={styles.itemsBrief}>
-            {cart.map((item) => (
-              <View key={item.itemId} style={styles.itemSummaryRow}>
-                <Text style={styles.itemSummaryName} numberOfLines={1}>
-                  {item.product.name} (x{item.quantity})
-                </Text>
-                <Text style={styles.itemSummaryPrice}>₹{item.product.price * item.quantity}</Text>
-              </View>
-            ))}
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Subtotal ({preview?.totalItems || 0} items)</Text>
+            <Text style={styles.summaryValue}>{preview?.formattedSubtotal || '₹0.00'}</Text>
           </View>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Taxes & GST</Text>
+            <Text style={styles.summaryValue}>{preview?.formattedTax || '₹0.00'}</Text>
+          </View>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Delivery & Fulfillment Charges</Text>
+            <Text style={styles.summaryValue}>{preview?.formattedShipping || '₹0.00'}</Text>
+          </View>
+
+          {preview?.discount ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Discounts & Coupon Savings</Text>
+              <Text style={[styles.summaryValue, { color: '#059669' }]}>-{preview.formattedDiscount}</Text>
+            </View>
+          ) : null}
 
           <View style={styles.divider} />
 
-          <View style={styles.billingRow}>
-            <Text style={styles.billLabel}>Subtotal</Text>
-            <Text style={styles.billVal}>₹{calculations.subtotal}</Text>
-          </View>
-          <View style={styles.billingRow}>
-            <Text style={styles.billLabel}>GST (18%)</Text>
-            <Text style={styles.billVal}>₹{calculations.gst}</Text>
-          </View>
-          <View style={styles.billingRow}>
-            <Text style={styles.billLabel}>Delivery Charges</Text>
-            <Text style={styles.billVal}>
-              {calculations.deliveryFee === 0 ? 'FREE' : `₹${calculations.deliveryFee}`}
-            </Text>
-          </View>
-          {calculations.discount > 0 && (
-            <View style={styles.billingRow}>
-              <Text style={[styles.billLabel, { color: '#059669' }]}>Discounts Applied</Text>
-              <Text style={[styles.billVal, { color: '#059669' }]}>-₹{calculations.discount}</Text>
-            </View>
-          )}
-
-          {riderTip > 0 && (
-            <View style={styles.billingRow}>
-              <Text style={styles.billLabel}>Rider Tip</Text>
-              <Text style={styles.billVal}>₹{riderTip}</Text>
-            </View>
-          )}
-
-          {codFee > 0 && (
-            <View style={styles.billingRow}>
-              <Text style={[styles.billLabel, { color: '#B45309' }]}>COD Fee</Text>
-              <Text style={[styles.billVal, { color: '#B45309' }]}>₹{codFee}</Text>
-            </View>
-          )}
-
-          <View style={styles.divider} />
-
-          <View style={styles.totalPayableRow}>
-            <Text style={styles.payableLabel}>Amount Payable</Text>
-            <Text style={styles.payableValue}>₹{totalPayable}</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.grandTotalLabel}>Total Payable</Text>
+            <Text style={styles.grandTotalValue}>{preview?.formattedGrandTotal || '₹0.00'}</Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Footer Checkout Trigger */}
-      <View style={styles.footer}>
+      {/* Sticky Bottom Place Order CTA */}
+      <View style={[styles.stickyFooter, { paddingBottom: bottomInsetPadding }]}>
         <View style={styles.footerInfo}>
           <Text style={styles.footerLabel}>Total Amount</Text>
-          <Text style={styles.footerPrice}>₹{totalPayable}</Text>
+          <Text style={styles.footerValue}>{preview?.formattedGrandTotal || '₹0.00'}</Text>
         </View>
-        <TouchableOpacity 
-          style={styles.payBtn}
-          onPress={handlePayment}
+
+        <TouchableOpacity
+          style={[styles.placeOrderBtn, (!isEligible || isPlacingOrder) && styles.disabledBtn]}
+          onPress={handlePlaceOrder}
+          disabled={!isEligible || isPlacingOrder}
+          accessibilityRole="button"
+          accessibilityLabel={isEligible ? "Place Order" : `Order blocked: ${primaryBlocker}`}
         >
-          <Text style={styles.payBtnText}>Pay Securely</Text>
-          <Ionicons name="lock-closed" size={16} color="white" style={{ marginLeft: 6 }} />
+          {isPlacingOrder ? (
+            <ActivityIndicator size="small" color="#FFFFFF" />
+          ) : (
+            <>
+              <Text style={styles.placeOrderText}>
+                {isEligible ? 'PLACE ORDER' : primaryBlocker.toUpperCase()}
+              </Text>
+              {isEligible && <Ionicons name="lock-closed" size={16} color="white" />}
+            </>
+          )}
         </TouchableOpacity>
       </View>
-
-      {/* RAZORPAY SECURE GATEWAY SIMULATOR */}
-      <Modal visible={showRazorpay} transparent={true} animationType="fade">
-        <View style={styles.razorpayBackdrop}>
-          <View style={styles.razorpayContainer}>
-            {/* Razorpay Branding Header */}
-            <View style={styles.razorpayHeader}>
-              <View style={styles.razorpayLogoRow}>
-                <Ionicons name="shield-checkmark" size={20} color="white" />
-                <Text style={styles.razorpayBrandName}>Razorpay Secure</Text>
-              </View>
-              <View>
-                <Text style={styles.razorpayAmountLabel}>PAYING AURAMART</Text>
-                <Text style={styles.razorpayAmountValue}>₹{totalPayable}</Text>
-              </View>
-            </View>
-
-            {/* Simulated Processing Body */}
-            <View style={styles.razorpayBody}>
-              {razorpayStatus === 'processing' && (
-                <View style={styles.centerCol}>
-                  <ActivityIndicator size="large" color="#0052FF" />
-                  <Text style={styles.processingText}>Processing payment securely...</Text>
-                  <Text style={styles.processingSub}>Connecting with bank gateways. Do not press back or refresh.</Text>
-                </View>
-              )}
-
-              {razorpayStatus === 'success' && (
-                <View style={styles.centerCol}>
-                  <Ionicons name="checkmark-circle" size={80} color="#059669" />
-                  <Text style={styles.successText}>Payment Successful!</Text>
-                  <Text style={styles.successSub}>Order Created Successfully. Order ID: {placedOrderId}</Text>
-                </View>
-              )}
-
-              {razorpayStatus === 'failed' && (
-                <View style={styles.centerCol}>
-                  <Ionicons name="close-circle" size={80} color="#EF4444" />
-                  <Text style={styles.errorText}>Payment Failed</Text>
-                  <Text style={styles.errorSub}>The transaction was declined by bank gateway.</Text>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.razorpayFooter}>
-              <Ionicons name="lock-closed" size={12} color="#9CA3AF" />
-              <Text style={styles.razorpayFooterText}>PCI-DSS Compliant • 128-bit SSL Encrypted</Text>
-            </View>
-          </View>
-        </View>
-      </Modal>
     </SafeAreaView>
   );
 }
@@ -363,366 +461,202 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
-  backButton: {
-    padding: 2,
+  backBtn: {
+    minWidth: 44,
+    minHeight: 44,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   headerTitle: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
   },
   scrollContent: {
+    padding: 16,
     paddingBottom: 100,
+  },
+  blockerBanner: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    padding: 12,
+    backgroundColor: '#FEF2F2',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FCA5A5',
+    marginBottom: 16,
+  },
+  blockerContent: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  blockerTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#991B1B',
+  },
+  blockerText: {
+    fontSize: 12,
+    color: '#B91C1C',
+    marginTop: 2,
   },
   sectionCard: {
     backgroundColor: '#FFFFFF',
-    marginHorizontal: 16,
-    marginTop: 12,
-    borderRadius: 16,
+    borderRadius: 12,
     padding: 16,
+    marginBottom: 14,
     borderWidth: 1,
     borderColor: '#E5E7EB',
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
   },
   sectionTitle: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 12,
+    fontWeight: '700',
+    color: '#111827',
+    marginLeft: 8,
   },
-  addressesContainer: {
-    gap: 10,
-  },
-  addressOption: {
+  optionRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
     padding: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  selectedAddressOption: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
-  },
-  radioButton: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    borderWidth: 2,
-    borderColor: '#D1D5DB',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginRight: 10,
-  },
-  radioButtonSelected: {
-    borderColor: '#8B5CF6',
-  },
-  radioDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: '#8B5CF6',
-  },
-  addressText: {
-    flex: 1,
-    fontSize: 12,
-    color: '#374151',
-    lineHeight: 18,
-  },
-  paymentOption: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    borderRadius: 8,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 12,
-    padding: 14,
-    marginBottom: 10,
     backgroundColor: '#F9FAFB',
+    marginBottom: 8,
+    minHeight: 48,
   },
-  selectedPaymentOption: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
+  optionRowSelected: {
+    borderColor: '#6366F1',
+    backgroundColor: '#EEF2FF',
   },
-  paymentTextCol: {
+  optionDisabled: {
+    opacity: 0.5,
+  },
+  optionDetails: {
     flex: 1,
-    marginLeft: 12,
+    marginLeft: 10,
   },
-  paymentName: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#1F2937',
+  optionTitle: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#111827',
   },
-  paymentDesc: {
-    fontSize: 11,
+  optionSub: {
+    fontSize: 12,
     color: '#6B7280',
     marginTop: 2,
   },
-  itemsBrief: {
-    gap: 8,
+  optionPrice: {
+    fontSize: 13,
+    fontWeight: '700',
+    color: '#111827',
   },
-  itemSummaryRow: {
+  etaBadge: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+    marginTop: 2,
+  },
+  uneligibleText: {
+    fontSize: 11,
+    color: '#DC2626',
+    marginTop: 2,
+  },
+  addressFallbackBox: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
+  },
+  addressFallbackText: {
+    fontSize: 13,
+    color: '#374151',
+    marginLeft: 8,
+    flex: 1,
+  },
+  summaryTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
+    marginBottom: 12,
+  },
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    alignItems: 'center',
+    marginBottom: 8,
   },
-  itemSummaryName: {
+  summaryLabel: {
     fontSize: 13,
     color: '#4B5563',
-    flex: 1,
-    marginRight: 16,
   },
-  itemSummaryPrice: {
+  summaryValue: {
     fontSize: 13,
     fontWeight: '600',
-    color: '#1F2937',
+    color: '#111827',
   },
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: 12,
+    marginVertical: 10,
   },
-  billingRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    marginVertical: 4,
-  },
-  billLabel: {
-    fontSize: 13,
-    color: '#6B7280',
-  },
-  billVal: {
-    fontSize: 13,
-    color: '#1F2937',
-    fontWeight: '500',
-  },
-  totalPayableRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
-  },
-  payableLabel: {
+  grandTotalLabel: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
-  payableValue: {
+  grandTotalValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#8B5CF6',
+    fontWeight: '800',
+    color: '#111827',
   },
-  footer: {
+  stickyFooter: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    gap: 12,
   },
   footerInfo: {
-    justifyContent: 'center',
+    flex: 1,
   },
   footerLabel: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    fontWeight: 'bold',
+    fontSize: 11,
+    color: '#6B7280',
   },
-  footerPrice: {
+  footerValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
-  payBtn: {
-    backgroundColor: '#8B5CF6',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
+  placeOrderBtn: {
+    flex: 1.8,
+    height: 48,
+    backgroundColor: '#6366F1',
     borderRadius: 10,
-  },
-  payBtnText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-
-  // Razorpay simulator backdrop
-  razorpayBackdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.7)',
+    flexDirection: 'row',
     justifyContent: 'center',
-    alignItems: 'center',
-  },
-  razorpayContainer: {
-    backgroundColor: '#FFFFFF',
-    width: width - 32,
-    borderRadius: 16,
-    overflow: 'hidden',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.3,
-    shadowRadius: 20,
-    elevation: 10,
-  },
-  razorpayHeader: {
-    backgroundColor: '#0F1E36',
-    padding: 16,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-  },
-  razorpayLogoRow: {
-    flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
   },
-  razorpayBrandName: {
-    color: 'white',
-    fontSize: 14,
-    fontWeight: 'bold',
+  disabledBtn: {
+    backgroundColor: '#9CA3AF',
   },
-  razorpayAmountLabel: {
-    color: '#9CA3AF',
-    fontSize: 8,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-  razorpayAmountValue: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: 'bold',
-    textAlign: 'right',
-  },
-  razorpayBody: {
-    padding: 32,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 220,
-  },
-  centerCol: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  processingText: {
-    marginTop: 16,
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  processingSub: {
-    marginTop: 8,
-    fontSize: 12,
-    color: '#6B7280',
-    textAlign: 'center',
-    lineHeight: 18,
-  },
-  successText: {
-    marginTop: 16,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#059669',
-  },
-  successSub: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#4B5563',
-    textAlign: 'center',
-  },
-  errorText: {
-    marginTop: 16,
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#EF4444',
-  },
-  errorSub: {
-    marginTop: 6,
-    fontSize: 12,
-    color: '#4B5563',
-    textAlign: 'center',
-  },
-  razorpayFooter: {
-    backgroundColor: '#F9FAFB',
-    paddingVertical: 10,
-    borderTopWidth: 1,
-    borderTopColor: '#E5E7EB',
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    gap: 4,
-  },
-  razorpayFooterText: {
-    color: '#9CA3AF',
-    fontSize: 10,
-    fontWeight: '500',
-  },
-  slotOptionBtn: {
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    padding: 12,
-    flex: 1,
-    alignItems: 'center',
-    backgroundColor: 'white'
-  },
-  slotOptionBtnActive: {
-    borderColor: '#059669',
-    backgroundColor: '#ECFDF5'
-  },
-  slotOptionText: {
-    fontSize: 11.5,
-    fontWeight: '700',
-    color: '#6B7280'
-  },
-  slotOptionTextActive: {
-    color: '#047857'
-  },
-  tipBtn: {
-    borderWidth: 1.5,
-    borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    minWidth: 60,
-    alignItems: 'center',
-    backgroundColor: 'white'
-  },
-  tipBtnActive: {
-    borderColor: '#059669',
-    backgroundColor: '#ECFDF5'
-  },
-  tipBtnText: {
-    fontSize: 11,
-    fontWeight: '700',
-    color: '#6B7280'
-  },
-  tipBtnTextActive: {
-    color: '#047857'
-  },
-  codWarningBanner: {
-    backgroundColor: '#FFF9C4',
-    borderWidth: 1,
-    borderColor: '#F59E0B',
-    borderRadius: 10,
-    padding: 12,
-    marginTop: 10,
-  },
-  codWarningTitle: {
-    fontSize: 12.5,
+  placeOrderText: {
+    color: '#FFFFFF',
+    fontSize: 13,
     fontWeight: '800',
-    color: '#92400E',
-    marginBottom: 4,
-  },
-  codWarningText: {
-    fontSize: 11,
-    color: '#B45309',
-    fontWeight: '600',
-    lineHeight: 16,
   },
 });

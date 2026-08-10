@@ -3,60 +3,140 @@ import { StyleSheet, View, Text, ScrollView, TouchableOpacity, ActivityIndicator
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { BASE_URL } from '../../utils/api';
 
 interface PassPlan {
-  id: string;
+  id: 'MONTHLY' | 'QUARTERLY' | 'ANNUAL';
   name: string;
-  price: number;
+  price: string;
   period: string;
   savingsDesc: string;
   badge?: string;
 }
 
 const PLANS: PassPlan[] = [
-  { id: 'monthly', name: 'Monthly Superpass', price: 39, period: '1 Month', savingsDesc: 'Saves ₹250/mo on avg' },
-  { id: 'quarterly', name: 'Quarterly Valuepass', price: 99, period: '3 Months', savingsDesc: 'Saves ₹900/mo on avg', badge: 'Popular' },
-  { id: 'annual', name: 'Annual VIP pass', price: 299, period: '1 Year', savingsDesc: 'Saves ₹4,200/yr on avg', badge: 'Best Value' }
+  { id: 'MONTHLY', name: 'Monthly Superpass', price: '$3.99', period: '1 Month', savingsDesc: 'Saves $15.00/mo on avg' },
+  { id: 'QUARTERLY', name: 'Quarterly Valuepass', price: '$9.99', period: '3 Months', savingsDesc: 'Saves $45.00/mo on avg', badge: 'Popular' },
+  { id: 'ANNUAL', name: 'Annual VIP Pass', price: '$29.99', period: '1 Year', savingsDesc: 'Saves $180.00/yr on avg', badge: 'Best Value' }
 ];
 
 export default function MobilePassScreen() {
   const router = useRouter();
-  const [selectedPlan, setSelectedPlan] = useState<string>('quarterly');
+  const [selectedPlan, setSelectedPlan] = useState<'MONTHLY' | 'QUARTERLY' | 'ANNUAL'>('QUARTERLY');
   const [isActivating, setIsActivating] = useState(false);
   const [isPassActive, setIsPassActive] = useState(false);
   const [expiryDate, setExpiryDate] = useState('');
+  const [cancelAtPeriodEnd, setCancelAtPeriodEnd] = useState(false);
 
-  // Simulating retrieval
-  useEffect(() => {
-    // In real app we use AsyncStorage. For mock we use simple states.
-  }, []);
+  const fetchStatus = async () => {
+    try {
+      const token = await AsyncStorage.getItem('aura_token');
+      if (!token) return;
 
-  const handleActivate = () => {
-    setIsActivating(true);
-
-    setTimeout(() => {
-      const future = new Date();
-      if (selectedPlan === 'monthly') future.setMonth(future.getMonth() + 1);
-      else if (selectedPlan === 'quarterly') future.setMonth(future.getMonth() + 3);
-      else future.setFullYear(future.getFullYear() + 1);
-
-      const formatted = future.toLocaleDateString('en-IN', {
-        day: 'numeric',
-        month: 'long',
-        year: 'numeric'
+      const res = await fetch(`${BASE_URL}/flado/vip/status`, {
+        headers: { Authorization: `Bearer ${token}` }
       });
 
-      setIsPassActive(true);
-      setExpiryDate(formatted);
-      setIsActivating(false);
-      Alert.alert('Welcome Elite! 🎉', 'Your Flado Pass is now active. Free shipping enabled.');
-    }, 2000);
+      if (res.ok) {
+        const data = await res.json();
+        setIsPassActive(data.isVip);
+        if (data.isVip && data.expiresAt) {
+          const date = new Date(data.expiresAt);
+          setExpiryDate(date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }));
+          setCancelAtPeriodEnd(!!data.cancelAtPeriodEnd);
+        }
+      }
+    } catch {
+      // Fallback ignore
+    }
   };
 
-  const handleCancel = () => {
-    setIsPassActive(false);
-    setExpiryDate('');
-    Alert.alert('Subscription Cancelled', 'Your pass has been cancelled successfully.');
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  const handleActivate = async () => {
+    const token = await AsyncStorage.getItem('aura_token');
+    if (!token) {
+      Alert.alert('Authentication Required', 'Please log in to activate Flado Pass.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Log In', onPress: () => router.push('/auth') },
+      ]);
+      return;
+    }
+
+    setIsActivating(true);
+
+    try {
+      // 1. Initiate Subscription
+      const subRes = await fetch(`${BASE_URL}/flado/vip/subscribe`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+          'X-Idempotency-Key': `idemp-mobile-pass-${Date.now()}`
+        },
+        body: JSON.stringify({ plan: selectedPlan })
+      });
+
+      if (!subRes.ok) {
+        const err = await subRes.json();
+        throw new Error(err.message || 'Failed to initiate subscription');
+      }
+
+      const subData = await subRes.json();
+
+      // 2. Confirm Payment & Activate
+      const confirmRes = await fetch(`${BASE_URL}/flado/vip/confirm-payment`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ subscriptionId: subData.subscription.id })
+      });
+
+      if (!confirmRes.ok) {
+        const err = await confirmRes.json();
+        throw new Error(err.message || 'Failed to confirm payment');
+      }
+
+      const activeSub = await confirmRes.json();
+      setIsPassActive(true);
+      if (activeSub.expiresAt) {
+        const date = new Date(activeSub.expiresAt);
+        setExpiryDate(date.toLocaleDateString('en-US', { day: 'numeric', month: 'long', year: 'numeric' }));
+      }
+
+      Alert.alert('Welcome Elite! 🎉', 'Your Flado Pass is now active. Free 10-minute delivery and waived handling fees enabled.');
+    } catch (err: any) {
+      Alert.alert('Activation Failed', err.message || 'Unable to activate Flado Pass.');
+    } finally {
+      setIsActivating(false);
+    }
+  };
+
+  const handleCancel = async () => {
+    const token = await AsyncStorage.getItem('aura_token');
+    if (!token) return;
+
+    try {
+      const res = await fetch(`${BASE_URL}/flado/vip/cancel`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+
+      if (res.ok) {
+        setCancelAtPeriodEnd(true);
+        Alert.alert('Subscription Cancelled', 'Your VIP renewal has been cancelled. Benefits remain active until expiry date.');
+      } else {
+        const err = await res.json();
+        Alert.alert('Cancellation Failed', err.message || 'Failed to cancel subscription.');
+      }
+    } catch (err: any) {
+      Alert.alert('Error', err.message || 'Failed to cancel subscription.');
+    }
   };
 
   return (
@@ -78,7 +158,7 @@ export default function MobilePassScreen() {
           </View>
           <Text style={styles.introTitle}>Join Flado Pass Elite</Text>
           <Text style={styles.introSubtitle}>
-            Unlock unlimited free deliveries above ₹99 and extra discounts on top groceries.
+            Unlock unlimited free 10-minute deliveries above $5.00 and waived cold-chain handling fees.
           </Text>
 
           <View style={styles.divider} />
@@ -86,11 +166,11 @@ export default function MobilePassScreen() {
           <View style={styles.perksList}>
             <View style={styles.perkRow}>
               <Ionicons name="checkmark-circle" size={16} color="#A7F3D0" />
-              <Text style={styles.perkText}>Unlimited FREE delivery on orders over ₹99</Text>
+              <Text style={styles.perkText}>Unlimited FREE delivery on orders over $5.00</Text>
             </View>
             <View style={styles.perkRow}>
               <Ionicons name="star" size={16} color="#A7F3D0" />
-              <Text style={styles.perkText}>Extra 5% discount on dairy, veggies & fruits</Text>
+              <Text style={styles.perkText}>100% Waived handling and packaging fees</Text>
             </View>
             <View style={styles.perkRow}>
               <Ionicons name="flash" size={16} color="#A7F3D0" />
@@ -105,10 +185,16 @@ export default function MobilePassScreen() {
             <Ionicons name="sparkles" size={32} color="#047857" style={{ marginBottom: 12 }} />
             <Text style={styles.activeTitle}>Active Pass Member</Text>
             <Text style={styles.activeExpiry}>Valid until: {expiryDate}</Text>
-            
-            <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
-              <Text style={styles.cancelBtnText}>Cancel Membership</Text>
-            </TouchableOpacity>
+
+            {cancelAtPeriodEnd ? (
+              <Text style={{ fontSize: 12, color: '#92400E', marginTop: 8, textAlign: 'center' }}>
+                Cancellation requested. Benefits active until {expiryDate}.
+              </Text>
+            ) : (
+              <TouchableOpacity style={styles.cancelBtn} onPress={handleCancel}>
+                <Text style={styles.cancelBtnText}>Cancel Membership Renewal</Text>
+              </TouchableOpacity>
+            )}
           </View>
         ) : (
           /* Plan Picker */
@@ -126,13 +212,13 @@ export default function MobilePassScreen() {
                   <View style={styles.planHeader}>
                     <Text style={styles.planName}>{plan.name}</Text>
                     {plan.badge && (
-                      <View style={[styles.badge, { backgroundColor: plan.id === 'annual' ? '#EF4444' : '#059669' }]}>
+                      <View style={[styles.badge, { backgroundColor: plan.id === 'ANNUAL' ? '#EF4444' : '#059669' }]}>
                         <Text style={styles.badgeText}>{plan.badge}</Text>
                       </View>
                     )}
                   </View>
                   <View style={styles.planDetails}>
-                    <Text style={styles.planPrice}>₹{plan.price}</Text>
+                    <Text style={styles.planPrice}>{plan.price}</Text>
                     <Text style={styles.planDesc}>{plan.savingsDesc}</Text>
                   </View>
                 </TouchableOpacity>
@@ -149,7 +235,7 @@ export default function MobilePassScreen() {
             )}
 
             <Text style={styles.termsText}>
-              Cancel anytime. Fees are simulated mock transactions deducted from wallet cash points.
+              Authoritative server subscription. Cancel anytime. Terms apply.
             </Text>
           </View>
         )}
@@ -249,7 +335,7 @@ const styles = StyleSheet.create({
     borderColor: '#E5E7EB',
     borderRadius: 14,
     padding: 16,
-    marginBottom: 10,
+    marginBottom: 12,
   },
   planBtnActive: {
     borderColor: '#059669',
@@ -261,20 +347,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   planName: {
-    fontSize: 12.5,
+    fontSize: 14,
     fontWeight: '800',
     color: '#1F2937',
   },
   badge: {
     paddingHorizontal: 8,
-    paddingVertical: 3,
-    borderRadius: 20,
+    paddingVertical: 2,
+    borderRadius: 6,
   },
   badgeText: {
     color: 'white',
-    fontSize: 8,
-    fontWeight: '900',
-    textTransform: 'uppercase',
+    fontSize: 10,
+    fontWeight: 'bold',
   },
   planDetails: {
     flexDirection: 'row',
@@ -283,40 +368,38 @@ const styles = StyleSheet.create({
     marginTop: 10,
   },
   planPrice: {
-    fontSize: 18,
+    fontSize: 22,
     fontWeight: '900',
-    color: '#1F2937',
+    color: '#064E3B',
   },
   planDesc: {
-    fontSize: 10,
+    fontSize: 11,
     color: '#6B7280',
-    fontWeight: '700',
+    fontWeight: '600',
   },
   activateBtn: {
     backgroundColor: '#059669',
     borderRadius: 12,
-    padding: 14,
-    alignItems: 'center',
-    justifyContent: 'center',
+    paddingVertical: 14,
     flexDirection: 'row',
-    gap: 6,
+    justifyContent: 'center',
+    alignItems: 'center',
+    gap: 8,
     marginTop: 12,
   },
   activateBtnText: {
     color: 'white',
-    fontWeight: '900',
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   termsText: {
-    fontSize: 9,
+    fontSize: 10,
     color: '#9CA3AF',
     textAlign: 'center',
     marginTop: 12,
-    lineHeight: 14,
-    fontWeight: '600',
   },
   activeCard: {
-    backgroundColor: 'white',
+    backgroundColor: '#ECFDF5',
     borderWidth: 1.5,
     borderColor: '#A7F3D0',
     borderRadius: 16,
@@ -325,24 +408,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   activeTitle: {
-    fontSize: 16,
-    fontWeight: '900',
-    color: '#047857',
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#065F46',
   },
   activeExpiry: {
-    fontSize: 12,
-    color: '#065F46',
-    fontWeight: '600',
+    fontSize: 13,
+    color: '#047857',
     marginTop: 4,
-    marginBottom: 20,
+    marginBottom: 16,
   },
   cancelBtn: {
-    padding: 8,
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    borderRadius: 8,
+    backgroundColor: '#FEE2E2',
   },
   cancelBtnText: {
-    color: '#EF4444',
-    fontSize: 11,
-    fontWeight: '800',
-    textDecorationLine: 'underline',
-  }
+    color: '#991B1B',
+    fontSize: 12,
+    fontWeight: 'bold',
+  },
 });

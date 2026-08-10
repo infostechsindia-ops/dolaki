@@ -154,6 +154,8 @@ export default function ProfileScreen() {
           router.push('/account/addresses');
         } else if (modalKey === 'wallet') {
           router.push('/account/wallet');
+        } else if (modalKey === 'settings' || modalKey === 'notifications') {
+          router.push('/account/notifications');
         } else {
           setActiveModal(modalKey);
         }

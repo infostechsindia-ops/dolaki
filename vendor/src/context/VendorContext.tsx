@@ -84,9 +84,9 @@ interface VendorContextType {
   orders: Order[];
   payouts: PayoutTransaction[];
   isLoggedIn: boolean;
-  login: (email: string, storeName: string) => void;
-  register: (profileData: VendorProfile) => void;
-  logout: () => void;
+  login: (email: string, pass: string, storeName?: string) => Promise<void>;
+  register: (profileData: VendorProfile, pass?: string) => Promise<void>;
+  logout: () => Promise<void>;
   addProduct: (product: Omit<Product, "id" | "createdAt" | "status">) => void;
   updateProduct: (id: string, updated: Partial<Product>) => void;
   deleteProduct: (id: string) => void;
@@ -346,6 +346,27 @@ export const VendorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
   useEffect(() => {
     // Perform only in browser
     if (typeof window !== "undefined") {
+      const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+      const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      
+      if (!isDemo) {
+        const hasToken = localStorage.getItem("vendor_token");
+        if (!hasToken) {
+          setProfile(null);
+          setProducts([]);
+          setOrders([]);
+          setPayouts([]);
+          setIsLoggedIn(false);
+          localStorage.removeItem("vendor_profile");
+          localStorage.removeItem("vendor_is_logged_in");
+          localStorage.removeItem("vendor_products");
+          localStorage.removeItem("vendor_orders");
+          localStorage.removeItem("vendor_payouts");
+          setIsLoading(false);
+          return;
+        }
+      }
+
       const storedProfile = localStorage.getItem("vendor_profile");
       const storedLoggedIn = localStorage.getItem("vendor_is_logged_in");
       const storedProducts = localStorage.getItem("vendor_products");
@@ -354,7 +375,7 @@ export const VendorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (storedProfile) {
         setProfile(JSON.parse(storedProfile));
-      } else {
+      } else if (isDemo) {
         // Seed default profile so it's ready to demo
         localStorage.setItem("vendor_profile", JSON.stringify(DEFAULT_PROFILE));
         setProfile(DEFAULT_PROFILE);
@@ -366,21 +387,21 @@ export const VendorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
       if (storedProducts) {
         setProducts(JSON.parse(storedProducts));
-      } else {
+      } else if (isDemo) {
         localStorage.setItem("vendor_products", JSON.stringify(INITIAL_PRODUCTS));
         setProducts(INITIAL_PRODUCTS);
       }
 
       if (storedOrders) {
         setOrders(JSON.parse(storedOrders));
-      } else {
+      } else if (isDemo) {
         localStorage.setItem("vendor_orders", JSON.stringify(INITIAL_ORDERS));
         setOrders(INITIAL_ORDERS);
       }
 
       if (storedPayouts) {
         setPayouts(JSON.parse(storedPayouts));
-      } else {
+      } else if (isDemo) {
         localStorage.setItem("vendor_payouts", JSON.stringify(INITIAL_PAYOUTS));
         setPayouts(INITIAL_PAYOUTS);
       }
@@ -389,36 +410,131 @@ export const VendorProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     }
   }, []);
 
-  const login = (email: string, storeName: string) => {
-    // Simple login simulation
+  const login = async (email: string, pass: string, storeName?: string) => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+    if (isDemo) {
+      setIsLoggedIn(true);
+      localStorage.setItem("vendor_is_logged_in", "true");
+      
+      let currentProfile = profile;
+      if (!currentProfile) {
+        currentProfile = { ...DEFAULT_PROFILE };
+      }
+      currentProfile = {
+        ...currentProfile,
+        email,
+        storeName: storeName || currentProfile.storeName
+      };
+      
+      setProfile(currentProfile);
+      localStorage.setItem("vendor_profile", JSON.stringify(currentProfile));
+      return;
+    }
+
+    const res = await fetch(`${BASE_URL}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password: pass })
+    });
+    if (!res.ok) {
+      const errJson = await res.json().catch(() => ({}));
+      throw new Error(errJson.error?.message || errJson.message || "Invalid email or password");
+    }
+    let data = await res.json();
+    if (data && typeof data === 'object' && 'data' in data) {
+      data = data.data;
+    }
+    if (!['VENDOR_OWNER', 'VENDOR_STAFF', 'VENDOR'].includes(data.user?.role)) {
+      throw new Error("Access Denied: Only Vendor accounts are permitted on this portal.");
+    }
     setIsLoggedIn(true);
     localStorage.setItem("vendor_is_logged_in", "true");
-    
-    // If there is no custom profile, we use the default and update store name
-    let currentProfile = profile;
-    if (!currentProfile) {
-      currentProfile = { ...DEFAULT_PROFILE };
-    }
-    currentProfile = {
-      ...currentProfile,
-      email,
-      storeName: storeName || currentProfile.storeName
+    localStorage.setItem("vendor_token", data.token || data.access_token);
+    const newProfile: VendorProfile = {
+      email: data.user?.email || email,
+      storeName: storeName || "My Vendor Store",
+      phone: "+91 99999 88888",
+      business: {
+        legalName: data.user?.fullName || "My Vendor LLC",
+        gstin: "",
+        pan: "",
+        address: "",
+        city: "",
+        state: "",
+        pincode: ""
+      },
+      bank: {
+        bankName: "",
+        accountHolder: "",
+        accountNumber: "",
+        ifsc: ""
+      },
+      isRegistered: true
     };
-    
-    setProfile(currentProfile);
-    localStorage.setItem("vendor_profile", JSON.stringify(currentProfile));
+    setProfile(newProfile);
+    localStorage.setItem("vendor_profile", JSON.stringify(newProfile));
   };
 
-  const register = (profileData: VendorProfile) => {
+  const register = async (profileData: VendorProfile, pass?: string) => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+    if (isDemo) {
+      setIsLoggedIn(true);
+      setProfile(profileData);
+      localStorage.setItem("vendor_is_logged_in", "true");
+      localStorage.setItem("vendor_profile", JSON.stringify(profileData));
+      return;
+    }
+
+    const res = await fetch(`${BASE_URL}/api/v1/auth/register-vendor`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: profileData.email,
+        password: pass,
+        fullName: profileData.business.legalName,
+        phone: profileData.phone
+      })
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error?.message || data.message || "Registration failed");
+    }
+    let data = await res.json();
+    if (data && typeof data === 'object' && 'data' in data) {
+      data = data.data;
+    }
     setIsLoggedIn(true);
-    setProfile(profileData);
     localStorage.setItem("vendor_is_logged_in", "true");
+    localStorage.setItem("vendor_token", data.token || data.access_token);
+    setProfile(profileData);
     localStorage.setItem("vendor_profile", JSON.stringify(profileData));
   };
 
-  const logout = () => {
+  const logout = async () => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+
+    if (!isDemo) {
+      const token = localStorage.getItem("vendor_token");
+      try {
+        await fetch(`${BASE_URL}/api/v1/auth/logout`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ token })
+        });
+      } catch (e) {
+        // Ignore network logout failure
+      }
+    }
+
     setIsLoggedIn(false);
     localStorage.removeItem("vendor_is_logged_in");
+    localStorage.removeItem("vendor_token");
+    localStorage.removeItem("vendor_profile");
   };
 
   const addProduct = (newProduct: Omit<Product, "id" | "createdAt" | "status">) => {

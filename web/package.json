@@ -1,24 +1,38 @@
 {
   "name": "web",
-  "version": "0.1.0",
+  "version": "2.0.0-rc.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "test": "npx tsx --test test/**/*_test.ts"
+    "test": "npx tsx --test test/**/*_test.ts",
+    "test:components": "jest --config jest.config.js --no-coverage"
   },
   "dependencies": {
     "framer-motion": "^12.42.0",
+    "lucide-react": "^1.22.0",
     "next": "16.2.9",
     "react": "19.2.4",
     "react-dom": "19.2.4",
     "react-icons": "^5.6.0"
   },
   "devDependencies": {
+    "@babel/core": "^8.0.1",
+    "@babel/preset-env": "^8.0.2",
+    "@babel/preset-react": "^8.0.1",
+    "@babel/preset-typescript": "^8.0.1",
+    "@jest/globals": "^30.4.1",
+    "@testing-library/jest-dom": "^7.0.0",
+    "@testing-library/react": "^16.3.2",
+    "@testing-library/user-event": "^14.6.3",
+    "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "babel-jest": "^30.4.1",
+    "jest": "^30.4.2",
+    "jest-environment-jsdom": "^30.4.1",
     "typescript": "^5"
   }
 }

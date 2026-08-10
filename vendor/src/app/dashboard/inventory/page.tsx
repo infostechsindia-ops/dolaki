@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useVendor, Product } from "@/context/VendorContext";
 import styles from "../dashboard.module.css";
 import {
@@ -8,13 +8,36 @@ import {
   TrashIcon,
   EditIcon,
   SearchIcon,
-  FilterIcon,
   FladoIcon,
   InfoIcon
 } from "@/components/Icons";
 
+interface LiveVendorProductDTO {
+  id: string;
+  title: string;
+  slug: string;
+  description: string;
+  categoryId: string;
+  categoryName?: string;
+  brandId?: string;
+  sku: string;
+  priceMinor: number;
+  formattedPrice: string;
+  compareAtPriceMinor?: number;
+  stockQuantity: number;
+  imageUrls: string[];
+  status: "DRAFT" | "ACTIVE" | "INACTIVE";
+  listOnFlado: boolean;
+  createdAt: string;
+}
+
 export default function InventoryPage() {
   const { products, addProduct, updateProduct, deleteProduct, toggleFladoListing } = useVendor();
+
+  const [liveProducts, setLiveProducts] = useState<LiveVendorProductDTO[] | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   // Search & Filter state
   const [searchQuery, setSearchQuery] = useState("");
@@ -23,7 +46,7 @@ export default function InventoryPage() {
 
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [editingProduct, setEditingProduct] = useState<LiveVendorProductDTO | null>(null);
 
   // Form Fields State
   const [name, setName] = useState("");
@@ -35,17 +58,68 @@ export default function InventoryPage() {
   const [description, setDescription] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [listOnFlado, setListOnFlado] = useState(false);
+  const [status, setStatus] = useState<"DRAFT" | "ACTIVE" | "INACTIVE">("ACTIVE");
 
-  // Check URL query parameters on mount to open modal if directed from overview
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const params = new URLSearchParams(window.location.search);
-      if (params.get("add") === "true") {
-        handleOpenAddModal();
-        // Clear query param
-        window.history.replaceState({}, document.title, window.location.pathname);
-      }
+  // FEAT-003: Brand assignment state
+  const [brandId, setBrandId] = useState<string>("");
+  const [availableBrands, setAvailableBrands] = useState<{ id: string; name: string; slug: string }[]>([]);
+  const [brandsLoading, setBrandsLoading] = useState(false);
+  const [mutatingId, setMutatingId] = useState<string | null>(null);
+
+  const fetchLiveProducts = useCallback(async () => {
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    if (isDemo || !token) {
+      setLoading(false);
+      return;
     }
+
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/products`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to load vendor products");
+      let data = await res.json();
+      if (data && typeof data === "object" && "data" in data) data = data.data;
+
+      setLiveProducts(Array.isArray(data) ? data : []);
+    } catch (err: any) {
+      setError(err?.message || "Failed to fetch vendor catalog");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchLiveProducts();
+  }, [fetchLiveProducts]);
+
+  // FEAT-003: Fetch active brands from /api/v1/brands for dropdown
+  useEffect(() => {
+    const fetchBrands = async () => {
+      setBrandsLoading(true);
+      const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+      const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+      try {
+        const res = await fetch(`${BASE_URL}/api/v1/brands?pageSize=100`);
+        if (!res.ok) throw new Error("Failed to fetch brands");
+        const body = await res.json();
+        const list = body.data ?? body ?? [];
+        setAvailableBrands(Array.isArray(list) ? list : []);
+      } catch {
+        if (isDemo) {
+          // Demo fallback — no brands available, brand field stays optional
+          setAvailableBrands([]);
+        }
+      } finally {
+        setBrandsLoading(false);
+      }
+    };
+    fetchBrands();
   }, []);
 
   const handleOpenAddModal = () => {
@@ -58,21 +132,25 @@ export default function InventoryPage() {
     setStock("50");
     setDescription("");
     setImageUrl("https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&auto=format&fit=crop&q=60");
+    setBrandId("");
     setListOnFlado(true);
+    setStatus("ACTIVE");
     setIsModalOpen(true);
   };
 
-  const handleOpenEditModal = (product: Product) => {
+  const handleOpenEditModal = (product: LiveVendorProductDTO) => {
     setEditingProduct(product);
-    setName(product.name);
-    setCategory(product.category);
-    setPrice(product.price.toString());
-    setCompareAtPrice(product.compareAtPrice?.toString() || "");
+    setName(product.title);
+    setCategory(product.categoryName || "Groceries & Beverages");
+    setPrice((product.priceMinor / 100).toString());
+    setCompareAtPrice(product.compareAtPriceMinor ? (product.compareAtPriceMinor / 100).toString() : "");
     setSku(product.sku);
-    setStock(product.stock.toString());
+    setStock(product.stockQuantity.toString());
     setDescription(product.description);
-    setImageUrl(product.imageUrl);
+    setImageUrl(product.imageUrls[0] || "");
+    setBrandId(product.brandId || "");
     setListOnFlado(product.listOnFlado);
+    setStatus(product.status);
     setIsModalOpen(true);
   };
 
@@ -81,15 +159,37 @@ export default function InventoryPage() {
     setEditingProduct(null);
   };
 
-  const handleDelete = (id: string, name: string) => {
-    if (confirm(`Are you sure you want to delete "${name}"?`)) {
+  const handleDelete = async (id: string, prodTitle: string) => {
+    if (!confirm(`Are you sure you want to delete "${prodTitle}"?`)) return;
+
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    setMutatingId(id);
+    if (isDemo || !token) {
       deleteProduct(id);
+      setMutatingId(null);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${BASE_URL}/api/v1/vendors/products/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Failed to delete product");
+      setSuccessMsg(`Deleted "${prodTitle}" successfully.`);
+      fetchLiveProducts();
+    } catch (err: any) {
+      setError(err?.message || "Failed to delete product");
+    } finally {
+      setMutatingId(null);
     }
   };
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-
     if (!name || !price || !sku || stock === "") {
       alert("Please fill in all required fields.");
       return;
@@ -104,81 +204,123 @@ export default function InventoryPage() {
       return;
     }
 
-    if (isNaN(stockNum) || stockNum < 0) {
-      alert("Stock cannot be negative.");
+    const isDemo = process.env.NEXT_PUBLIC_ENABLE_DEMO_FIXTURES === "true";
+    const BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5000";
+    const token = typeof window !== "undefined" ? localStorage.getItem("vendor_token") : null;
+
+    setMutatingId(editingProduct ? editingProduct.id : "new");
+    if (isDemo || !token) {
+      const productPayload = {
+        name,
+        category,
+        price: priceNum,
+        compareAtPrice: comparePriceNum,
+        sku,
+        stock: stockNum,
+        description,
+        imageUrl: imageUrl || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&auto=format&fit=crop&q=60",
+        listOnFlado
+      };
+      if (editingProduct) updateProduct(editingProduct.id, productPayload);
+      else addProduct(productPayload);
+      handleCloseModal();
+      setMutatingId(null);
       return;
     }
 
-    const productPayload = {
-      name,
-      category,
-      price: priceNum,
-      compareAtPrice: comparePriceNum,
-      sku,
-      stock: stockNum,
-      description,
-      imageUrl: imageUrl || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&auto=format&fit=crop&q=60",
-      listOnFlado
-    };
+    try {
+      const endpoint = editingProduct
+        ? `${BASE_URL}/api/v1/vendors/products/${editingProduct.id}`
+        : `${BASE_URL}/api/v1/vendors/products`;
+      const method = editingProduct ? "PUT" : "POST";
 
-    if (editingProduct) {
-      updateProduct(editingProduct.id, productPayload);
-    } else {
-      addProduct(productPayload);
+      const res = await fetch(endpoint, {
+        method,
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          title: name,
+          description,
+          categoryId: "cat-1",
+          brandId: brandId || undefined,
+          sku,
+          priceMinor: Math.round(priceNum * 100),
+          compareAtPriceMinor: comparePriceNum ? Math.round(comparePriceNum * 100) : undefined,
+          stockQuantity: stockNum,
+          imageUrls: [imageUrl || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d?w=500&auto=format&fit=crop&q=60"],
+          status
+        })
+      });
+
+      if (!res.ok) {
+        const errJson = await res.json().catch(() => ({}));
+        throw new Error(errJson.message || "Failed to save product listing");
+      }
+
+      setSuccessMsg(editingProduct ? "Product updated successfully!" : "Product listing created successfully!");
+      handleCloseModal();
+      fetchLiveProducts();
+    } catch (err: any) {
+      setError(err?.message || "Catalog error");
+    } finally {
+      setMutatingId(null);
     }
-
-    handleCloseModal();
   };
 
-  // Filter Products
-  const filteredProducts = products.filter((product) => {
-    const matchesSearch = product.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          product.sku.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          product.description.toLowerCase().includes(searchQuery.toLowerCase());
-    
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
+  const displayList: LiveVendorProductDTO[] = liveProducts !== null
+    ? liveProducts
+    : products.map((p) => ({
+        id: p.id,
+        title: p.name,
+        slug: p.name.toLowerCase().replace(/\s+/g, "-"),
+        description: p.description,
+        categoryId: "cat-1",
+        categoryName: p.category,
+        sku: p.sku,
+        priceMinor: Math.round(p.price * 100),
+        formattedPrice: `₹${p.price}`,
+        stockQuantity: p.stock,
+        imageUrls: [p.imageUrl],
+        status: p.stock > 0 ? "ACTIVE" : "INACTIVE",
+        listOnFlado: p.listOnFlado,
+        createdAt: p.createdAt
+      }));
+
+  const filteredProducts = displayList.filter((product) => {
+    const matchesSearch = product.title.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                          product.sku.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesCategory = selectedCategory === "all" || product.categoryName === selectedCategory;
     
     let matchesStatus = true;
-    if (selectedStatus === "active") matchesStatus = product.stock > 0;
-    if (selectedStatus === "out_of_stock") matchesStatus = product.stock === 0;
+    if (selectedStatus === "active") matchesStatus = product.status === "ACTIVE";
+    if (selectedStatus === "draft") matchesStatus = product.status === "DRAFT";
     if (selectedStatus === "flado") matchesStatus = product.listOnFlado;
 
     return matchesSearch && matchesCategory && matchesStatus;
   });
 
-  const categories = ["all", "Groceries & Beverages", "Ethnic Wear", "Groceries & Gourmet", "Home & Kitchen", "Personal Care"];
-
-  const formatINR = (val: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0
-    }).format(val);
-  };
+  const isInitialLoad = loading && liveProducts === null;
+  const isRefetching = loading && liveProducts !== null;
 
   return (
     <div className="animate-fade-in">
       {/* Top Header Actions */}
       <div className={styles.actionHeader}>
         <div className={styles.searchFilterRow}>
-          {/* Search Box */}
           <div className={styles.searchBox}>
             <SearchIcon size={16} className={styles.searchIcon} />
             <input
               type="text"
-              placeholder="Search by name, SKU..."
+              placeholder="Search by title, SKU..."
               className={styles.searchInput}
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
 
-          {/* Category Filter */}
-          <select
-            className={styles.filterSelect}
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-          >
+          <select className={styles.filterSelect} value={selectedCategory} onChange={(e) => setSelectedCategory(e.target.value)}>
             <option value="all">All Categories</option>
             <option value="Groceries & Beverages">Groceries & Beverages</option>
             <option value="Ethnic Wear">Ethnic Wear</option>
@@ -187,52 +329,99 @@ export default function InventoryPage() {
             <option value="Personal Care">Personal Care</option>
           </select>
 
-          {/* Status Filter */}
-          <select
-            className={styles.filterSelect}
-            value={selectedStatus}
-            onChange={(e) => setSelectedStatus(e.target.value)}
-          >
-            <option value="all">All Inventory Status</option>
-            <option value="active">Active (In Stock)</option>
-            <option value="out_of_stock">Out of Stock</option>
+          <select className={styles.filterSelect} value={selectedStatus} onChange={(e) => setSelectedStatus(e.target.value)}>
+            <option value="all">All Listing Status</option>
+            <option value="active">Active</option>
+            <option value="draft">Draft</option>
             <option value="flado">Synced with Flado</option>
           </select>
         </div>
 
-        <button className={styles.primaryBtn} onClick={handleOpenAddModal}>
+        <button className={styles.primaryBtn} onClick={handleOpenAddModal} disabled={mutatingId !== null}>
           <PlusIcon size={16} />
           <span>Add Product</span>
         </button>
       </div>
+
+      {error && (
+        <div style={{ backgroundColor: "#FEF2F2", borderLeft: "4px solid #EF4444", color: "#991B1B", padding: "1rem", marginBottom: "1.5rem", borderRadius: "4px", fontSize: "0.875rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <strong>Catalog Error:</strong> {error}
+          </div>
+          <button onClick={() => fetchLiveProducts()} className={styles.secondaryBtn} style={{ fontSize: "0.75rem", padding: "4px 10px", backgroundColor: "white", cursor: "pointer" }}>
+            Retry Catalog Fetch
+          </button>
+        </div>
+      )}
+
+      {/* Background Refetch Indicator */}
+      {isRefetching && (
+        <div className={styles.refetchBanner} role="status" aria-live="polite">
+          <span>⚡ Syncing live catalog data...</span>
+        </div>
+      )}
 
       {/* Flado Information Alert Banner */}
       <div className={styles.fladoPromoCard} style={{ marginBottom: "1.5rem" }}>
         <div className={styles.fladoPromoInfo}>
           <span className={styles.fladoPromoTitle}>
             <FladoIcon size={16} style={{ color: "var(--primary-green)" }} />
-            Flado Hyperlocal Delivery Service
+            Flado Hyperlocal Catalog Sync
           </span>
           <span className={styles.fladoPromoDesc}>
-            Items toggled &ldquo;List on Flado&rdquo; are visible on our instant-delivery app (15-min delivery). Ensure correct SKU and inventory counts are maintained to guarantee fast dispatch.
+            Items toggled &ldquo;List on Flado&rdquo; are visible on our instant-delivery app. Darkstore availability requires active store inventory configuration.
           </span>
         </div>
       </div>
 
-      {/* Inventory Listings Table */}
-      {filteredProducts.length === 0 ? (
-        <div style={{ padding: "4rem 2rem", textAlign: "center", backgroundColor: "var(--card-bg)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }}>
+      {/* Inventory Listings Table / Skeleton / Empty State */}
+      {isInitialLoad ? (
+        <div className={styles.tableContainer} aria-busy="true" aria-label="Loading inventory catalog..." data-testid="inventory-table-skeleton">
+          <table className={styles.table}>
+            <thead>
+              <tr>
+                <th>Product Details</th>
+                <th>Category</th>
+                <th>SKU</th>
+                <th>Price</th>
+                <th>Stock Level</th>
+                <th>Status</th>
+                <th style={{ textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Array.from({ length: 5 }).map((_, idx) => (
+                <tr key={`skeleton-row-${idx}`} data-testid="inventory-skeleton-row" aria-hidden="true">
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div className={styles.skeletonPulse} style={{ width: "48px", height: "48px", borderRadius: "6px", flexShrink: 0 }} />
+                      <div style={{ display: "flex", flexDirection: "column", gap: "6px", flexGrow: 1 }}>
+                        <div className={styles.skeletonPulse} style={{ width: "60%", height: "14px" }} />
+                        <div className={styles.skeletonPulse} style={{ width: "85%", height: "10px" }} />
+                      </div>
+                    </div>
+                  </td>
+                  <td><div className={styles.skeletonPulse} style={{ width: "70px", height: "20px", borderRadius: "4px" }} /></td>
+                  <td><div className={styles.skeletonPulse} style={{ width: "65px", height: "14px" }} /></td>
+                  <td><div className={styles.skeletonPulse} style={{ width: "55px", height: "16px" }} /></td>
+                  <td><div className={styles.skeletonPulse} style={{ width: "90px", height: "20px", borderRadius: "12px" }} /></td>
+                  <td><div className={styles.skeletonPulse} style={{ width: "60px", height: "20px", borderRadius: "12px" }} /></td>
+                  <td style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex", gap: "8px" }}>
+                      <div className={styles.skeletonPulse} style={{ width: "32px", height: "28px", borderRadius: "4px" }} />
+                      <div className={styles.skeletonPulse} style={{ width: "32px", height: "28px", borderRadius: "4px" }} />
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : filteredProducts.length === 0 ? (
+        <div style={{ padding: "4rem 2rem", textAlign: "center", backgroundColor: "var(--card-bg)", borderRadius: "var(--radius-md)", border: "1px solid var(--border-color)" }} data-testid="inventory-empty-state">
           <InfoIcon size={48} style={{ color: "var(--text-light)", marginBottom: "1rem" }} />
           <h3 style={{ fontWeight: 700, fontSize: "1.1rem", marginBottom: "0.25rem" }}>No Products Found</h3>
-          <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>
-            {products.length === 0 ? "You haven't listed any products yet." : "Try adjusting your search query or filters."}
-          </p>
-          {products.length === 0 && (
-            <button className={styles.primaryBtn} onClick={handleOpenAddModal} style={{ marginTop: "1rem" }}>
-              <PlusIcon size={16} />
-              <span>List Your First Product</span>
-            </button>
-          )}
+          <p style={{ color: "var(--text-secondary)", fontSize: "0.875rem" }}>Try adjusting your search query or filters.</p>
         </div>
       ) : (
         <div className={styles.tableContainer}>
@@ -244,279 +433,124 @@ export default function InventoryPage() {
                 <th>SKU</th>
                 <th>Price</th>
                 <th>Stock Level</th>
-                <th style={{ textAlign: "center" }}>List on Flado</th>
+                <th>Status</th>
                 <th style={{ textAlign: "right" }}>Actions</th>
               </tr>
             </thead>
             <tbody>
-              {filteredProducts.map((product) => {
-                const isOutOfStock = product.stock === 0;
-                const isLowStock = product.stock > 0 && product.stock <= 15;
-
-                return (
-                  <tr key={product.id}>
-                    <td>
-                      <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                        <img
-                          src={product.imageUrl}
-                          alt={product.name}
-                          style={{
-                            width: "48px",
-                            height: "48px",
-                            borderRadius: "var(--radius-sm)",
-                            objectFit: "cover",
-                            backgroundColor: "var(--bg-color)",
-                            border: "1px solid var(--border-color)"
-                          }}
-                        />
-                        <div>
-                          <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "0.9rem" }}>
-                            {product.name}
-                          </div>
-                          <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>
-                            {product.description.substring(0, 75)}...
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-                    <td>
-                      <span className="badge badge-neutral" style={{ fontSize: "0.7rem", fontWeight: 600 }}>
-                        {product.category}
-                      </span>
-                    </td>
-                    <td style={{ fontFamily: "var(--font-mono)", fontSize: "0.8rem", color: "var(--text-secondary)" }}>
-                      {product.sku}
-                    </td>
-                    <td>
+              {filteredProducts.map((product) => (
+                <tr key={product.id}>
+                  <td>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <img
+                        src={product.imageUrls[0] || "https://images.unsplash.com/photo-1596040033229-a9821ebd058d"}
+                        alt={product.title}
+                        style={{ width: "48px", height: "48px", borderRadius: "6px", objectFit: "cover", backgroundColor: "#F3F4F6" }}
+                      />
                       <div>
-                        <span style={{ fontWeight: 700, color: "var(--text-primary)" }}>
-                          {formatINR(product.price)}
-                        </span>
-                        {product.compareAtPrice && product.compareAtPrice > product.price && (
-                          <span style={{
-                            fontSize: "0.75rem",
-                            color: "var(--text-light)",
-                            textDecoration: "line-through",
-                            marginLeft: "6px"
-                          }}>
-                            {formatINR(product.compareAtPrice)}
-                          </span>
-                        )}
+                        <div style={{ fontWeight: 700, color: "var(--text-primary)", fontSize: "0.9rem" }}>{product.title}</div>
+                        <div style={{ fontSize: "0.75rem", color: "var(--text-secondary)", marginTop: "2px" }}>{product.description.substring(0, 75)}...</div>
                       </div>
-                    </td>
-                    <td>
-                      {isOutOfStock ? (
-                        <span className="badge badge-danger">OUT OF STOCK</span>
-                      ) : isLowStock ? (
-                        <div>
-                          <span className="badge badge-warning">LOW STOCK ({product.stock})</span>
-                        </div>
-                      ) : (
-                        <span className="badge badge-success">IN STOCK ({product.stock})</span>
-                      )}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: "6px" }}>
-                        <label className={styles.switch}>
-                          <input
-                            type="checkbox"
-                            checked={product.listOnFlado}
-                            onChange={() => toggleFladoListing(product.id)}
-                          />
-                          <span className={styles.slider} />
-                        </label>
-                        <span style={{
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                          color: product.listOnFlado ? "var(--primary-green)" : "var(--text-light)"
-                        }}>
-                          {product.listOnFlado ? "ON" : "OFF"}
-                        </span>
-                      </div>
-                    </td>
-                    <td style={{ textAlign: "right" }}>
-                      <div style={{ display: "inline-flex", gap: "8px" }}>
-                        <button
-                          className={styles.secondaryBtn}
-                          style={{ padding: "6px 10px" }}
-                          onClick={() => handleOpenEditModal(product)}
-                          title="Edit Details"
-                        >
-                          <EditIcon size={14} />
-                        </button>
-                        <button
-                          className={styles.secondaryBtn}
-                          style={{ padding: "6px 10px", color: "#ef4444", borderColor: "rgba(239,68,68,0.2)" }}
-                          onClick={() => handleDelete(product.id, product.name)}
-                          title="Delete Product"
-                        >
-                          <TrashIcon size={14} />
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
+                    </div>
+                  </td>
+                  <td><span className="badge badge-neutral" style={{ fontSize: "0.7rem", fontWeight: 600 }}>{product.categoryName || "General"}</span></td>
+                  <td style={{ fontFamily: "monospace", fontSize: "0.8rem", color: "var(--text-secondary)" }}>{product.sku}</td>
+                  <td><span style={{ fontWeight: 700 }}>{product.formattedPrice}</span></td>
+                  <td>
+                    {product.stockQuantity === 0 ? (
+                      <span className="badge badge-danger">OUT OF STOCK</span>
+                    ) : product.stockQuantity <= 5 ? (
+                      <span className="badge badge-warning">LOW STOCK ({product.stockQuantity})</span>
+                    ) : (
+                      <span className="badge badge-success">IN STOCK ({product.stockQuantity})</span>
+                    )}
+                  </td>
+                  <td>
+                    <span className={`badge ${product.status === "ACTIVE" ? "badge-success" : product.status === "DRAFT" ? "badge-warning" : "badge-neutral"}`}>
+                      {product.status}
+                    </span>
+                  </td>
+                  <td style={{ textAlign: "right" }}>
+                    <div style={{ display: "inline-flex", gap: "8px" }}>
+                      <button className={styles.secondaryBtn} style={{ padding: "6px 10px" }} onClick={() => handleOpenEditModal(product)} disabled={mutatingId === product.id} title="Edit Details"><EditIcon size={14} /></button>
+                      <button className={styles.secondaryBtn} style={{ padding: "6px 10px", color: "#ef4444", borderColor: "rgba(239,68,68,0.2)" }} onClick={() => handleDelete(product.id, product.title)} disabled={mutatingId === product.id} title="Delete Product"><TrashIcon size={14} /></button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tbody>
           </table>
         </div>
       )}
 
-      {/* Add / Edit Product Modal */}
+      {/* Modal */}
       {isModalOpen && (
         <div className={styles.modalOverlay} onClick={handleCloseModal}>
           <div className={styles.modalContent} onClick={(e) => e.stopPropagation()}>
             <div className={styles.modalHeader}>
-              <h3 className={styles.modalTitle}>
-                {editingProduct ? "Modify Listing Details" : "Create New Product Listing"}
-              </h3>
-              <button className={styles.closeBtn} onClick={handleCloseModal}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <line x1="18" y1="6" x2="6" y2="18" />
-                  <line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
+              <h3 className={styles.modalTitle}>{editingProduct ? "Modify Listing Details" : "Create New Product Listing"}</h3>
+              <button className={styles.closeBtn} onClick={handleCloseModal}>✕</button>
             </div>
-
             <form onSubmit={handleSave}>
               <div className={styles.modalBody}>
-                {/* Product Name */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "1rem" }}>
+                <div style={{ marginBottom: "1rem" }}>
                   <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Product Title *</label>
-                  <input
-                    type="text"
-                    className={styles.searchInput}
-                    placeholder="e.g. Handmade Kashmiri Walnut Wood Bowl"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
+                  <input type="text" className={styles.searchInput} value={name} onChange={(e) => setName(e.target.value)} required />
                 </div>
-
-                {/* SKU & Category */}
+                {/* FEAT-003: Brand dropdown — fetched from /api/v1/brands */}
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Brand <span style={{ fontWeight: 400, color: "var(--text-secondary)" }}>(optional)</span></label>
+                  <select
+                    id="product-brand-select"
+                    className={styles.filterSelect}
+                    style={{ width: "100%" }}
+                    value={brandId}
+                    onChange={(e) => setBrandId(e.target.value)}
+                    disabled={brandsLoading}
+                  >
+                    <option value="">— No Brand / Unbranded —</option>
+                    {availableBrands.map(b => (
+                      <option key={b.id} value={b.id}>{b.name}</option>
+                    ))}
+                  </select>
+                  {brandsLoading && <small style={{ color: "var(--text-secondary)", fontSize: "0.75rem" }}>Loading brands...</small>}
+                </div>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Category *</label>
-                    <select
-                      className={styles.filterSelect}
-                      style={{ width: "100%" }}
-                      value={category}
-                      onChange={(e) => setCategory(e.target.value)}
-                    >
-                      <option value="Groceries & Beverages">Groceries & Beverages</option>
-                      <option value="Ethnic Wear">Ethnic Wear</option>
-                      <option value="Groceries & Gourmet">Groceries & Gourmet</option>
-                      <option value="Home & Kitchen">Home & Kitchen</option>
-                      <option value="Personal Care">Personal Care</option>
+                  <div>
+                    <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>SKU Code *</label>
+                    <input type="text" className={styles.searchInput} value={sku} onChange={(e) => setSku(e.target.value)} required />
+                  </div>
+                  <div>
+                    <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Listing Status</label>
+                    <select className={styles.filterSelect} style={{ width: "100%" }} value={status} onChange={(e) => setStatus(e.target.value as any)}>
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="DRAFT">DRAFT</option>
+                      <option value="INACTIVE">INACTIVE</option>
                     </select>
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>SKU Code *</label>
-                    <input
-                      type="text"
-                      className={styles.searchInput}
-                      placeholder="e.g. HND-WLT-BWL"
-                      value={sku}
-                      onChange={(e) => setSku(e.target.value)}
-                      required
-                    />
-                  </div>
                 </div>
-
-                {/* Pricing & Stock */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+                  <div>
                     <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Selling Price (₹) *</label>
-                    <input
-                      type="number"
-                      className={styles.searchInput}
-                      placeholder="INR Price"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      required
-                    />
+                    <input type="number" className={styles.searchInput} value={price} onChange={(e) => setPrice(e.target.value)} required />
                   </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
-                    <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>MRP / Compare (₹)</label>
-                    <input
-                      type="number"
-                      className={styles.searchInput}
-                      placeholder="MRP struckout"
-                      value={compareAtPrice}
-                      onChange={(e) => setCompareAtPrice(e.target.value)}
-                    />
-                  </div>
-                  <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <div>
                     <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Stock Qty *</label>
-                    <input
-                      type="number"
-                      className={styles.searchInput}
-                      placeholder="Available stock"
-                      value={stock}
-                      onChange={(e) => setStock(e.target.value)}
-                      required
-                    />
+                    <input type="number" className={styles.searchInput} value={stock} onChange={(e) => setStock(e.target.value)} required />
                   </div>
                 </div>
-
-                {/* Image URL */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "1rem" }}>
-                  <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Product Image URL</label>
-                  <input
-                    type="url"
-                    className={styles.searchInput}
-                    placeholder="https://..."
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                  />
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Image URL</label>
+                  <input type="url" className={styles.searchInput} value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} />
                 </div>
-
-                {/* Description */}
-                <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "1rem" }}>
-                  <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Product Description</label>
-                  <textarea
-                    className={styles.searchInput}
-                    style={{ minHeight: "80px", resize: "vertical" }}
-                    placeholder="Describe product materials, benefits, dimensions..."
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                  />
-                </div>
-
-                {/* Flado Sync Toggle inside Form */}
-                <div style={{
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  backgroundColor: "var(--bg-color)",
-                  padding: "0.75rem 1rem",
-                  borderRadius: "var(--radius-sm)"
-                }}>
-                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                    <FladoIcon size={18} style={{ color: "var(--primary-green)" }} />
-                    <div>
-                      <div style={{ fontSize: "0.8125rem", fontWeight: 700 }}>Enable Flado Hyperlocal</div>
-                      <div style={{ fontSize: "0.7rem", color: "var(--text-secondary)" }}>Sync item for 15-min deliveries on Flado app</div>
-                    </div>
-                  </div>
-                  <label className={styles.switch}>
-                    <input
-                      type="checkbox"
-                      checked={listOnFlado}
-                      onChange={(e) => setListOnFlado(e.target.checked)}
-                    />
-                    <span className={styles.slider} />
-                  </label>
+                <div style={{ marginBottom: "1rem" }}>
+                  <label style={{ fontSize: "0.8125rem", fontWeight: 600 }}>Description</label>
+                  <textarea className={styles.searchInput} style={{ minHeight: "80px" }} value={description} onChange={(e) => setDescription(e.target.value)} />
                 </div>
               </div>
-
               <div className={styles.modalFooter}>
-                <button type="button" className={styles.secondaryBtn} onClick={handleCloseModal}>
-                  Cancel
-                </button>
-                <button type="submit" className={styles.primaryBtn}>
-                  {editingProduct ? "Save Changes" : "Create Listing"}
-                </button>
+                <button type="button" className={styles.secondaryBtn} onClick={handleCloseModal}>Cancel</button>
+                <button type="submit" className={styles.primaryBtn}>{editingProduct ? "Save Changes" : "Create Listing"}</button>
               </div>
             </form>
           </div>

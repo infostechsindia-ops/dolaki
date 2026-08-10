@@ -1,0 +1,120 @@
+.fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.legend {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-md);
+  font-weight: 700;
+  color: var(--color-text-primary);
+  margin-bottom: var(--space-3);
+  padding: 0;
+}
+
+.optionsList {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  width: 100%;
+}
+
+.optionLabel {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background-color: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.optionLabel:hover {
+  border-color: var(--color-text-muted);
+}
+
+.optionLabel.selected {
+  border-color: var(--color-primary);
+  background-color: hsl(265, 100%, 99%);
+}
+
+.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background-color: var(--color-background-secondary, #f9fafb);
+}
+
+.disabled:hover {
+  border-color: var(--color-border);
+}
+
+.uneligibleReason {
+  margin-top: var(--space-1);
+  font-size: var(--font-size-xs);
+  color: #b45309;
+  font-weight: 500;
+}
+
+.radioInput {
+  accent-color: var(--color-primary);
+  margin-top: 3px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  outline: none;
+}
+
+.radioInput:focus-visible {
+  box-shadow: var(--focus-ring);
+}
+
+.methodInfo {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+}
+
+.nameRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.iconNameGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.icon {
+  font-size: 18px;
+  color: var(--color-primary);
+}
+
+.name {
+  font-size: var(--font-size-sm);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+.badge {
+  display: inline-block;
+  padding: 2px var(--space-2);
+  background-color: #ecfdf5;
+  color: #059669;
+  font-size: var(--font-size-xs);
+  font-weight: 700;
+  border-radius: var(--radius-sm);
+  border: 1px solid #a7f3d0;
+}
+
+.description {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-secondary);
+}

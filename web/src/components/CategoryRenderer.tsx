@@ -4,9 +4,20 @@ import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { FiHeart, FiZap, FiChevronRight, FiChevronLeft } from 'react-icons/fi';
 import { CategoryBlock, CategoryThemeConfig } from '@/data/categoryThemes';
-import { products as allProducts, Product } from '@/data/products';
 import ProductCard from './ProductCard';
 import styles from './CategoryRenderer.module.css';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 interface FilterProps {
   maxPrice: number;
@@ -179,10 +190,9 @@ export const PromotionalFlash = ({ block }: { block: CategoryBlock }) => {
 };
 
 // --- Product Listing Grid Block ---
-export const ProductListingGrid = ({ block, filters }: { block: CategoryBlock; filters?: FilterProps }) => {
+export const ProductListingGrid = ({ block, filters, products = [] }: { block: CategoryBlock; filters?: FilterProps; products?: Product[] }) => {
   const data = block.data as any;
-  // Get actual products based on listed IDs
-  const rawProducts = allProducts.filter((p) => data.productIds?.includes(p.id));
+  const rawProducts = products.length > 0 ? products : (data.products || []);
   const blockProducts = applyFilters(rawProducts, filters);
 
   return (
@@ -204,9 +214,9 @@ export const ProductListingGrid = ({ block, filters }: { block: CategoryBlock; f
 };
 
 // --- Product Carousel Block ---
-export const ProductListingCarousel = ({ block, filters }: { block: CategoryBlock; filters?: FilterProps }) => {
+export const ProductListingCarousel = ({ block, filters, products = [] }: { block: CategoryBlock; filters?: FilterProps; products?: Product[] }) => {
   const data = block.data as any;
-  const rawProducts = allProducts.filter((p) => data.productIds?.includes(p.id));
+  const rawProducts = products.length > 0 ? products : (data.products || []);
   const blockProducts = applyFilters(rawProducts, filters);
   const scrollRef = useRef<HTMLDivElement>(null);
 
@@ -269,17 +279,17 @@ export const MasonryGrid = ({ block }: { block: CategoryBlock }) => {
 };
 
 // --- Layout Renderer Hub ---
-export const CategoryLayoutRenderer = ({ block, filters }: { block: CategoryBlock; filters?: FilterProps }) => {
+export const CategoryLayoutRenderer = ({ block, filters, products = [] }: { block: CategoryBlock; filters?: FilterProps; products?: Product[] }) => {
   if (block.layout?.type) {
     switch (block.layout.type) {
       case 'masonry':
         return <MasonryGrid block={block} />;
       case 'grid':
-        return <ProductListingGrid block={block} filters={filters} />;
+        return <ProductListingGrid block={block} filters={filters} products={products} />;
       case 'carousel':
         return block.type === 'BRAND_CAROUSEL'
           ? <BrandCarousel block={block} />
-          : <ProductListingCarousel block={block} filters={filters} />;
+          : <ProductListingCarousel block={block} filters={filters} products={products} />;
     }
   }
 
@@ -292,7 +302,7 @@ export const CategoryLayoutRenderer = ({ block, filters }: { block: CategoryBloc
     case 'PROMOTIONAL_BANNER':
       return <PromotionalFlash block={block} />;
     case 'PRODUCT_LISTING':
-      return <ProductListingGrid block={block} filters={filters} />;
+      return <ProductListingGrid block={block} filters={filters} products={products} />;
     case 'CONTENT_MASONRY':
       return <MasonryGrid block={block} />;
     default:
@@ -303,9 +313,10 @@ export const CategoryLayoutRenderer = ({ block, filters }: { block: CategoryBloc
 interface CategoryRendererProps {
   config: CategoryThemeConfig;
   filters?: FilterProps;
+  products?: Product[];
 }
 
-export default function CategoryRenderer({ config, filters }: CategoryRendererProps) {
+export default function CategoryRenderer({ config, filters, products = [] }: CategoryRendererProps) {
   // Sort blocks based on block order config
   const sortedBlocks = [...config.blocks].sort((a, b) => a.order - b.order);
 
@@ -313,7 +324,7 @@ export default function CategoryRenderer({ config, filters }: CategoryRendererPr
     <div className={styles.container} style={{ backgroundColor: config.theme.backgroundColor }}>
       {sortedBlocks.map((block) => (
         <section key={block.id} className={styles.sectionBlock}>
-          <CategoryLayoutRenderer block={block} filters={filters} />
+          <CategoryLayoutRenderer block={block} filters={filters} products={products} />
         </section>
       ))}
     </div>

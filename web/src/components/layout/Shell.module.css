@@ -1,0 +1,31 @@
+.shell {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  width: 100%;
+}
+
+.main {
+  flex: 1 0 auto;
+  outline: none;
+  width: 100%;
+}
+
+/* Theme assignments driven by surface tokens */
+.marketplace {
+  --color-primary: #7C3AED;
+  --color-primary-hover: #6D28D9;
+  --focus-ring: 0 0 0 3px rgba(124, 58, 237, 0.4);
+}
+
+.quickCommerce {
+  --color-primary: var(--color-flado, #10B981);
+  --color-primary-hover: var(--color-flado-dark, #047857);
+  --focus-ring: var(--focus-ring-flado);
+}
+
+@media (max-width: 767px) {
+  .shell {
+    padding-bottom: var(--mobile-bottom-nav-height);
+  }
+}

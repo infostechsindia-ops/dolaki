@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { Search, ShoppingBag, CheckCircle, Clock, AlertTriangle, Filter } from "lucide-react";
 import { useAdmin, Order } from "@/context/AdminContext";
+import OrderStatusBadge from "@/components/OrderStatusBadge";
 import styles from "../crud.module.css";
 
 export default function OrdersPage() {
@@ -13,9 +14,9 @@ export default function OrdersPage() {
 
   // Calculate order stats
   const totalOrdersCount = orders.length;
-  const pendingCount = orders.filter((o) => o.status === "Pending" || o.status === "Processing").length;
-  const shippedCount = orders.filter((o) => o.status === "Shipped").length;
-  const deliveredCount = orders.filter((o) => o.status === "Delivered").length;
+  const pendingCount = orders.filter((o) => (o.status as string) === "Pending" || (o.status as string) === "Processing" || (o.status as string) === "PLACED" || (o.status as string) === "PREPARING").length;
+  const shippedCount = orders.filter((o) => (o.status as string) === "Shipped" || (o.status as string) === "SHIPPED" || (o.status as string) === "OUT_FOR_DELIVERY").length;
+  const deliveredCount = orders.filter((o) => (o.status as string) === "Delivered" || (o.status as string) === "DELIVERED").length;
 
   const handleStatusChange = (orderId: string, status: Order["status"]) => {
     updateOrderStatus(orderId, status);
@@ -33,23 +34,6 @@ export default function OrdersPage() {
 
     return matchesSearch && matchesStatus && matchesPayment;
   });
-
-  const getStatusBadgeClass = (status: Order["status"]) => {
-    switch (status) {
-      case "Delivered":
-        return "badge badge-success";
-      case "Shipped":
-        return "badge badge-info";
-      case "Processing":
-        return "badge badge-warning";
-      case "Pending":
-        return "badge badge-warning";
-      case "Cancelled":
-        return "badge badge-danger";
-      default:
-        return "badge badge-muted";
-    }
-  };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "2rem" }}>
@@ -182,7 +166,7 @@ export default function OrdersPage() {
                     <span className="badge badge-muted">{order.paymentMethod}</span>
                   </td>
                   <td>
-                    <span className={getStatusBadgeClass(order.status)}>{order.status}</span>
+                    <OrderStatusBadge status={order.status} />
                   </td>
                   <td>
                     <select

@@ -1,277 +1,342 @@
-import React, { useState } from 'react';
-import { StyleSheet, View, Text, ScrollView, TouchableOpacity, Image, TextInput, Alert, Dimensions } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import {
+  StyleSheet,
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  RefreshControl,
+} from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import { useCart, CartItem } from '../../context/CartContext';
-
-const { width } = Dimensions.get('window');
+import { useCart, FormattedCartItem } from '../../context/CartContext';
+import { useSurface } from '../../context/SurfaceContext';
+import { LoadingView, ErrorStateView, EmptyStateView } from '../../components/common/StateViews';
 
 export default function CartScreen() {
   const router = useRouter();
-  const { 
-    cart, 
-    updateQuantity, 
-    removeFromCart, 
-    calculations, 
-    rewardWalletBalance, 
-    couponDiscount, 
-    setCouponDiscount,
-    selectedAddress 
+  const { surface } = useSurface();
+  const {
+    cart,
+    authoritativeCart,
+    isLoadingCart,
+    cartError,
+    fetchAuthoritativeCart,
+    updateCartItemQuantity,
+    removeCartItem,
+    updateSubstitutionPreference,
+    updateQuantity,
+    removeFromCart,
+    calculations,
   } = useCart();
 
-  const [promoInput, setPromoInput] = useState('');
-  const [walletApplied, setWalletApplied] = useState(false);
+  const [refreshing, setRefreshing] = useState<boolean>(false);
+  const [activeSubstitutionItemId, setActiveSubstitutionItemId] = useState<string | null>(null);
 
-  const fladoItems = cart.filter(item => item.product.isFlado);
-  const auraMartItems = cart.filter(item => !item.product.isFlado);
+  useEffect(() => {
+    fetchAuthoritativeCart();
+  }, [fetchAuthoritativeCart]);
 
-  const handleApplyPromo = () => {
-    const code = promoInput.trim().toUpperCase();
-    if (code === 'AURA50') {
-      setCouponDiscount(50);
-      Alert.alert('Success', 'Flat ₹50 discount applied!');
-      setPromoInput('');
-    } else if (code === 'FLADO100') {
-      setCouponDiscount(100);
-      Alert.alert('Success', 'Flat ₹100 discount applied!');
-      setPromoInput('');
-    } else {
-      Alert.alert('Invalid Code', 'Try AURA50 or FLADO100');
-    }
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchAuthoritativeCart();
+    setRefreshing(false);
   };
 
-  const handleApplyWallet = () => {
-    if (walletApplied) {
-      setCouponDiscount(0);
-      setWalletApplied(false);
-    } else {
-      if (rewardWalletBalance <= 0) {
-        Alert.alert('No Balance', 'Play games in the Profile tab to win reward cash!');
-        return;
-      }
-      // Apply maximum 10% of cart total or wallet balance, whichever is smaller
-      const maxDiscount = Math.min(rewardWalletBalance, Math.round(calculations.subtotal * 0.1));
-      if (maxDiscount === 0) {
-        Alert.alert('Cart Empty', 'Add items to cart to apply reward cash');
-        return;
-      }
-      setCouponDiscount(maxDiscount);
-      setWalletApplied(true);
-      Alert.alert('Wallet Cash Applied', `Applied ₹${maxDiscount} from your reward cash!`);
-    }
-  };
+  // Determine items list & grouping
+  const hasAuthoritative = !!authoritativeCart;
+  const authItems: FormattedCartItem[] = authoritativeCart?.items || [];
+  
+  const fladoAuthItems = authItems.filter(item => item.isFlado);
+  const auraMartAuthItems = authItems.filter(item => !item.isFlado);
 
-  const renderCartItem = (item: CartItem, colorTheme: string) => {
+  const localFladoItems = cart.filter(item => item.product.isFlado);
+  const localAuraMartItems = cart.filter(item => !item.product.isFlado);
+
+  const isCartEmpty = hasAuthoritative ? authItems.length === 0 : cart.length === 0;
+
+  if (isLoadingCart && !refreshing && !authoritativeCart) {
+    return <LoadingView message="Loading authoritative cart..." />;
+  }
+
+  if (cartError && !refreshing && !authoritativeCart && cart.length === 0) {
     return (
-      <View key={item.itemId} style={styles.cartItemCard}>
-        <Image source={{ uri: item.product.image || (item.product.images && item.product.images[0]) || '' }} style={styles.itemImage} />
-        
+      <SafeAreaView style={styles.container}>
+        <ErrorStateView
+          title="Cart Unavailable"
+          message={cartError}
+          onRetry={fetchAuthoritativeCart}
+          retryLabel="Reload Cart"
+        />
+      </SafeAreaView>
+    );
+  }
+
+  if (isCartEmpty && !refreshing) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <EmptyStateView
+          title="Your Cart is Empty"
+          message="Explore products across AuraMart Marketplace and Flado Quick Commerce."
+          actionLabel="Start Shopping"
+          onAction={() => router.push('/')}
+        />
+      </SafeAreaView>
+    );
+  }
+
+  // Verbatim financial totals from DTO
+  const subtotalDisplay = authoritativeCart?.formattedSubtotal || `₹${calculations.subtotal}`;
+  const taxDisplay = authoritativeCart?.formattedTax || `₹${calculations.gst}`;
+  const shippingDisplay = authoritativeCart?.formattedShipping || `₹${calculations.deliveryFee}`;
+  const discountDisplay = authoritativeCart?.formattedDiscount || `₹${calculations.discount}`;
+  const grandTotalDisplay = authoritativeCart?.formattedGrandTotal || `₹${calculations.total}`;
+
+  // Eligibility evaluation
+  const isEligible = authoritativeCart?.checkoutEligibility?.isEligible ?? true;
+  const blockerReason = authoritativeCart?.checkoutEligibility?.blockers?.[0] || 'Cart requirements not met';
+
+  const renderAuthCartItem = (item: FormattedCartItem, isFladoGroup: boolean) => {
+    const isSubstitutionOpen = activeSubstitutionItemId === item.id;
+    return (
+      <View key={item.id} style={styles.cartItemCard}>
+        <Image
+          source={{ uri: item.image || 'https://images.unsplash.com/photo-1523275335684-37898b6baf30?w=400' }}
+          style={styles.itemImage}
+          resizeMode="contain"
+        />
+
         <View style={styles.itemDetails}>
-          <Text style={styles.itemName} numberOfLines={1}>{item.product.name}</Text>
-          <Text style={styles.itemCategory}>{item.product.category}</Text>
-          
-          {(item.selectedColor || item.selectedSize) && (
-            <View style={styles.attributesRow}>
-              {item.selectedColor && (
-                <View style={styles.attributeTag}>
-                  <Text style={styles.attributeText}>{item.selectedColor}</Text>
-                </View>
-              )}
-              {item.selectedSize && (
-                <View style={styles.attributeTag}>
-                  <Text style={styles.attributeText}>Size {item.selectedSize}</Text>
+          <Text style={styles.itemName} numberOfLines={1}>{item.title}</Text>
+          <Text style={styles.itemSku}>SKU: {item.sku}</Text>
+
+          {!item.inStock && (
+            <View style={styles.warningBadge}>
+              <Ionicons name="warning" size={12} color="#DC2626" />
+              <Text style={styles.warningText}>Out of stock at active store</Text>
+            </View>
+          )}
+
+          {item.isStoreUnavailable && (
+            <View style={styles.warningBadge}>
+              <Ionicons name="alert-circle" size={12} color="#D97706" />
+              <Text style={styles.warningText}>{item.availabilityReason || 'Store unavailable'}</Text>
+            </View>
+          )}
+
+          {/* Substitution Preference for Flado items */}
+          {isFladoGroup && (
+            <View style={styles.substitutionContainer}>
+              <TouchableOpacity
+                style={styles.substitutionBtn}
+                onPress={() => setActiveSubstitutionItemId(isSubstitutionOpen ? null : item.id)}
+                accessibilityRole="button"
+                accessibilityLabel="Change substitution preference"
+              >
+                <Ionicons name="swap-horizontal" size={14} color="#059669" />
+                <Text style={styles.substitutionText}>
+                  Sub: {item.substitutionPreference || 'ALLOW_SUBSTITUTION'}
+                </Text>
+                <Ionicons name="chevron-down" size={14} color="#059669" />
+              </TouchableOpacity>
+
+              {isSubstitutionOpen && (
+                <View style={styles.substitutionMenu}>
+                  {(['ALLOW_SUBSTITUTION', 'CONTACT_ME', 'NO_SUBSTITUTION'] as const).map(pref => (
+                    <TouchableOpacity
+                      key={pref}
+                      style={[styles.prefOption, item.substitutionPreference === pref && styles.prefOptionSelected]}
+                      onPress={() => {
+                        updateSubstitutionPreference(item.id, pref);
+                        setActiveSubstitutionItemId(null);
+                      }}
+                      accessibilityRole="button"
+                      accessibilityLabel={`Set substitution preference to ${pref}`}
+                    >
+                      <Text style={[styles.prefOptionText, item.substitutionPreference === pref && styles.prefOptionTextSelected]}>
+                        {pref.replace('_', ' ')}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
               )}
             </View>
           )}
 
           <View style={styles.priceRow}>
-            <Text style={styles.itemPrice}>₹{item.product.price * item.quantity}</Text>
-            
+            <Text style={styles.itemPrice}>{item.formattedLineTotal}</Text>
+
             <View style={styles.qtyContainer}>
-              <TouchableOpacity 
-                style={[styles.qtyBtn, { backgroundColor: colorTheme }]}
-                onPress={() => updateQuantity(item.itemId, item.quantity - 1)}
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => updateCartItemQuantity(item.id, item.quantity - 1)}
+                accessibilityRole="button"
+                accessibilityLabel="Decrease item quantity"
               >
-                <Ionicons name="remove" size={14} color="white" />
+                <Ionicons name="remove" size={14} color="#374151" />
               </TouchableOpacity>
+
               <Text style={styles.qtyText}>{item.quantity}</Text>
-              <TouchableOpacity 
-                style={[styles.qtyBtn, { backgroundColor: colorTheme }]}
-                onPress={() => updateQuantity(item.itemId, item.quantity + 1)}
+
+              <TouchableOpacity
+                style={styles.qtyBtn}
+                onPress={() => updateCartItemQuantity(item.id, item.quantity + 1)}
+                accessibilityRole="button"
+                accessibilityLabel="Increase item quantity"
               >
-                <Ionicons name="add" size={14} color="white" />
+                <Ionicons name="add" size={14} color="#374151" />
               </TouchableOpacity>
             </View>
           </View>
         </View>
 
-        <TouchableOpacity 
-          style={styles.deleteBtn}
-          onPress={() => removeFromCart(item.itemId)}
+        <TouchableOpacity
+          style={styles.removeBtn}
+          onPress={() => removeCartItem(item.id)}
+          accessibilityRole="button"
+          accessibilityLabel={`Remove ${item.title} from cart`}
         >
-          <Ionicons name="trash-outline" size={18} color="#EF4444" />
+          <Ionicons name="trash-outline" size={20} color="#EF4444" />
         </TouchableOpacity>
       </View>
     );
   };
 
-  if (cart.length === 0) {
-    return (
-      <SafeAreaView style={styles.emptyContainer}>
-        <Ionicons name="cart-outline" size={80} color="#D1D5DB" />
-        <Text style={styles.emptyTitle}>Your cart is empty</Text>
-        <Text style={styles.emptySubtitle}>Explore products and add them to your cart to see them here.</Text>
-        <TouchableOpacity 
-          style={styles.shopBtn}
-          onPress={() => router.push('/(tabs)')}
-        >
-          <Text style={styles.shopBtnText}>Start Shopping</Text>
-        </TouchableOpacity>
-      </SafeAreaView>
-    );
-  }
-
   return (
     <SafeAreaView style={styles.container}>
+      {/* Header */}
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Shopping Cart</Text>
       </View>
 
-      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={styles.scrollContent}>
-        {/* Address Selection Header */}
-        <View style={styles.addressSection}>
-          <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-            <Ionicons name="location" size={18} color="#8B5CF6" />
-            <Text style={styles.addressLabel}>Shipping to:</Text>
-          </View>
-          <Text style={styles.addressText} numberOfLines={1}>{selectedAddress}</Text>
-        </View>
-
-        {/* SPLIT CART Section 1: Flado (Green) */}
-        {fladoItems.length > 0 && (
-          <View style={styles.splitSection}>
-            <View style={[styles.splitHeader, styles.fladoSplitHeader]}>
-              <View style={styles.splitHeaderLeft}>
-                <Ionicons name="flash" size={18} color="#059669" />
-                <Text style={[styles.splitTitle, { color: '#059669' }]}>Flado Quick Delivery (10 mins)</Text>
-              </View>
-              <Text style={styles.splitBadge}>⚡ 10 mins</Text>
-            </View>
-            <View style={styles.itemsWrapper}>
-              {fladoItems.map(item => renderCartItem(item, '#059669'))}
-            </View>
+      <ScrollView
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={handleRefresh} colors={['#6366F1']} />}
+      >
+        {/* Flado Delivery ETA & Store Status Banner */}
+        {authoritativeCart?.estimatedDeliveryEtaText && (
+          <View style={[styles.etaBanner, { backgroundColor: surface === 'QUICK_COMMERCE' ? '#ECFDF5' : '#EEF2FF', borderColor: surface === 'QUICK_COMMERCE' ? '#A7F3D0' : '#C7D2FE' }]}>
+            <Ionicons name={surface === 'QUICK_COMMERCE' ? "flash" : "time-outline"} size={18} color={surface === 'QUICK_COMMERCE' ? "#059669" : "#6366F1"} />
+            <Text style={[styles.etaText, { color: surface === 'QUICK_COMMERCE' ? "#047857" : "#4338CA" }]}>
+              {authoritativeCart.estimatedDeliveryEtaText}
+            </Text>
           </View>
         )}
 
-        {/* SPLIT CART Section 2: AuraMart (Violet) */}
-        {auraMartItems.length > 0 && (
-          <View style={styles.splitSection}>
-            <View style={[styles.splitHeader, styles.auramartSplitHeader]}>
-              <View style={styles.splitHeaderLeft}>
-                <MaterialCommunityIcons name="truck-delivery" size={18} color="#8B5CF6" />
-                <Text style={[styles.splitTitle, { color: '#8B5CF6' }]}>AuraMart Standard Delivery</Text>
-              </View>
-              <Text style={styles.splitBadge}>🚚 2-3 days</Text>
-            </View>
-            <View style={styles.itemsWrapper}>
-              {auraMartItems.map(item => renderCartItem(item, '#8B5CF6'))}
-            </View>
+        {/* Minimum Basket Shortfall Warning */}
+        {authoritativeCart?.isMinimumBasketMet === false && authoritativeCart.formattedMinimumBasketShortfall && (
+          <View style={styles.shortfallBanner}>
+            <Ionicons name="alert-circle" size={18} color="#D97706" />
+            <Text style={styles.shortfallText}>
+              Add {authoritativeCart.formattedMinimumBasketShortfall} more for minimum order requirement.
+            </Text>
           </View>
         )}
 
-        {/* Reward Wallet Offer / Promo Apply */}
-        <View style={styles.promoSection}>
-          <Text style={styles.promoSectionTitle}>Offers & Discounts</Text>
-          
-          {/* Reward Wallet Applied */}
-          <TouchableOpacity 
-            style={[styles.walletApplyCard, walletApplied && styles.walletAppliedCard]}
-            onPress={handleApplyWallet}
-          >
-            <View style={styles.walletLeft}>
-              <Ionicons name="wallet" size={24} color="#8B5CF6" />
-              <View style={{ marginLeft: 10 }}>
-                <Text style={styles.walletTitle}>Reward Cash Wallet</Text>
-                <Text style={styles.walletBal}>Available Balance: ₹{rewardWalletBalance}</Text>
-              </View>
+        {/* Flado Quick Commerce Group */}
+        {(hasAuthoritative ? fladoAuthItems.length > 0 : localFladoItems.length > 0) && (
+          <View style={styles.groupCard}>
+            <View style={styles.groupHeader}>
+              <Ionicons name="flash" size={16} color="#059669" />
+              <Text style={[styles.groupTitle, { color: '#059669' }]}>⚡ Flado Quick Commerce</Text>
             </View>
-            <Text style={[styles.walletApplyBtnText, walletApplied && { color: '#EF4444' }]}>
-              {walletApplied ? 'REMOVE' : 'APPLY 10%'}
-            </Text>
-          </TouchableOpacity>
+            {hasAuthoritative
+              ? fladoAuthItems.map(item => renderAuthCartItem(item, true))
+              : localFladoItems.map(item => (
+                  <View key={item.itemId} style={styles.cartItemCard}>
+                    <Image source={{ uri: item.product.image }} style={styles.itemImage} resizeMode="contain" />
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName} numberOfLines={1}>{item.product.name}</Text>
+                      <Text style={styles.itemPrice}>₹{item.product.price * item.quantity}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => removeFromCart(item.itemId)} style={styles.removeBtn}>
+                      <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
+          </View>
+        )}
 
-          {/* Coupon Code Input */}
-          <View style={styles.promoInputRow}>
-            <TextInput
-              style={styles.promoInput}
-              placeholder="Enter Coupon (e.g. AURA50)"
-              placeholderTextColor="#9CA3AF"
-              value={promoInput}
-              onChangeText={setPromoInput}
-              autoCapitalize="characters"
-            />
-            <TouchableOpacity style={styles.promoBtn} onPress={handleApplyPromo}>
-              <Text style={styles.promoBtnText}>APPLY</Text>
-            </TouchableOpacity>
+        {/* AuraMart Marketplace Group */}
+        {(hasAuthoritative ? auraMartAuthItems.length > 0 : localAuraMartItems.length > 0) && (
+          <View style={styles.groupCard}>
+            <View style={styles.groupHeader}>
+              <MaterialCommunityIcons name="truck-delivery" size={16} color="#6366F1" />
+              <Text style={[styles.groupTitle, { color: '#6366F1' }]}>🚚 AuraMart Marketplace (Standard Express)</Text>
+            </View>
+            {hasAuthoritative
+              ? auraMartAuthItems.map(item => renderAuthCartItem(item, false))
+              : localAuraMartItems.map(item => (
+                  <View key={item.itemId} style={styles.cartItemCard}>
+                    <Image source={{ uri: item.product.image }} style={styles.itemImage} resizeMode="contain" />
+                    <View style={styles.itemDetails}>
+                      <Text style={styles.itemName} numberOfLines={1}>{item.product.name}</Text>
+                      <Text style={styles.itemPrice}>₹{item.product.price * item.quantity}</Text>
+                    </View>
+                    <TouchableOpacity onPress={() => removeFromCart(item.itemId)} style={styles.removeBtn}>
+                      <Ionicons name="trash-outline" size={20} color="#EF4444" />
+                    </TouchableOpacity>
+                  </View>
+                ))}
           </View>
-          <Text style={styles.promoHint}>Use AURA50 (Save ₹50) or FLADO100 (Save ₹100)</Text>
-        </View>
+        )}
 
-        {/* Bill Summary */}
-        <View style={styles.billSection}>
-          <Text style={styles.billSectionTitle}>Bill Summary</Text>
-          
-          <View style={styles.billRow}>
-            <Text style={styles.billLabel}>AuraMart Subtotal</Text>
-            <Text style={styles.billValue}>₹{calculations.auraMartSubtotal}</Text>
+        {/* Bill Details Summary (Authoritative Verbatim DTO) */}
+        <View style={styles.summaryCard}>
+          <Text style={styles.summaryTitle}>Bill Summary</Text>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Item Subtotal</Text>
+            <Text style={styles.summaryValue}>{subtotalDisplay}</Text>
           </View>
-          {calculations.fladoSubtotal > 0 && (
-            <View style={styles.billRow}>
-              <Text style={styles.billLabel}>Flado Subtotal</Text>
-              <Text style={styles.billValue}>₹{calculations.fladoSubtotal}</Text>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Taxes & GST</Text>
+            <Text style={styles.summaryValue}>{taxDisplay}</Text>
+          </View>
+
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Delivery & Quick Fees</Text>
+            <Text style={styles.summaryValue}>{shippingDisplay}</Text>
+          </View>
+
+          {authoritativeCart?.discount ? (
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Discounts & Savings</Text>
+              <Text style={[styles.summaryValue, { color: '#059669' }]}>-{discountDisplay}</Text>
             </View>
-          )}
-          <View style={styles.billRow}>
-            <Text style={styles.billLabel}>GST (18% rate)</Text>
-            <Text style={styles.billValue}>₹{calculations.gst}</Text>
-          </View>
-          <View style={styles.billRow}>
-            <Text style={styles.billLabel}>Delivery Fees</Text>
-            <Text style={styles.billValue}>
-              {calculations.deliveryFee === 0 ? 'FREE' : `₹${calculations.deliveryFee}`}
-            </Text>
-          </View>
-          
-          {couponDiscount > 0 && (
-            <View style={styles.billRow}>
-              <Text style={[styles.billLabel, { color: '#059669' }]}>Discounts Applied</Text>
-              <Text style={[styles.billValue, { color: '#059669' }]}>-₹{couponDiscount}</Text>
-            </View>
-          )}
+          ) : null}
 
           <View style={styles.divider} />
 
-          <View style={[styles.billRow, { marginTop: 8 }]}>
-            <Text style={styles.grandTotalLabel}>Grand Total</Text>
-            <Text style={styles.grandTotalValue}>₹{calculations.total}</Text>
+          <View style={styles.summaryRow}>
+            <Text style={styles.grandTotalLabel}>To Pay</Text>
+            <Text style={styles.grandTotalValue}>{grandTotalDisplay}</Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Checkout Button Footer */}
-      <View style={styles.footer}>
-        <View style={styles.totalContainer}>
-          <Text style={styles.footerTotalLabel}>PAYABLE</Text>
-          <Text style={styles.footerTotalValue}>₹{calculations.total}</Text>
+      {/* Sticky Bottom Checkout Footer */}
+      <View style={styles.stickyFooter}>
+        <View style={styles.totalBox}>
+          <Text style={styles.footerTotalLabel}>Total Amount</Text>
+          <Text style={styles.footerTotalValue}>{grandTotalDisplay}</Text>
         </View>
-        <TouchableOpacity 
-          style={styles.checkoutBtn}
+
+        <TouchableOpacity
+          style={[styles.checkoutBtn, !isEligible && styles.disabledCheckoutBtn]}
           onPress={() => router.push('/checkout')}
+          disabled={!isEligible}
+          accessibilityRole="button"
+          accessibilityLabel={isEligible ? "Proceed to Checkout" : `Checkout disabled: ${blockerReason}`}
         >
-          <Text style={styles.checkoutBtnText}>Proceed to Checkout</Text>
-          <Ionicons name="arrow-forward" size={18} color="white" style={{ marginLeft: 6 }} />
+          <Text style={styles.checkoutBtnText}>
+            {isEligible ? 'PROCEED TO CHECKOUT' : blockerReason.toUpperCase()}
+          </Text>
+          {isEligible && <Ionicons name="arrow-forward" size={18} color="white" />}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -284,130 +349,152 @@ const styles = StyleSheet.create({
     backgroundColor: '#F9FAFB',
   },
   header: {
-    backgroundColor: '#FFFFFF',
     paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 14,
+    backgroundColor: '#FFFFFF',
     borderBottomWidth: 1,
     borderBottomColor: '#E5E7EB',
   },
   headerTitle: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
   scrollContent: {
+    padding: 16,
     paddingBottom: 100,
   },
-  addressSection: {
+  etaBanner: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: '#FFF',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: 1,
-    borderBottomColor: '#E5E7EB',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    marginBottom: 12,
   },
-  addressLabel: {
-    fontSize: 12,
-    color: '#6B7280',
-    fontWeight: '500',
-    marginLeft: 4,
-  },
-  addressText: {
-    fontSize: 12,
-    color: '#1F2937',
+  etaText: {
+    fontSize: 13,
     fontWeight: '600',
-    flex: 1,
     marginLeft: 8,
-    textAlign: 'right',
+    flex: 1,
   },
-  splitSection: {
-    marginTop: 12,
+  shortfallBanner: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+    backgroundColor: '#FFFBEB',
+    marginBottom: 12,
+  },
+  shortfallText: {
+    fontSize: 13,
+    fontWeight: '600',
+    color: '#B45309',
+    marginLeft: 8,
+    flex: 1,
+  },
+  groupCard: {
     backgroundColor: '#FFFFFF',
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    borderWidth: 1,
     borderColor: '#E5E7EB',
   },
-  splitHeader: {
+  groupHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
+    marginBottom: 12,
+    paddingBottom: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#F3F4F6',
+  },
+  groupTitle: {
+    fontSize: 13,
+    fontWeight: '700',
+    marginLeft: 6,
+  },
+  cartItemCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     paddingVertical: 10,
     borderBottomWidth: 1,
     borderBottomColor: '#F3F4F6',
   },
-  fladoSplitHeader: {
-    backgroundColor: '#ECFDF5',
-  },
-  auramartSplitHeader: {
-    backgroundColor: '#F5F3FF',
-  },
-  splitHeaderLeft: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  splitTitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    marginLeft: 6,
-  },
-  splitBadge: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    overflow: 'hidden',
-  },
-  itemsWrapper: {
-    paddingHorizontal: 16,
-  },
-  cartItemCard: {
-    flexDirection: 'row',
-    paddingVertical: 14,
-    borderBottomWidth: 1,
-    borderBottomColor: '#F3F4F6',
-  },
   itemImage: {
-    width: 70,
-    height: 70,
+    width: 64,
+    height: 64,
     borderRadius: 8,
-    resizeMode: 'cover',
+    backgroundColor: '#F3F4F6',
   },
   itemDetails: {
     flex: 1,
     marginLeft: 12,
-    justifyContent: 'center',
   },
   itemName: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1F2937',
+    fontWeight: '700',
+    color: '#111827',
   },
-  itemCategory: {
+  itemSku: {
     fontSize: 11,
-    color: '#9CA3AF',
+    color: '#6B7280',
     marginTop: 2,
   },
-  attributesRow: {
+  warningBadge: {
     flexDirection: 'row',
+    alignItems: 'center',
     marginTop: 4,
-    gap: 6,
   },
-  attributeTag: {
-    backgroundColor: '#F3F4F6',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+  warningText: {
+    fontSize: 11,
+    color: '#DC2626',
+    marginLeft: 4,
+    fontWeight: '600',
+  },
+  substitutionContainer: {
+    marginTop: 6,
+  },
+  substitutionBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#ECFDF5',
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 6,
+    alignSelf: 'flex-start',
+  },
+  substitutionText: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#059669',
+    marginHorizontal: 4,
+  },
+  substitutionMenu: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    marginTop: 4,
+    padding: 4,
+  },
+  prefOption: {
+    paddingVertical: 6,
+    paddingHorizontal: 8,
     borderRadius: 4,
   },
-  attributeText: {
-    fontSize: 10,
-    color: '#4B5563',
+  prefOptionSelected: {
+    backgroundColor: '#ECFDF5',
+  },
+  prefOptionText: {
+    fontSize: 11,
+    color: '#374151',
+  },
+  prefOptionTextSelected: {
+    color: '#059669',
+    fontWeight: '700',
   },
   priceRow: {
     flexDirection: 'row',
@@ -417,220 +504,118 @@ const styles = StyleSheet.create({
   },
   itemPrice: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
   qtyContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    backgroundColor: '#F3F4F6',
+    borderRadius: 8,
   },
   qtyBtn: {
-    width: 22,
-    height: 22,
-    borderRadius: 11,
+    width: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
   },
   qtyText: {
-    marginHorizontal: 10,
     fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '700',
+    paddingHorizontal: 8,
+    color: '#111827',
   },
-  deleteBtn: {
-    padding: 6,
+  removeBtn: {
+    padding: 8,
+    minHeight: 44,
+    minWidth: 44,
     justifyContent: 'center',
-  },
-  promoSection: {
-    marginTop: 12,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  promoSectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1F2937',
-    marginBottom: 12,
-  },
-  walletApplyCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
-    borderColor: '#E5E7EB',
-    borderRadius: 10,
-    padding: 12,
-    marginBottom: 12,
-    backgroundColor: '#F9FAFB',
-  },
-  walletAppliedCard: {
-    borderColor: '#8B5CF6',
-    backgroundColor: '#F5F3FF',
-  },
-  walletLeft: {
-    flexDirection: 'row',
     alignItems: 'center',
   },
-  walletTitle: {
-    fontSize: 13,
-    fontWeight: 'bold',
-    color: '#1F2937',
-  },
-  walletBal: {
-    fontSize: 11,
-    color: '#6B7280',
-    marginTop: 2,
-  },
-  walletApplyBtnText: {
-    fontSize: 12,
-    fontWeight: 'bold',
-    color: '#8B5CF6',
-  },
-  promoInputRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  promoInput: {
-    flex: 1,
+  summaryCard: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 16,
     borderWidth: 1,
     borderColor: '#E5E7EB',
-    borderRadius: 8,
-    paddingHorizontal: 12,
-    fontSize: 13,
-    height: 40,
-    backgroundColor: '#F9FAFB',
   },
-  promoBtn: {
-    backgroundColor: '#1F2937',
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    justifyContent: 'center',
-  },
-  promoBtnText: {
-    color: 'white',
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-  promoHint: {
-    fontSize: 11,
-    color: '#9CA3AF',
-    marginTop: 6,
-  },
-  billSection: {
-    marginTop: 12,
-    backgroundColor: '#FFFFFF',
-    padding: 16,
-    borderTopWidth: 1,
-    borderBottomWidth: 1,
-    borderColor: '#E5E7EB',
-  },
-  billSectionTitle: {
-    fontSize: 14,
-    fontWeight: 'bold',
-    color: '#1F2937',
+  summaryTitle: {
+    fontSize: 15,
+    fontWeight: '800',
+    color: '#111827',
     marginBottom: 12,
   },
-  billRow: {
+  summaryRow: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    marginVertical: 4,
+    marginBottom: 8,
   },
-  billLabel: {
+  summaryLabel: {
     fontSize: 13,
     color: '#4B5563',
   },
-  billValue: {
+  summaryValue: {
     fontSize: 13,
-    color: '#1F2937',
-    fontWeight: '500',
+    fontWeight: '600',
+    color: '#111827',
   },
   divider: {
     height: 1,
     backgroundColor: '#E5E7EB',
-    marginVertical: 8,
+    marginVertical: 10,
   },
   grandTotalLabel: {
     fontSize: 15,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
   grandTotalValue: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#8B5CF6',
+    fontSize: 18,
+    fontWeight: '800',
+    color: '#111827',
   },
-  footer: {
+  stickyFooter: {
     position: 'absolute',
     bottom: 0,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     backgroundColor: '#FFFFFF',
     borderTopWidth: 1,
     borderTopColor: '#E5E7EB',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
+    gap: 12,
   },
-  totalContainer: {
-    justifyContent: 'center',
+  totalBox: {
+    flex: 1,
   },
   footerTotalLabel: {
-    fontSize: 10,
-    color: '#9CA3AF',
-    fontWeight: 'bold',
+    fontSize: 11,
+    color: '#6B7280',
   },
   footerTotalValue: {
     fontSize: 18,
-    fontWeight: 'bold',
-    color: '#1F2937',
+    fontWeight: '800',
+    color: '#111827',
   },
   checkoutBtn: {
-    backgroundColor: '#8B5CF6',
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    flex: 1.8,
+    height: 48,
+    backgroundColor: '#6366F1',
     borderRadius: 10,
-  },
-  checkoutBtnText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
-  },
-  emptyContainer: {
-    flex: 1,
+    flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 32,
-    backgroundColor: '#FFFFFF',
+    gap: 6,
   },
-  emptyTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    color: '#374151',
-    marginTop: 16,
+  disabledCheckoutBtn: {
+    backgroundColor: '#9CA3AF',
   },
-  emptySubtitle: {
-    fontSize: 14,
-    color: '#6B7280',
-    textAlign: 'center',
-    marginTop: 6,
-    marginBottom: 24,
-  },
-  shopBtn: {
-    backgroundColor: '#8B5CF6',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-  },
-  shopBtnText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 14,
+  checkoutBtnText: {
+    color: '#FFFFFF',
+    fontSize: 13,
+    fontWeight: '800',
   },
 });

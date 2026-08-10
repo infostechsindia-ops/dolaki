@@ -13,14 +13,13 @@ describe('AppController (e2e)', () => {
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    await app.init();
+    await app.listen(0, '127.0.0.1');
   });
 
-  it('/ (GET)', () => {
+  it('/pricing/catalog/non-existent (GET)', () => {
     return request(app.getHttpServer())
-      .get('/')
-      .expect(200)
-      .expect('Hello World!');
+      .get('/pricing/catalog/non-existent')
+      .expect(404);
   });
 
   afterEach(async () => {

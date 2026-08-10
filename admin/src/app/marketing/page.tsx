@@ -7,6 +7,7 @@ import { useAdmin, Coupon, FlashSale } from "@/context/AdminContext";
 import CouponModal from "@/components/modals/CouponModal";
 import FlashSaleModal from "@/components/modals/FlashSaleModal";
 import styles from "../crud.module.css";
+import { API_BASE_URL } from "@/lib/config";
 
 export default function MarketingPage() {
   const { coupons, flashSales, deleteCoupon, deleteFlashSale } = useAdmin();
@@ -116,7 +117,7 @@ export default function MarketingPage() {
         ]
       };
 
-      const res = await fetch("http://localhost:5000/api/sdui/flado", {
+      const res = await fetch(`${API_BASE_URL}/api/v1/sdui/flado`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload)
@@ -280,11 +281,13 @@ export default function MarketingPage() {
             fontSize: "0.95rem",
             fontWeight: 600,
             color: activeTab === "coupons" ? "var(--primary)" : "var(--text-light)",
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none",
             borderBottom: activeTab === "coupons" ? "3px solid var(--primary)" : "3px solid transparent",
             transition: "all var(--transition-fast)",
             marginBottom: "-2px",
             background: "transparent",
-            border: "none",
             cursor: "pointer"
           }}
         >
@@ -297,11 +300,13 @@ export default function MarketingPage() {
             fontSize: "0.95rem",
             fontWeight: 600,
             color: activeTab === "flash" ? "var(--primary)" : "var(--text-light)",
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none",
             borderBottom: activeTab === "flash" ? "3px solid var(--primary)" : "3px solid transparent",
             transition: "all var(--transition-fast)",
             marginBottom: "-2px",
             background: "transparent",
-            border: "none",
             cursor: "pointer"
           }}
         >
@@ -314,11 +319,13 @@ export default function MarketingPage() {
             fontSize: "0.95rem",
             fontWeight: 600,
             color: activeTab === "gamification" ? "var(--primary)" : "var(--text-light)",
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none",
             borderBottom: activeTab === "gamification" ? "3px solid var(--primary)" : "3px solid transparent",
             transition: "all var(--transition-fast)",
             marginBottom: "-2px",
             background: "transparent",
-            border: "none",
             cursor: "pointer"
           }}
         >
@@ -331,11 +338,13 @@ export default function MarketingPage() {
             fontSize: "0.95rem",
             fontWeight: 600,
             color: activeTab === "sdui" ? "var(--primary)" : "var(--text-light)",
+            borderTop: "none",
+            borderLeft: "none",
+            borderRight: "none",
             borderBottom: activeTab === "sdui" ? "3px solid var(--primary)" : "3px solid transparent",
             transition: "all var(--transition-fast)",
             marginBottom: "-2px",
             background: "transparent",
-            border: "none",
             cursor: "pointer"
           }}
         >

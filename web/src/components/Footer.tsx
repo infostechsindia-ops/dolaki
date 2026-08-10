@@ -2,12 +2,34 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
-import { FiShield, FiTruck, FiRefreshCw, FiSmile, FiMail, FiSend } from 'react-icons/fi';
+import {
+  FiShield,
+  FiSmile,
+  FiMail,
+  FiSend,
+  FiCheckCircle,
+  FiUsers,
+  FiFacebook,
+  FiInstagram,
+  FiTwitter,
+  FiLinkedin,
+  FiYoutube,
+  FiPhone,
+  FiClock
+} from 'react-icons/fi';
+import { Container, Grid, Stack, Inline } from '@/components/layout/LayoutPrimitives';
+import IconButton from '@/components/ui/IconButton';
 import styles from './Footer.module.css';
 
-export default function Footer() {
+export interface FooterProps {
+  surface?: 'MARKETPLACE' | 'QUICK_COMMERCE';
+}
+
+export default function Footer({ surface = 'MARKETPLACE' }: FooterProps) {
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
+
+  const isFlado = surface === 'QUICK_COMMERCE';
 
   const handleSubscribe = (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,150 +40,215 @@ export default function Footer() {
   };
 
   return (
-    <footer className={styles.footer}>
-      {/* Trust Badges */}
-      <div className={styles.trustBadges}>
-        <div className="container">
-          <div className={styles.badgesGrid}>
-            <div className={styles.badgeItem}>
-              <div className={styles.badgeIconWrapper}>
-                <FiTruck className={styles.badgeIcon} />
+    <footer className={`${styles.footer} ${isFlado ? styles.quickCommerce : ''}`} aria-label="AuraMart Site Footer">
+      
+      {/* STEP 4 — Trust Section */}
+      <div className={styles.trustSection}>
+        <Container size="2xl">
+          <Grid columns={4} gap="6" className={styles.trustGrid}>
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <FiShield className={styles.trustIcon} />
               </div>
-              <div className={styles.badgeText}>
-                <h4>Instant & Free Delivery</h4>
-                <p>10-min Flado grocery delivery & free standard shipping above ₹499</p>
-              </div>
-            </div>
-            <div className={styles.badgeItem}>
-              <div className={styles.badgeIconWrapper}>
-                <FiShield className={styles.badgeIcon} />
-              </div>
-              <div className={styles.badgeText}>
+              <div className={styles.trustText}>
                 <h4>Secure Payments</h4>
                 <p>Fully encrypted transactions via UPI, Credit/Debit cards & Netbanking</p>
               </div>
             </div>
-            <div className={styles.badgeItem}>
-              <div className={styles.badgeIconWrapper}>
-                <FiRefreshCw className={styles.badgeIcon} />
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <FiCheckCircle className={styles.trustIcon} />
               </div>
-              <div className={styles.badgeText}>
-                <h4>7-Day Easy Returns</h4>
-                <p>Hassle-free, no-questions-asked returns and direct refunds</p>
-              </div>
-            </div>
-            <div className={styles.badgeItem}>
-              <div className={styles.badgeIconWrapper}>
-                <FiSmile className={styles.badgeIcon} />
-              </div>
-              <div className={styles.badgeText}>
-                <h4>24/7 Dedicated Support</h4>
-                <p>Chat live or contact our helpline at any hour of the day</p>
+              <div className={styles.trustText}>
+                <h4>Buyer Protection</h4>
+                <p>Hassle-free direct refunds and 7-day easy return query policies</p>
               </div>
             </div>
-          </div>
-        </div>
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <FiUsers className={styles.trustIcon} />
+              </div>
+              <div className={styles.trustText}>
+                <h4>Trusted Sellers</h4>
+                <p>100% verified merchant channels and premium product standards</p>
+              </div>
+            </div>
+
+            <div className={styles.trustItem}>
+              <div className={styles.trustIconWrapper}>
+                <FiSmile className={styles.trustIcon} />
+              </div>
+              <div className={styles.trustText}>
+                <h4>Customer Support</h4>
+                <p>Helpful assistance available at any hour for shopping needs</p>
+              </div>
+            </div>
+          </Grid>
+        </Container>
       </div>
 
-      {/* Footer Content */}
+      {/* STEP 3 — Footer Links Sections */}
       <div className={styles.footerMain}>
-        <div className="container">
-          <div className={styles.linksGrid}>
-            {/* Brand column */}
-            <div className={styles.brandCol}>
-              <Link href="/" className={styles.logo}>
-                <span className={styles.logoAccent}>Aura</span>Mart
-              </Link>
-              <p className={styles.brandDesc}>
-                India's premier multi-platform shopping hub. Sourcing top-tier electronics, fashion, beauty, home decor, and delivering instant daily groceries under 10 minutes via Flado Quick Commerce.
-              </p>
-              <div className={styles.appStoreLinks}>
-                <a href="#" className={styles.appBadge} aria-label="Get it on Google Play">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Google Play" />
-                </a>
-                <a href="#" className={styles.appBadge} aria-label="Download on the App Store">
-                  <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="App Store" />
-                </a>
-              </div>
-            </div>
-
-            {/* Quick Links */}
+        <Container size="2xl">
+          <div className={styles.footerGrid}>
+            
+            {/* Column 1: Company */}
             <div className={styles.linksCol}>
-              <h4>Shop Categories</h4>
-              <ul>
-                <li><Link href="/categories/electronics">Electronics & Smart Gadgets</Link></li>
-                <li><Link href="/categories/fashion">Fashion & Designer Lifestyle</Link></li>
-                <li><Link href="/categories/beauty">Beauty & Premium Skincare</Link></li>
-                <li><Link href="/categories/home">Modern Home & Kitchen</Link></li>
-                <li><Link href="/flado">Flado 10-Min Groceries</Link></li>
+              <h4>Company</h4>
+              <ul className={styles.linkList}>
+                <li><Link href="/company/about">About Us</Link></li>
+                <li><Link href="/company/our-story">Our Story</Link></li>
+                <li><Link href="/company/careers">Careers</Link></li>
+                <li><Link href="/blog">Blog & Guides</Link></li>
+                <li><Link href="/company/sustainability">Sustainability</Link></li>
               </ul>
             </div>
 
-            {/* Customer Care */}
+            {/* Column 2: Customer Support */}
             <div className={styles.linksCol}>
               <h4>Customer Support</h4>
-              <ul>
-                <li><Link href="/profile">My Account Dashboard</Link></li>
-                <li><Link href="/cart">View Basket / Cart</Link></li>
-                <li><Link href="/profile">Track My Order Status</Link></li>
-                <li><Link href="#">Terms of Service</Link></li>
-                <li><Link href="#">Privacy & Cookie Policy</Link></li>
+              <ul className={styles.linkList}>
+                <li><Link href="/help">Help Center</Link></li>
+                <li><Link href="/help/contact">Contact Us</Link></li>
+                <li><Link href="/policies/returns-refunds">Returns & Refunds</Link></li>
+                <li><Link href="/policies/shipping-policy">Shipping Policy</Link></li>
               </ul>
             </div>
 
-            {/* Newsletter Subscription & Info */}
+            {/* Column 3: Marketplace */}
             <div className={styles.linksCol}>
-              <h4>Stay Connected</h4>
-              <p className={styles.newsletterDesc}>Subscribe to receive early sales announcements, coupons, and premium updates.</p>
-              {subscribed ? (
-                <div className={styles.subscriptionSuccess}>
-                  <span>✓ Thank you for subscribing!</span>
-                </div>
-              ) : (
-                <form onSubmit={handleSubscribe} className={styles.newsletterForm}>
-                  <input
-                    type="email"
-                    required
-                    placeholder="Enter email address"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className={styles.newsletterInput}
-                  />
-                  <button type="submit" className={styles.newsletterButton} aria-label="Subscribe">
-                    <FiSend />
-                  </button>
-                </form>
-              )}
+              <h4>Marketplace</h4>
+              <ul className={styles.linkList}>
+                <li><Link href="/business/become-a-seller">Become a Seller</Link></li>
+                <li><Link href="/vendor/login">Seller Dashboard</Link></li>
+                <li><Link href="/discover/best-sellers">Best Sellers</Link></li>
+              </ul>
+            </div>
 
-              <div className={styles.contactDetails}>
-                <p><strong>Support Helpline:</strong> 1800-AURA-MART</p>
-                <p><strong>Email Queries:</strong> support@auramart.in</p>
+            {/* Column 4: Flado */}
+            <div className={styles.linksCol}>
+              <h4>Flado</h4>
+              <ul className={styles.linkList}>
+                <li><Link href="/merchant/apply">Become Merchant</Link></li>
+                <li><Link href="/merchant/login">Merchant Dashboard</Link></li>
+                <li><Link href="/policies/shipping-policy">Delivery SLA</Link></li>
+              </ul>
+            </div>
+
+            {/* Column 5: Legal */}
+            <div className={styles.linksCol}>
+              <h4>Legal</h4>
+              <ul className={styles.linkList}>
+                <li><Link href="/legal/privacy-policy">Privacy Policy</Link></li>
+                <li><Link href="/legal/terms-of-service">Terms of Service</Link></li>
+                <li><Link href="/legal/cookie-policy">Cookie Policy</Link></li>
+                <li><Link href="/policies/returns-refunds">Refund Policy</Link></li>
+              </ul>
+            </div>
+
+            {/* Column 6: Contact Info */}
+            <div className={styles.linksCol}>
+              <h4>Contact Details</h4>
+              <ul className={styles.contactList}>
+                <li>
+                  <FiMail className={styles.contactIcon} />
+                  <span>support@auramart.in</span>
+                </li>
+                <li>
+                  <FiPhone className={styles.contactIcon} />
+                  <span>1800-AURA-MART</span>
+                </li>
+                <li>
+                  <FiClock className={styles.contactIcon} />
+                  <span>24/7 Dedicated Support</span>
+                </li>
+              </ul>
+
+              {/* Newsletter subscribe form */}
+              <div className={styles.newsletterSection}>
+                <span className={styles.newsletterTitle}>Newsletter</span>
+                {subscribed ? (
+                  <span className={styles.subSuccess}>✓ Subscribed successfully!</span>
+                ) : (
+                  <form onSubmit={handleSubscribe} className={styles.newsletterForm}>
+                    <input
+                      type="email"
+                      required
+                      placeholder="Email address"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      className={styles.newsletterInput}
+                      aria-label="Subscribe to newsletter"
+                    />
+                    <button type="submit" className={styles.newsletterBtn} aria-label="Subscribe submit">
+                      <FiSend />
+                    </button>
+                  </form>
+                )}
               </div>
             </div>
+
           </div>
-        </div>
+        </Container>
       </div>
 
-      {/* Payment methods and copyright */}
+      {/* Bottom bar & socials */}
       <div className={styles.footerBottom}>
-        <div className="container">
+        <Container size="2xl">
           <div className={styles.bottomInner}>
-            <p>&copy; {new Date().getFullYear()} AuraMart Private Limited. All rights reserved. Sourced & packaged with premium care.</p>
-            <div className={styles.paymentMethods}>
-              <span className={styles.paymentBadge}>UPI</span>
-              <span className={styles.paymentBadge}>VISA</span>
-              <span className={styles.paymentBadge}>MASTERCARD</span>
-              <span className={styles.paymentBadge}>RUPAY</span>
-              <span className={styles.paymentBadge}>NETBANKING</span>
-            </div>
-            <div className={styles.socials}>
-              <Link href="#">Instagram</Link>
-              <Link href="#">Twitter</Link>
-              <Link href="#">Facebook</Link>
+            <p className={styles.copyright}>
+              &copy; {new Date().getFullYear()} AuraMart Private Limited. All rights reserved. Sourced & packaged with premium care.
+            </p>
+
+            {/* STEP 5 — Social Icons */}
+            <div className={styles.socials} aria-label="Social Media Connections">
+              <a href="https://facebook.com" target="_blank" rel="noopener noreferrer">
+                <IconButton
+                  icon={<FiFacebook />}
+                  aria-label="Facebook Link"
+                  variant={isFlado ? "flado" : "primary"}
+                  size="sm"
+                />
+              </a>
+              <a href="https://instagram.com" target="_blank" rel="noopener noreferrer">
+                <IconButton
+                  icon={<FiInstagram />}
+                  aria-label="Instagram Link"
+                  variant={isFlado ? "flado" : "primary"}
+                  size="sm"
+                />
+              </a>
+              <a href="https://twitter.com" target="_blank" rel="noopener noreferrer">
+                <IconButton
+                  icon={<FiTwitter />}
+                  aria-label="X Link"
+                  variant={isFlado ? "flado" : "primary"}
+                  size="sm"
+                />
+              </a>
+              <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer">
+                <IconButton
+                  icon={<FiLinkedin />}
+                  aria-label="LinkedIn Link"
+                  variant={isFlado ? "flado" : "primary"}
+                  size="sm"
+                />
+              </a>
+              <a href="https://youtube.com" target="_blank" rel="noopener noreferrer">
+                <IconButton
+                  icon={<FiYoutube />}
+                  aria-label="YouTube Link"
+                  variant={isFlado ? "flado" : "primary"}
+                  size="sm"
+                />
+              </a>
             </div>
           </div>
-        </div>
+        </Container>
       </div>
+
     </footer>
   );
 }

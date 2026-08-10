@@ -3,9 +3,15 @@
  * There are many other ways to style your app. For example, [Nativewind](https://www.nativewind.dev/), [Tamagui](https://tamagui.dev/), [unistyles](https://reactnativeunistyles.vercel.app), etc.
  */
 
-import '@/global.css';
-
-import { Platform } from 'react-native';
+let Platform: any = {
+  OS: 'web',
+  select: (obj: any) => obj.web || obj.default || obj.ios || obj.android,
+};
+try {
+  Platform = require('react-native').Platform || Platform;
+} catch (e) {
+  // Fallback in Node test context
+}
 
 export const Colors = {
   light: {
@@ -63,3 +69,57 @@ export const Spacing = {
 
 export const BottomTabInset = Platform.select({ ios: 50, android: 80 }) ?? 0;
 export const MaxContentWidth = 800;
+
+// ─── CMD-060 Surface Themes ───────────────────────────────────────────────────
+
+export interface ColorPalette {
+  primary: string;
+  primaryDark: string;
+  accent: string;
+  background: string;
+  cardBackground: string;
+  textPrimary: string;
+  textSecondary: string;
+  border: string;
+  badgeBackground: string;
+  badgeText: string;
+  error: string;
+  success: string;
+}
+
+export const MARKETPLACE_THEME: ColorPalette = {
+  primary: '#6366F1', // Indigo
+  primaryDark: '#4F46E5',
+  accent: '#F59E0B',
+  background: '#F9FAFB',
+  cardBackground: '#FFFFFF',
+  textPrimary: '#111827',
+  textSecondary: '#6B7280',
+  border: '#E5E7EB',
+  badgeBackground: '#EEF2FF',
+  badgeText: '#4338CA',
+  error: '#EF4444',
+  success: '#10B981',
+};
+
+export const FLADO_QUICK_THEME: ColorPalette = {
+  primary: '#10B981', // Emerald Quick Green
+  primaryDark: '#059669',
+  accent: '#F59E0B',
+  background: '#0F172A', // Dark Charcoal background for 10-min mode
+  cardBackground: '#1E293B',
+  textPrimary: '#F8FAFC',
+  textSecondary: '#94A3B8',
+  border: '#334155',
+  badgeBackground: '#064E3B',
+  badgeText: '#6EE7B7',
+  error: '#F87171',
+  success: '#34D399',
+};
+
+export type CommerceSurface = 'MARKETPLACE' | 'QUICK_COMMERCE';
+
+export function getThemeForSurface(surface: CommerceSurface): ColorPalette {
+  return surface === 'QUICK_COMMERCE' ? FLADO_QUICK_THEME : MARKETPLACE_THEME;
+}
+

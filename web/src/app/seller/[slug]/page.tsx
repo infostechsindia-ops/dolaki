@@ -7,9 +7,21 @@ import {
   FiStar, FiPackage, FiShield, FiClock, FiMessageSquare,
   FiThumbsUp, FiChevronRight, FiAward, FiTruck, FiPhone, FiGrid, FiList
 } from 'react-icons/fi';
-import { products as allProducts, Product } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 // ─── Seller Data ──────────────────────────────────────────────────────────────
 interface SellerReview {
@@ -156,13 +168,39 @@ export default function SellerPage({ params }: SellerPageProps) {
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'rating'>('default');
   const [activeTab, setActiveTab] = useState<'products' | 'reviews' | 'policies'>('products');
   const [contactSent, setContactSent] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   if (!seller) notFound();
 
-  let products = allProducts.filter(seller.filter).slice(0, 24);
-  if (sortBy === 'price-asc') products = [...products].sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-desc') products = [...products].sort((a, b) => b.price - a.price);
-  if (sortBy === 'rating') products = [...products].sort((a, b) => b.rating - a.rating);
+  React.useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=24&sort=${sortBy === 'rating' ? 'rating' : sortBy === 'price-asc' ? 'price_asc' : sortBy === 'price-desc' ? 'price_desc' : 'featured'}`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          setProducts(list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          })));
+        }
+      } catch (e) {
+        console.error('Failed to load seller products:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, [slug, sortBy]);
 
   const ratingPercent = seller.ratingBreakdown;
 

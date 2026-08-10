@@ -1,0 +1,59 @@
+.root {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md, 1rem);
+  flex-wrap: wrap;
+  padding: var(--space-sm, 0.5rem) 0;
+  border-bottom: 1px solid var(--color-gray-100, #f3f4f6);
+}
+
+.controls {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md, 1rem);
+  flex-wrap: wrap;
+}
+
+.selectGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-gray-700, #374151);
+}
+
+.label {
+  font-weight: var(--font-weight-medium, 500);
+}
+
+.select {
+  padding: var(--space-xs, 0.25rem) var(--space-sm, 0.5rem);
+  border: 1px solid var(--color-gray-300, #d1d5db);
+  border-radius: var(--radius-md, 0.5rem);
+  background-color: var(--color-white, #ffffff);
+  color: var(--color-gray-800, #1f2937);
+  font-size: var(--font-size-sm, 0.875rem);
+  cursor: pointer;
+}
+
+.select:focus-visible {
+  outline: none;
+  box-shadow: var(--focus-ring, 0 0 0 3px rgba(99, 102, 241, 0.4));
+}
+
+.checkboxGroup {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs, 0.25rem);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-gray-700, #374151);
+  cursor: pointer;
+}
+
+.checkbox {
+  width: 1rem;
+  height: 1rem;
+  accent-color: var(--color-primary, #7c3aed);
+  cursor: pointer;
+}

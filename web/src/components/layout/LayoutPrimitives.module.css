@@ -1,0 +1,153 @@
+/* ── Page Container ──────────────────────────────────── */
+.pageContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-10);
+  padding: var(--space-4) 0;
+  width: 100%;
+}
+
+/* ── Container ───────────────────────────────────────── */
+.container {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+/* Container Max Widths - Synchronized with globals.css Content Widths */
+.max_sm { max-width: 640px; }
+.max_md { max-width: 768px; }
+.max_lg { max-width: 1024px; }
+.max_xl { max-width: 1280px; }
+.max_2xl { max-width: 1536px; }
+.max_full { max-width: 100%; }
+
+/* ── Section (Full Bleed Background + Constrained Inner) ─ */
+.section {
+  width: 100%;
+}
+
+.sectionInner {
+  width: 100%;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: var(--space-4);
+  padding-right: var(--space-4);
+}
+
+/* ── Stack (Vertical Flexbox Layout) ─────────────────── */
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Inline (Horizontal Flexbox Layout) ───────────────── */
+.inline {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+/* Alignments */
+.align_start { align-items: flex-start; }
+.align_center { align-items: center; }
+.align_end { align-items: flex-end; }
+.align_baseline { align-items: baseline; }
+.align_stretch { align-items: stretch; }
+
+/* Justifications */
+.justify_start { justify-content: flex-start; }
+.justify_center { justify-content: center; }
+.justify_end { justify-content: flex-end; }
+.justify_between { justify-content: space-between; }
+.justify_around { justify-content: space-around; }
+
+/* ── Grid (CSS Grid Container) ────────────────────────── */
+.grid {
+  display: grid;
+}
+
+/* Grid Column Tracks */
+.cols_1 { grid-template-columns: repeat(1, minmax(0, 1fr)); }
+.cols_2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+.cols_3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.cols_4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.cols_6 { grid-template-columns: repeat(6, minmax(0, 1fr)); }
+.cols_12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
+
+/* ── Product Grid (Responsive Multi-Column Layout) ───── */
+.productGrid {
+  display: grid;
+  gap: var(--space-4);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  width: 100%;
+}
+
+/* Breakpoint Synchronizations mapping exactly to CSS variable values */
+@media (min-width: 640px) {
+  .productGrid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 768px) {
+  .productGrid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1024px) {
+  .productGrid {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 1280px) {
+  .productGrid {
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+  }
+}
+
+/* ── Gap Scales ──────────────────────────────────────── */
+.gap_1 { gap: var(--space-1); }
+.gap_2 { gap: var(--space-2); }
+.gap_3 { gap: var(--space-3); }
+.gap_4 { gap: var(--space-4); }
+.gap_5 { gap: var(--space-5); }
+.gap_6 { gap: var(--space-6); }
+.gap_8 { gap: var(--space-8); }
+.gap_10 { gap: var(--space-10); }
+.gap_12 { gap: var(--space-12); }
+.gap_16 { gap: var(--space-16); }
+
+/* ── Responsive Safety Protections ───────────────────── */
+
+/* Flexbox and Grid child safety default */
+.stack > *,
+.inline > *,
+.grid > *,
+.productGrid > * {
+  min-width: 0;
+}
+
+/* Fluid images/media safety */
+.productGrid img,
+.container img,
+.section img {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Wrap safety for long textual nodes */
+.productGrid h3,
+.productGrid p,
+.container p,
+.container h1,
+.container h2,
+.container h3 {
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  word-break: break-word;
+}

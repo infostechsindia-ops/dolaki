@@ -11,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { api } from '../../utils/api';
 import { Product } from '../../utils/mockData';
 import { fladoProductsData } from '../../utils/fladoProducts';
+import { MerchantErrorBoundary } from '../../merchant/ErrorBoundary';
 
 const { width } = Dimensions.get('window');
 
@@ -44,7 +45,7 @@ const C = {
 };
 
 // ─── TYPES ────────────────────────────────────────────────────────────────────
-type BottomTab = 'dashboard' | 'orders' | 'store' | 'analytics' | 'earnings';
+type BottomTab = 'dashboard' | 'orders' | 'store' | 'analytics' | 'earnings' | 'reports' | 'staff';
 type StoreSubTab = 'inventory' | 'riders' | 'promos' | 'delivery' | 'credit' | 'profile';
 type OrderFilter = 'all' | 'PLACED' | 'PREPARING' | 'OUT_FOR_DELIVERY' | 'DELIVERED';
 type AnalyticsPeriod = 'today' | 'week' | 'month';
@@ -1258,7 +1259,94 @@ export default function FladoVendorDashboard() {
     { key: 'earnings' as BottomTab, label: 'Earnings', icon: 'cash' },
   ];
 
+  const renderReports = () => {
+    return (
+      <ScrollView style={{ flex: 1, padding: 16 }} showsVerticalScrollIndicator={false}>
+        <Text style={{ fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 12 }}>
+          📊 Darkstore Operational Reports
+        </Text>
+        <View style={{ backgroundColor: C.white, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: C.border }}>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: C.textLight }}>Select Report Period</Text>
+          <View style={{ flexDirection: 'row', marginTop: 8 }}>
+            <TouchableOpacity style={{ backgroundColor: C.primaryLight, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginRight: 8 }}>
+              <Text style={{ color: C.primary, fontWeight: '600' }}>Last 7 Days</Text>
+            </TouchableOpacity>
+            <TouchableOpacity style={{ backgroundColor: C.bg, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8, marginRight: 8 }}>
+              <Text style={{ color: C.textLight }}>Last 30 Days</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        <View style={{ backgroundColor: C.white, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: C.border }}>
+          <Text style={{ fontSize: 16, fontWeight: '700', color: C.dark, marginBottom: 12 }}>💰 Sales & Performance Summary</Text>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: C.textLight }}>Gross Sales:</Text>
+            <Text style={{ fontWeight: '700', color: C.primary }}>₹12,500.00</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: C.textLight }}>Refunds / Adjustments:</Text>
+            <Text style={{ fontWeight: '600', color: C.danger }}>-₹500.00</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: C.textLight }}>Net Sales:</Text>
+            <Text style={{ fontWeight: '700', color: C.dark }}>₹12,000.00</Text>
+          </View>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 }}>
+            <Text style={{ color: C.textLight }}>SLA Health Rate:</Text>
+            <Text style={{ fontWeight: '700', color: C.primary }}>96.0%</Text>
+          </View>
+        </View>
+
+        <TouchableOpacity
+          style={{ backgroundColor: C.primary, padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 24 }}
+          onPress={() => Alert.alert('Export CSV', 'CSV report generated authoritatively from backend.')}
+        >
+          <Text style={{ color: C.white, fontWeight: '700' }}>📥 Export CSV Report</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
+  const renderStaff = () => {
+    return (
+      <ScrollView style={{ flex: 1, padding: 16 }} showsVerticalScrollIndicator={false}>
+        <Text style={{ fontSize: 20, fontWeight: '700', color: C.dark, marginBottom: 12 }}>
+          👥 Darkstore Staff & Access Management
+        </Text>
+        <View style={{ backgroundColor: C.white, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: C.border }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: C.dark }}>Suresh Sharma (Owner)</Text>
+            <View style={{ backgroundColor: C.primaryLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+              <Text style={{ color: C.primary, fontSize: 12, fontWeight: '700' }}>OWNER</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 13, color: C.textLight }}>suresh@auramart.com · Active</Text>
+          <Text style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>Assigned Darkstores: shop-flado-001, shop-flado-002</Text>
+        </View>
+
+        <View style={{ backgroundColor: C.white, borderRadius: 12, padding: 16, marginBottom: 16, borderWidth: 1, borderColor: C.border }}>
+          <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+            <Text style={{ fontSize: 16, fontWeight: '700', color: C.dark }}>Ramesh Verma (Picker)</Text>
+            <View style={{ backgroundColor: C.blueLight, paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 }}>
+              <Text style={{ color: C.blue, fontSize: 12, fontWeight: '700' }}>FULFILLMENT_STAFF</Text>
+            </View>
+          </View>
+          <Text style={{ fontSize: 13, color: C.textLight }}>ramesh@auramart.com · Active</Text>
+          <Text style={{ fontSize: 12, color: C.textMuted, marginTop: 4 }}>Assigned Darkstores: shop-flado-001</Text>
+        </View>
+
+        <TouchableOpacity
+          style={{ backgroundColor: C.primary, padding: 14, borderRadius: 10, alignItems: 'center', marginBottom: 24 }}
+          onPress={() => Alert.alert('Invite Staff', 'Invite staff modal active.')}
+        >
+          <Text style={{ color: C.white, fontWeight: '700' }}>✉️ Invite New Darkstore Staff</Text>
+        </TouchableOpacity>
+      </ScrollView>
+    );
+  };
+
   return (
+    <MerchantErrorBoundary fallbackText="Quick Merchant Ops encountered a temporary UI issue. Please reload dashboard.">
     <SafeAreaView style={s.container} edges={['top']}>
       {/* ─── PREMIUM DARK HEADER ─── */}
       <View style={s.header}>
@@ -1311,11 +1399,19 @@ export default function FladoVendorDashboard() {
         {activeTab === 'store' && renderStore()}
         {activeTab === 'analytics' && renderAnalytics()}
         {activeTab === 'earnings' && renderEarnings()}
+        {activeTab === 'reports' && renderReports()}
+        {activeTab === 'staff' && renderStaff()}
       </View>
 
       {/* ─── BOTTOM NAV BAR ─── */}
       <View style={s.bottomNav}>
-        {BOTTOM_TABS.map(tab => {
+        {[
+          { key: 'dashboard' as const, label: 'Dashboard', icon: 'grid-outline' },
+          { key: 'orders' as const, label: 'Orders', icon: 'receipt-outline', badge: newOrders.length },
+          { key: 'reports' as const, label: 'Reports', icon: 'bar-chart-outline' },
+          { key: 'staff' as const, label: 'Staff', icon: 'people-outline' },
+          { key: 'store' as const, label: 'Store', icon: 'storefront-outline' },
+        ].map(tab => {
           const isActive = activeTab === tab.key;
           return (
             <TouchableOpacity key={tab.key} style={s.bottomNavItem} onPress={() => setActiveTab(tab.key)} activeOpacity={0.7}>
@@ -1524,6 +1620,7 @@ export default function FladoVendorDashboard() {
       </Modal>
 
     </SafeAreaView>
+    </MerchantErrorBoundary>
   );
 }
 

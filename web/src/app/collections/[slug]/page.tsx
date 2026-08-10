@@ -4,9 +4,21 @@ import React, { use, useState } from 'react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiChevronRight, FiHeart, FiShare2, FiGrid, FiList, FiFilter, FiTag } from 'react-icons/fi';
-import { products as allProducts, Product } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
+import { API_BASE_URL } from '@/lib/config';
+
+export interface Product {
+  id: string;
+  name: string;
+  price: number;
+  originalPrice?: number;
+  image: string;
+  rating: number;
+  reviewsCount?: number;
+  category?: string;
+  brand?: string;
+}
 
 // ─── Collection Data ──────────────────────────────────────────────────────────
 interface CollectionTag { label: string; color: string; }
@@ -142,13 +154,39 @@ export default function CollectionPage({ params }: CollectionPageProps) {
   const [showFilters, setShowFilters] = useState(false);
   const [sortBy, setSortBy] = useState<'default' | 'price-asc' | 'price-desc' | 'rating'>('default');
   const [saved, setSaved] = useState(false);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
 
   if (!collection) notFound();
 
-  let products = allProducts.filter(collection.filter).slice(0, 24);
-  if (sortBy === 'price-asc') products = [...products].sort((a, b) => a.price - b.price);
-  if (sortBy === 'price-desc') products = [...products].sort((a, b) => b.price - a.price);
-  if (sortBy === 'rating') products = [...products].sort((a, b) => b.rating - a.rating);
+  React.useEffect(() => {
+    const loadProducts = async () => {
+      setLoading(true);
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/v1/products?limit=24&sort=${sortBy === 'rating' ? 'rating' : sortBy === 'price-asc' ? 'price_asc' : sortBy === 'price-desc' ? 'price_desc' : 'featured'}`);
+        if (res.ok) {
+          const json = await res.json();
+          const list = json.data || [];
+          setProducts(list.map((p: any) => ({
+            id: p.id,
+            name: p.title || p.name || 'Product',
+            price: p.discountPrice ?? p.basePrice ?? 0,
+            originalPrice: p.basePrice ?? 0,
+            image: p.imageUrl || 'https://images.unsplash.com/photo-1607082348824-0a96f2a4b9da?w=600',
+            rating: p.rating ?? 4.5,
+            reviewsCount: p.reviewCount ?? 12,
+            category: p.category,
+            brand: p.brand?.name || ''
+          })));
+        }
+      } catch (e) {
+        console.error('Failed to load collection products:', e);
+      } finally {
+        setLoading(false);
+      }
+    };
+    loadProducts();
+  }, [slug, sortBy]);
 
   return (
     <div className={styles.page}>
