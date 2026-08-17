@@ -245,7 +245,7 @@ button {
 }
 
 /* ==========================================================================
-   11. HOVER & ANIMATION UTILITIES
+   11. COMMAND 9 — MOTION, TAP, PRESS & ANIMATION SYSTEM
    ========================================================================== */
 .hover-lift {
   transition: transform var(--duration-normal) var(--motion-spring), box-shadow var(--duration-normal) var(--motion-spring);
@@ -270,6 +270,12 @@ button {
   border-color: rgba(124, 58, 237, 0.4);
 }
 
+/* Press & Tap Active Micro-Interactions */
+button:active, .btn:active, .chip:active, .card:active {
+  transform: scale(0.97) !important;
+  transition: transform 0.08s var(--motion-spring) !important;
+}
+
 @keyframes shimmer {
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
@@ -285,8 +291,46 @@ button {
   50% { transform: translateY(-6px); }
 }
 
+@keyframes heartPop {
+  0% { transform: scale(1); }
+  40% { transform: scale(1.35); }
+  70% { transform: scale(0.9); }
+  100% { transform: scale(1); }
+}
+
+@keyframes modalScaleUp {
+  0% { opacity: 0; transform: scale(0.92) translateY(12px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+@keyframes slideInRight {
+  0% { opacity: 0; transform: translateX(100%); }
+  100% { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes dropdownSlideDown {
+  0% { opacity: 0; transform: translateY(-8px) scale(0.97); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes toastFloatIn {
+  0% { opacity: 0; transform: translateY(20px) scale(0.95); }
+  100% { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes pageFadeIn {
+  0% { opacity: 0; transform: translateY(6px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+
 .animate-pulse { animation: pulseGlow 2s infinite ease-in-out; }
 .animate-float { animation: float 3s infinite ease-in-out; }
+.animate-heart-pop { animation: heartPop 0.45s var(--motion-spring); }
+.animate-modal { animation: modalScaleUp 0.3s var(--motion-spring); }
+.animate-drawer { animation: slideInRight 0.3s var(--motion-spring); }
+.animate-dropdown { animation: dropdownSlideDown 0.2s var(--motion-spring); }
+.animate-toast { animation: toastFloatIn 0.3s var(--motion-spring); }
+.animate-page { animation: pageFadeIn 0.3s var(--motion-spring); }
 
 /* ==========================================================================
    12. GLASSMORPHISM CLASSES

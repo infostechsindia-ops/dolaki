@@ -21,6 +21,7 @@
   flex-direction: column;
   overflow: hidden;
   outline: none;
+  animation: modalScaleUp 0.3s var(--motion-spring);
 }
 
 /* Sizes */
