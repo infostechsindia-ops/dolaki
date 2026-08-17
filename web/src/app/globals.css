@@ -657,3 +657,43 @@ button:active, .btn:active, .chip:active, .card:active {
 .toast-error   { border-left: 4px solid var(--color-danger); }
 .toast-warning { border-left: 4px solid var(--color-warning); }
 .toast-info    { border-left: 4px solid var(--color-info); }
+
+/* ==========================================================================
+   19. TABLET LAYOUT OPTIMIZATION ARCHITECTURE (768px - 1024px)
+   ========================================================================== */
+@media (min-width: 768px) and (max-width: 1024px) {
+  /* Tablet Container */
+  .container {
+    padding: 0 var(--space-4);
+    max-width: 100%;
+  }
+
+  /* Two-column Split View Primitives */
+  .tablet-split-layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: var(--space-4);
+    align-items: start;
+  }
+
+  /* Adaptive Product Cards Grid (3 columns on Tablet Landscape, 2 on Portrait) */
+  .tablet-product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: var(--space-3);
+  }
+
+  /* Tablet Sticky Multi-panel Sidebar */
+  .tablet-sticky-panel {
+    position: sticky;
+    top: calc(var(--header-height) + var(--space-2));
+  }
+
+  /* Touch-friendly Filter Drawer */
+  .tablet-filter-panel {
+    background: var(--color-surface);
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--color-border);
+    padding: var(--space-3);
+  }
+}
