@@ -40,8 +40,8 @@
 
 .card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 14px 28px rgba(124, 58, 237, 0.12);
-  border-color: rgba(124, 58, 237, 0.4);
+  box-shadow: 0 14px 28px var(--color-primary-glow, rgba(91, 76, 255, 0.15));
+  border-color: var(--color-primary-hover, #4A3BFF);
 }
 
 .quickCommerce .card:hover {

@@ -20,11 +20,11 @@
   display: inline-block;
   align-self: flex-start;
   padding: 4px 10px;
-  background: #7C3AED;
+  background: var(--color-secondary, #7C3AED);
   color: white;
   font-size: 0.75rem;
   font-weight: 700;
-  border-radius: 6px;
+  border-radius: var(--radius-button, 6px);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
@@ -32,13 +32,13 @@
 .sectionTitle {
   font-size: 1.5rem;
   font-weight: 800;
-  color: #0F172A;
+  color: var(--color-text-primary, #0F172A);
   margin: 0;
 }
 
 .sectionSubtitle {
   font-size: 0.9rem;
-  color: #64748B;
+  color: var(--color-text-secondary, #64748B);
   margin: 0;
 }
 

@@ -537,7 +537,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             </div>
 
             {/* Out-of-Stock Notify Me Box or Cart Actions */}
-            {(product.generalStock ?? (product as any).stock ?? (product.inStock === false ? 0 : 10)) === 0 || product.inStock === false ? (
+            {(product.generalStock ?? (product as any).stock ?? ((product as any).inStock === false ? 0 : 10)) === 0 || (product as any).inStock === false ? (
               <div className={styles.notifyBox} data-testid="notify-me-box">
                 <h4 className={styles.notifyTitle}>Notify Me When Available</h4>
                 <div className={styles.notifyForm}>

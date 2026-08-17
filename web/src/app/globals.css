@@ -80,6 +80,11 @@
   /* ------------------------------------------------------------------------
      4. 2027 BRAND CONSTITUTION COLOR & GRADIENT SYSTEM
      ------------------------------------------------------------------------ */
+  /* Disabled & Form Input State Tokens */
+  --color-disabled-bg: #F1F5F9;
+  --color-disabled-text: #94A3B8;
+  --color-disabled-border: #E2E8F0;
+
   /* Brand Roles */
   --color-primary: #5B4CFF;
   --color-primary-hover: #4A3BFF;
