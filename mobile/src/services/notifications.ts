@@ -4,7 +4,7 @@ try {
 } catch (e) {
   // Fallback in Node test context
 }
-import { apiClient } from '../api/client';
+import { apiClient } from '../api/client.ts';
 
 export interface NotificationPayloadData {
   type?: 'product' | 'category' | 'order' | 'refund' | 'promotion' | 'brand' | 'support_ticket' | 'vip_pass' | 'quick_tracking';

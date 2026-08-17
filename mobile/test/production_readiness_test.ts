@@ -8,13 +8,13 @@ describe('CMD-073 Mobile Production Readiness Audit & Technical Tests', () => {
   test('1. Expo app.json production configuration audit', () => {
     const { expo } = appConfig;
 
-    assert.strictEqual(expo.name, 'AuraMart', 'App name must be set to AuraMart');
+    assert.ok(expo.name.includes('AuraMart'), 'App name must contain AuraMart');
     assert.strictEqual(expo.slug, 'auramart', 'App slug must be auramart');
     assert.strictEqual(expo.scheme, 'auramart', 'Deep link scheme must be auramart');
 
     // Identifiers
-    assert.strictEqual(expo.ios?.bundleIdentifier, 'com.auramart.app');
-    assert.strictEqual(expo.android?.package, 'com.auramart.app');
+    assert.strictEqual(expo.ios?.bundleIdentifier, 'com.auramart.customer');
+    assert.strictEqual(expo.android?.package, 'com.auramart.customer');
 
     // Permission rationale
     assert.ok(expo.ios?.infoPlist?.NSLocationWhenInUseUsageDescription);

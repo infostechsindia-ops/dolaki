@@ -1,6 +1,6 @@
-import { getFullApiUrl, ENV } from '../config/env';
-import { getSecureItem, SECURE_KEYS, clearAuthSessionTokens } from '../storage/secureStore';
-import { isSafeReadEndpoint, getSafeReadCache, setSafeReadCache } from '../utils/cache';
+import { getFullApiUrl, ENV } from '../config/env.ts';
+import { getSecureItem, SECURE_KEYS, clearAuthSessionTokens } from '../storage/secureStore.ts';
+import { isSafeReadEndpoint, getSafeReadCache, setSafeReadCache } from '../utils/cache.ts';
 
 export interface ApiErrorPayload {
   statusCode: number;

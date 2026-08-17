@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { warehouseMobileService, PickTaskItem } from '../src/services/warehouse_service.ts';
+import { warehouseMobileService } from '../src/services/warehouse_service.ts';
+import type { PickTaskItem } from '../src/services/warehouse_service.ts';
 
 describe('WAREHOUSE-001 Warehouse Mobile & Inventory Operations Tests', () => {
   test('1. Warehouse Dashboard stats report picking, packing, and queue metrics accurately', () => {

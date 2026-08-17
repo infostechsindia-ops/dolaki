@@ -1,6 +1,7 @@
 import assert from 'node:assert';
 import { test, describe } from 'node:test';
-import { riderMobileService, RiderDeliveryTask } from '../src/services/rider_service.ts';
+import { riderMobileService } from '../src/services/rider_service.ts';
+import type { RiderDeliveryTask } from '../src/services/rider_service.ts';
 
 describe('RIDER-001 Premium Rider Mobile App & Operations Tests', () => {
   test('1. Rider Dashboard stats maintain server authority for earnings and distance', () => {
