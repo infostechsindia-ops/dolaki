@@ -17,6 +17,7 @@ export interface Product {
   rating: number;
   reviewsCount?: number;
   category?: string;
+  subCategory?: string;
   brand?: string;
 }
 

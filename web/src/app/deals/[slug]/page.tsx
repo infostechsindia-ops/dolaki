@@ -35,6 +35,14 @@ export default function CampaignPage({ params }: CampaignPageProps) {
   const [campaignProducts, setCampaignProducts] = useState<Product[]>([]);
   const [loadingProducts, setLoadingProducts] = useState(true);
 
+  const handleCopyCode = () => {
+    if (campaign?.couponCode) {
+      navigator.clipboard.writeText(campaign.couponCode);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
+
   useEffect(() => {
     if (!campaign) return;
 
@@ -88,6 +96,8 @@ export default function CampaignPage({ params }: CampaignPageProps) {
 
     return () => clearInterval(timer);
   }, [campaign]);
+
+  if (!campaign) return null;
 
   return (
     <div className={styles.campaignPage}>

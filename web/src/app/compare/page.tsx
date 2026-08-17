@@ -18,6 +18,9 @@ export interface Product {
   reviewsCount?: number;
   category?: string;
   brand?: string;
+  images?: string[];
+  generalStock?: number;
+  specifications?: Record<string, string>;
 }
 
 function ComparePageContent() {
@@ -160,17 +163,17 @@ function ComparePageContent() {
 
                   {/* Stock */}
                   <div className={styles.specItem}>
-                    {prod.generalStock > 0 ? `${prod.generalStock} units` : 'Out of Stock'}
+                    {(prod.generalStock ?? 0) > 0 ? `${prod.generalStock} units` : 'Out of Stock'}
                   </div>
 
                   {/* Warranty */}
                   <div className={styles.specItem}>
-                    {prod.specifications['Warranty'] || '1 Year Brand Warranty'}
+                    {(prod.specifications && prod.specifications['Warranty']) || '1 Year Brand Warranty'}
                   </div>
 
                   {/* Bluetooth Version */}
                   <div className={styles.specItem}>
-                    {prod.specifications['Bluetooth Version'] || 'N/A'}
+                    {(prod.specifications && prod.specifications['Bluetooth Version']) || 'N/A'}
                   </div>
 
                   <div className={styles.actions}>

@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FiStore, FiArrowRight, FiShield, FiTrendingUp, FiLock } from 'react-icons/fi';
+import { FiShoppingBag, FiArrowRight, FiShield, FiTrendingUp, FiLock } from 'react-icons/fi';
 import styles from '../../page.module.css';
 
 export default function VendorLoginPage() {
@@ -23,7 +23,7 @@ export default function VendorLoginPage() {
           fontSize: '32px',
           marginBottom: '16px'
         }}>
-          <FiStore />
+          <FiShoppingBag />
         </div>
         <h1 style={{ fontSize: '2.2rem', fontWeight: 800, color: 'var(--text-dark)', marginBottom: '12px' }}>
           AuraMart Vendor Portal Access

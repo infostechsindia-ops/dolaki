@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { FiStore, FiArrowRight, FiShield, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
+import { FiShoppingBag, FiArrowRight, FiShield, FiTrendingUp, FiCheckCircle } from 'react-icons/fi';
 
 export default function BecomeASellerPage() {
   const vendorPortalUrl = process.env.NEXT_PUBLIC_VENDOR_PORTAL_URL || 'http://localhost:3002/login';
@@ -22,7 +22,7 @@ export default function BecomeASellerPage() {
           fontSize: '0.85rem',
           marginBottom: '12px'
         }}>
-          <FiStore /> AuraMart Merchant Partner Program
+          <FiShoppingBag /> AuraMart Merchant Partner Program
         </span>
         <h1 style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-dark)', marginBottom: '12px' }}>
           Sell on AuraMart Marketplace

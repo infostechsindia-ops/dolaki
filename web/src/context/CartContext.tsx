@@ -5,14 +5,21 @@ import React, { createContext, useContext, useState, useEffect, useCallback } fr
 export interface Product {
   id: string;
   name: string;
+  title?: string;
+  description?: string;
   price: number;
   originalPrice?: number;
-  image: string;
+  image?: string;
+  images?: string[];
   rating: number;
   reviewsCount?: number;
   category?: string;
+  subCategory?: string;
   brand?: string;
   inStock?: boolean;
+  isFlado?: boolean;
+  generalStock?: number;
+  specifications?: Record<string, string>;
 }
 
 export interface CartItem {

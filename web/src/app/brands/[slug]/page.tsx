@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { FiChevronLeft, FiShoppingBag, FiInfo, FiAward, FiChevronRight, FiChevronDown, FiPackage } from 'react-icons/fi';
 import { brandsApi, BrandApiDto } from '@/lib/api';
+import { Product } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
 

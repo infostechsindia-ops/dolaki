@@ -22,6 +22,7 @@ import {
   FiExternalLink
 } from 'react-icons/fi';
 import { useCart } from '@/context/CartContext';
+import { Product, products as localProducts } from '@/data/products';
 import ProductCard from '@/components/ProductCard';
 import styles from './page.module.css';
 import { API_BASE_URL } from '@/lib/config';
@@ -194,7 +195,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     if (quantityInCart > 0) {
       updateQuantity(product.id, quantityInCart + 1);
     } else {
-      addToCart(product, 1);
+      addToCart(product as any, 1);
     }
   };
 
@@ -283,7 +284,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
     : 0;
 
   // Get recommendations from same category
-  const recommendations = [...localProducts, ...fladoProductsData]
+  const recommendations = localProducts
     .filter((p) => p.category === product.category && p.id !== product.id)
     .slice(0, 4);
 
@@ -321,7 +322,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
       if (checkedBundleItems[idx]) {
         const existing = cart.find(c => c.product.id === item.id);
         if (!existing) {
-          addToCart(item, 1);
+          addToCart(item as any, 1);
         }
       }
     });
@@ -458,7 +459,7 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             )}
 
             {/* Stock Alert */}
-            {product.generalStock > 0 && product.generalStock < 10 && (
+            {(product.generalStock ?? 0) > 0 && (product.generalStock ?? 0) < 10 && (
               <p className={styles.stockAlert}>⚠️ Only {product.generalStock} left in stock - order soon!</p>
             )}
 

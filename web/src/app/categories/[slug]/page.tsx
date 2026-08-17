@@ -22,6 +22,7 @@ export interface Product {
   basePrice?: number;
   discountPrice?: number;
   image: string;
+  images?: string[];
   imageUrl?: string;
   rating: number;
   reviewsCount?: number;

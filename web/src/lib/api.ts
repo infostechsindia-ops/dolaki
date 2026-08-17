@@ -119,7 +119,7 @@ function applyLocalFilters(prods: Product[], filters: ProductFilters): Product[]
   let result = [...prods];
 
   if (filters.category)
-    result = result.filter(p => p.category.toLowerCase() === filters.category!.toLowerCase());
+    result = result.filter(p => (p.category ?? '').toLowerCase() === filters.category!.toLowerCase());
   if (filters.brand)
     result = result.filter(p => p.brand?.toLowerCase() === filters.brand!.toLowerCase());
   if (filters.minPrice !== undefined)
@@ -131,7 +131,7 @@ function applyLocalFilters(prods: Product[], filters: ProductFilters): Product[]
     result = result.filter(p =>
       p.name.toLowerCase().includes(q) ||
       p.brand?.toLowerCase().includes(q) ||
-      p.category.toLowerCase().includes(q)
+      (p.category ?? '').toLowerCase().includes(q)
     );
   }
 

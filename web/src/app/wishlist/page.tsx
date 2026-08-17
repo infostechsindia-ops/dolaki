@@ -17,6 +17,7 @@ export interface Product {
   reviewsCount?: number;
   category?: string;
   brand?: string;
+  images?: string[];
 }
 
 export default function WishlistPage() {

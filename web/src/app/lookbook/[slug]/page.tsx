@@ -6,6 +6,7 @@ import { notFound } from 'next/navigation';
 import { FiShoppingCart, FiHeart, FiChevronRight, FiCamera, FiEye } from 'react-icons/fi';
 import styles from './page.module.css';
 import { API_BASE_URL } from '@/lib/config';
+import { products as allProducts, Product } from '@/data/products';
 
 interface Hotspot { top: string; left: string; productId: string; label?: string; }
 interface LookbookSlide { imageUrl: string; title: string; hotspots: Hotspot[]; }

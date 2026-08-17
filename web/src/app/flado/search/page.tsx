@@ -37,8 +37,8 @@ export default function FladoSearchPage() {
     }
     const filtered = fladoProductsData.filter(p => 
       p.name.toLowerCase().includes(query.toLowerCase()) || 
-      p.brand.toLowerCase().includes(query.toLowerCase()) ||
-      p.subCategory.toLowerCase().includes(query.toLowerCase())
+      (p.brand ?? '').toLowerCase().includes(query.toLowerCase()) ||
+      (p.subCategory ?? '').toLowerCase().includes(query.toLowerCase())
     );
     setResults(filtered);
   }, [query]);
