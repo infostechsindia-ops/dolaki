@@ -73,42 +73,69 @@
   --radius-full: 9999px;
 
   /* ------------------------------------------------------------------------
-     4. COLOR PALETTE & SEMANTIC COLORS (LIGHT DEFAULT)
+     4. COMMAND 10 — SEMANTIC COLOR SYSTEM & LAYER TOKENS
      ------------------------------------------------------------------------ */
-  /* Aura Primary (Violet) */
+  /* Brand Roles */
   --color-primary: #7C3AED;
   --color-primary-hover: #6D28D9;
   --color-primary-active: #5B21B6;
   --color-primary-light: #EDE9FE;
   --color-primary-glow: rgba(124, 58, 237, 0.15);
 
-  /* Flado Primary (Emerald) */
+  --color-secondary: #6366F1;
+  --color-secondary-hover: #4F46E5;
+  --color-secondary-light: #EEF2FF;
+
+  --color-accent: #F59E0B;
+  --color-accent-hover: #D97706;
+  --color-accent-light: #FEF3C7;
+
+  /* Flado Brand Role */
   --color-flado: #059669;
   --color-flado-hover: #047857;
   --color-flado-active: #065F46;
   --color-flado-light: #D1FAE5;
   --color-flado-glow: rgba(5, 150, 105, 0.15);
 
-  /* Neutrals */
+  /* Semantic Feedback Roles */
+  --color-positive: #10B981;
+  --color-positive-light: #D1FAE5;
+  --color-negative: #EF4444;
+  --color-negative-light: #FEE2E2;
+  --color-warning: #F59E0B;
+  --color-warning-light: #FEF3C7;
+  --color-information: #3B82F6;
+  --color-information-light: #DBEAFE;
+
+  /* Legacy Aliases */
+  --color-success: var(--color-positive);
+  --color-success-light: var(--color-positive-light);
+  --color-danger: var(--color-negative);
+  --color-danger-light: var(--color-negative-light);
+  --color-info: var(--color-information);
+  --color-info-light: var(--color-information-light);
+
+  /* Surface & Layer Architecture */
+  --color-background: #F8FAFC;
   --color-bg: #F8FAFC;
   --color-bg-alt: #F1F5F9;
+
   --color-surface: #FFFFFF;
-  --color-surface-elevated: #FFFFFF;
+  --color-elevated: #FFFFFF;
+  --color-glass: rgba(255, 255, 255, 0.88);
+
+  --color-border: #E2E8F0;
+  --color-border-strong: #CBD5E1;
+  --color-divider: #E2E8F0;
+
+  --color-layer-1: #F8FAFC; /* Canvas base */
+  --color-layer-2: #FFFFFF; /* Card surface */
+  --color-layer-3: #FFFFFF; /* Floating popover */
+  --color-layer-4: rgba(15, 23, 42, 0.85); /* Modal backdrop */
+
   --color-text-primary: #0F172A;
   --color-text-secondary: #475569;
   --color-text-muted: #94A3B8;
-  --color-border: #E2E8F0;
-  --color-border-strong: #CBD5E1;
-
-  /* Semantics */
-  --color-success: #10B981;
-  --color-success-light: #D1FAE5;
-  --color-warning: #F59E0B;
-  --color-warning-light: #FEF3C7;
-  --color-danger: #EF4444;
-  --color-danger-light: #FEE2E2;
-  --color-info: #3B82F6;
-  --color-info-light: #DBEAFE;
 
   /* ------------------------------------------------------------------------
      5. ELEVATION & SHADOWS SCALE
