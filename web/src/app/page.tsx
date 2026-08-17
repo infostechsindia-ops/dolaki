@@ -19,6 +19,8 @@ import PromotionalBanner from '@/components/home/PromotionalBanner';
 import BrandLogos from '@/components/home/BrandLogos';
 import TrustFeatures from '@/components/home/TrustFeatures';
 import NewsletterSection from '@/components/home/NewsletterSection';
+import FlashSaleTicker from '@/components/home/FlashSaleTicker';
+import CustomerTestimonials from '@/components/home/CustomerTestimonials';
 import { PageContainer, Container } from '@/components/layout/LayoutPrimitives';
 import styles from './page.module.css';
 
@@ -281,7 +283,12 @@ export default async function Home() {
 
               case 'hero_banners': {
                 const banners = (section.config?.banners as BannerItem[]) || FALLBACK_BANNERS;
-                return <HeroBanner key={section.id} banners={banners} surface="MARKETPLACE" />;
+                return (
+                  <React.Fragment key={section.id}>
+                    <HeroBanner banners={banners} surface="MARKETPLACE" />
+                    <FlashSaleTicker />
+                  </React.Fragment>
+                );
               }
 
               case 'category_grid': {
@@ -352,7 +359,12 @@ export default async function Home() {
               }
 
               case 'trust_features':
-                return <TrustFeatures key={section.id} surface="MARKETPLACE" />;
+                return (
+                  <React.Fragment key={section.id}>
+                    <CustomerTestimonials />
+                    <TrustFeatures surface="MARKETPLACE" />
+                  </React.Fragment>
+                );
 
               case 'newsletter':
                 return <NewsletterSection key={section.id} surface="MARKETPLACE" />;
@@ -365,6 +377,7 @@ export default async function Home() {
           /* Default Fallback Layout if SDUI payload is empty */
           <>
             <HeroBanner banners={FALLBACK_BANNERS} surface="MARKETPLACE" />
+            <FlashSaleTicker />
             <CategoriesSection categories={FALLBACK_CATEGORIES} title="Shop by Department" surface="MARKETPLACE" />
 
             <ProductCarousel
@@ -395,6 +408,7 @@ export default async function Home() {
             />
 
             <BrandLogos brands={FALLBACK_BRANDS} title="Official Brand Partners" surface="MARKETPLACE" />
+            <CustomerTestimonials />
             <TrustFeatures surface="MARKETPLACE" />
             <NewsletterSection surface="MARKETPLACE" />
           </>

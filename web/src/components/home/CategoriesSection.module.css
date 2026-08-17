@@ -1,127 +1,117 @@
 .section {
   width: 100%;
-  margin-bottom: var(--space-8);
+  margin-bottom: 48px;
 }
 
 .header {
-  margin-bottom: var(--space-4);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
 }
 
 .sectionTitle {
   font-family: var(--font-heading);
-  font-size: var(--font-size-xl);
+  font-size: 1.8rem;
   font-weight: 800;
-  color: var(--color-text-primary);
-  margin: 0;
-  line-height: 1.2;
+  color: var(--color-text-primary, #0F172A);
+  letter-spacing: -0.02em;
 }
 
 .grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-4);
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 20px;
 }
 
 .card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
-  background-color: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  padding: var(--space-4);
+  text-align: center;
+  padding: 24px 16px;
+  background-color: #FFFFFF;
+  border-radius: var(--radius-lg, 18px);
+  border: 1px solid var(--color-border, #E2E8F0);
   text-decoration: none;
-  outline: none;
-  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-}
-
-.card:focus-visible {
-  box-shadow: var(--focus-ring);
-  border-color: var(--color-primary);
-}
-
-.section.quickCommerce .card:focus-visible {
-  border-color: var(--color-flado);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .card:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-sm);
-  border-color: var(--color-primary);
+  transform: translateY(-5px);
+  box-shadow: 0 14px 28px rgba(124, 58, 237, 0.12);
+  border-color: rgba(124, 58, 237, 0.4);
 }
 
-.section.quickCommerce .card:hover {
-  border-color: var(--color-flado);
+.quickCommerce .card:hover {
+  box-shadow: 0 14px 28px rgba(5, 150, 105, 0.12);
+  border-color: rgba(5, 150, 105, 0.4);
 }
 
 .iconBox {
-  width: 48px;
-  height: 48px;
-  border-radius: var(--radius-full);
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
+  margin-bottom: 16px;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: inset 0 2px 4px rgba(255, 255, 255, 0.8), 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.card:hover .iconBox {
+  transform: scale(1.1) rotate(4deg);
 }
 
 .emoji {
-  font-size: var(--font-size-xl);
+  font-size: 2rem;
+  line-height: 1;
 }
 
 .meta {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
-  overflow: hidden;
+  align-items: center;
 }
 
 .catName {
-  font-family: var(--font-body);
-  font-size: var(--font-size-sm);
+  font-family: var(--font-heading);
+  font-size: 1rem;
   font-weight: 700;
-  color: var(--color-text-primary);
-  margin: 0;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
+  color: var(--color-text-primary, #0F172A);
+  margin-bottom: 4px;
 }
 
 .offerText {
-  font-size: 11px;
+  font-size: 0.8rem;
   font-weight: 600;
-  color: var(--color-primary);
-  margin-top: 2px;
+  color: var(--color-primary, #7C3AED);
+  transition: color 0.2s ease;
 }
 
-.section.quickCommerce .offerText {
-  color: var(--color-flado);
+.quickCommerce .offerText {
+  color: var(--color-flado, #059669);
 }
 
-/* Responsive columns scaling */
-@media (max-width: 1023px) {
-  .grid {
-    grid-template-columns: repeat(3, 1fr);
-  }
+.card:hover .offerText {
+  text-decoration: underline;
 }
 
-@media (max-width: 767px) {
+@media (max-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
   }
-}
-
-@media (max-width: 479px) {
-  .grid {
-    grid-template-columns: 1fr;
-    gap: var(--space-3);
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
   .card {
-    transition: none !important;
-    transform: none !important;
+    padding: 18px 12px;
+  }
+  .iconBox {
+    width: 60px;
+    height: 60px;
+  }
+  .emoji {
+    font-size: 1.6rem;
   }
 }

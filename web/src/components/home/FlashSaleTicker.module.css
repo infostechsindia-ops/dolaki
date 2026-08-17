@@ -1,0 +1,147 @@
+.flashSaleSection {
+  background: linear-gradient(135deg, #FFF1F2 0%, #FFE4E6 50%, #FECDD3 100%);
+  border-radius: var(--radius-xl, 24px);
+  padding: 32px 36px;
+  margin-bottom: 48px;
+  border: 1px solid #FECDD3;
+  box-shadow: 0 10px 30px -5px rgba(225, 29, 72, 0.08);
+}
+
+.flashHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.titleGroup {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.flashIcon {
+  font-size: 2rem;
+  color: #E11D48;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+.flashTitle {
+  font-family: var(--font-heading);
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #881337;
+  margin: 0;
+}
+
+.timerBox {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #FFFFFF;
+  padding: 8px 16px;
+  border-radius: var(--radius-full, 9999px);
+  box-shadow: 0 4px 12px rgba(225, 29, 72, 0.1);
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 0.95rem;
+  color: #E11D48;
+}
+
+.timerUnit {
+  background: #E11D48;
+  color: #FFFFFF;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.dealsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 20px;
+}
+
+.dealCard {
+  background: #FFFFFF;
+  border-radius: var(--radius-lg, 16px);
+  padding: 16px;
+  border: 1px solid #FFE4E6;
+  text-decoration: none;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  display: flex;
+  flex-direction: column;
+}
+
+.dealCard:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(225, 29, 72, 0.15);
+}
+
+.imageWrapper {
+  position: relative;
+  width: 100%;
+  height: 160px;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  background: #FFF1F2;
+}
+
+.dealImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.discountBadge {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  background: #E11D48;
+  color: #FFFFFF;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+  font-weight: 800;
+}
+
+.dealTitle {
+  font-family: var(--font-heading);
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #0F172A;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.priceGroup {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: auto;
+}
+
+.currentPrice {
+  font-family: var(--font-heading);
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: #E11D48;
+}
+
+.originalPrice {
+  font-size: 0.85rem;
+  color: #94A3B8;
+  text-decoration: line-through;
+}
