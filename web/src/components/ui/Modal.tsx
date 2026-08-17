@@ -42,15 +42,20 @@ export default function Modal({
     if (isOpen) {
       triggerRef.current = document.activeElement;
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('modal-open');
 
       // Initial focus: first focusable inside dialog
       const frame = requestAnimationFrame(() => {
         const first = dialogRef.current?.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)[0];
         first?.focus();
       });
-      return () => cancelAnimationFrame(frame);
+      return () => {
+        cancelAnimationFrame(frame);
+        document.body.classList.remove('modal-open');
+      };
     } else {
       document.body.style.overflow = '';
+      document.body.classList.remove('modal-open');
       // Restore focus to trigger element
       if (triggerRef.current && 'focus' in triggerRef.current) {
         (triggerRef.current as HTMLElement).focus();

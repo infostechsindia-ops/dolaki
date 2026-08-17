@@ -49,6 +49,10 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
   // Expandable details accordion
   const [openAccordion, setOpenAccordion] = useState<string>('features');
 
+  // PDP Out-of-stock Notify Me Box state
+  const [notifyEmail, setNotifyEmail] = useState('');
+  const [isSubscribed, setIsSubscribed] = useState(false);
+
   // Pincode ETA Checker
   const [pincode, setPincode] = useState('');
   const [etaMessage, setEtaMessage] = useState<string | null>(null);
@@ -347,22 +351,34 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
             </div>
             
             {/* Gallery Thumbnails */}
-            <div className={styles.thumbnails}>
+            <div className={styles.thumbnails} role="tablist" aria-label="Product thumbnail gallery">
               <button
+                type="button"
+                role="tab"
+                aria-selected={activeImage === product.image || activeImage === '0' || activeImage === ''}
                 onClick={() => setActiveImage(product.image || '')}
                 className={`${styles.thumbBtn} ${activeImage === product.image ? styles.thumbActive : ''}`}
+                aria-label="Main product thumbnail"
               >
                 <img src={product.image} alt="Main thumbnail" className={styles.thumbImg} />
               </button>
-              {product.images?.map((img, i) => (
-                <button
-                  key={i}
-                  onClick={() => setActiveImage(img)}
-                  className={`${styles.thumbBtn} ${activeImage === img ? styles.thumbActive : ''}`}
-                >
-                  <img src={img} alt={`Thumbnail ${i}`} className={styles.thumbImg} />
-                </button>
-              ))}
+              {product.images?.map((img, i) => {
+                const idx = i + 1;
+                const isSelected = activeImage === img || activeImage === String(idx);
+                return (
+                  <button
+                    key={i}
+                    type="button"
+                    role="tab"
+                    aria-selected={isSelected}
+                    onClick={() => setActiveImage(img)}
+                    className={`${styles.thumbBtn} ${activeImage === img ? styles.thumbActive : ''}`}
+                    aria-label={`Thumbnail ${i + 1}`}
+                  >
+                    <img src={img} alt={`Thumbnail ${i}`} className={styles.thumbImg} />
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -520,27 +536,52 @@ export default function ProductDetailPage({ params }: ProductPageProps) {
               )}
             </div>
 
-            {/* Cart Actions */}
-            <div className={styles.actionsRow}>
-              {quantityInCart > 0 ? (
-                <div className={styles.qtyContainer}>
-                  <button onClick={handleDecrement} className={styles.qtyBtn} aria-label="Decrease quantity">
-                    <FiMinus />
-                  </button>
-                  <span className={styles.qtyVal}>{quantityInCart}</span>
-                  <button onClick={handleIncrement} className={styles.qtyBtn} aria-label="Increase quantity">
-                    <FiPlus />
+            {/* Out-of-Stock Notify Me Box or Cart Actions */}
+            {(product.generalStock ?? (product as any).stock ?? (product.inStock === false ? 0 : 10)) === 0 || product.inStock === false ? (
+              <div className={styles.notifyBox} data-testid="notify-me-box">
+                <h4 className={styles.notifyTitle}>Notify Me When Available</h4>
+                <div className={styles.notifyForm}>
+                  <input
+                    type="email"
+                    placeholder="Enter your email"
+                    value={notifyEmail}
+                    onChange={(e) => setNotifyEmail(e.target.value)}
+                    className={styles.notifyInput}
+                    aria-label="Email address for stock notification"
+                    data-testid="notify-email-input"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setIsSubscribed(true)}
+                    className={styles.notifyBtn}
+                    data-testid="notify-me-btn"
+                  >
+                    {isSubscribed ? 'Subscribed!' : 'Notify Me'}
                   </button>
                 </div>
-              ) : (
-                <button 
-                  onClick={handleIncrement} 
-                  className={`${styles.addBtn} ${product.isFlado ? styles.fladoAddBtn : ''}`}
-                >
-                  <FiShoppingBag /> Add to Cart Basket
-                </button>
-              )}
-            </div>
+              </div>
+            ) : (
+              <div className={styles.actionsRow}>
+                {quantityInCart > 0 ? (
+                  <div className={styles.qtyContainer}>
+                    <button onClick={handleDecrement} className={styles.qtyBtn} aria-label="Decrease quantity">
+                      <FiMinus />
+                    </button>
+                    <span className={styles.qtyVal}>{quantityInCart}</span>
+                    <button onClick={handleIncrement} className={styles.qtyBtn} aria-label="Increase quantity">
+                      <FiPlus />
+                    </button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleIncrement} 
+                    className={`${styles.addBtn} ${product.isFlado ? styles.fladoAddBtn : ''}`}
+                  >
+                    <FiShoppingBag /> Add to Cart Basket
+                  </button>
+                )}
+              </div>
+            )}
 
             {/* Accordion Expandables */}
             <div className={styles.accordionContainer}>

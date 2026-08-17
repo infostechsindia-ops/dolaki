@@ -15,12 +15,48 @@ import styles from './MobileBottomNav.module.css';
 
 export interface MobileBottomNavProps {
   surface?: 'MARKETPLACE' | 'QUICK_COMMERCE';
+  isOverlayActive?: boolean;
 }
 
-export default function MobileBottomNav({ surface = 'MARKETPLACE' }: MobileBottomNavProps) {
+export default function MobileBottomNav({ surface = 'MARKETPLACE', isOverlayActive = false }: MobileBottomNavProps) {
   const pathname = usePathname();
   const { totalItems } = useCart();
   const isFlado = surface === 'QUICK_COMMERCE';
+  const [isOverlayOpen, setIsOverlayOpen] = React.useState(false);
+
+  React.useEffect(() => {
+    const checkOverlay = () => {
+      if (typeof document === 'undefined') return;
+      const bodyHasClass =
+        document.body.classList.contains('modal-open') ||
+        document.body.classList.contains('drawer-open') ||
+        document.body.classList.contains('overlay-active') ||
+        document.body.style.overflow === 'hidden';
+
+      const hasModalElement =
+        document.querySelector('[role="dialog"]') !== null ||
+        document.querySelector('[aria-modal="true"]') !== null ||
+        document.querySelector('.modal-overlay') !== null ||
+        document.querySelector('.drawer') !== null;
+
+      const nextVal = bodyHasClass || hasModalElement;
+      setIsOverlayOpen((prev) => (prev !== nextVal ? nextVal : prev));
+    };
+
+    checkOverlay();
+
+    if (typeof window !== 'undefined' && 'MutationObserver' in window) {
+      const observer = new MutationObserver(() => {
+        checkOverlay();
+      });
+      observer.observe(document.body, {
+        attributes: true,
+        childList: true,
+        subtree: true,
+      });
+      return () => observer.disconnect();
+    }
+  }, []);
 
   // Surface path mapping
   const homePath = isFlado ? '/flado' : '/';
@@ -38,6 +74,10 @@ export default function MobileBottomNav({ surface = 'MARKETPLACE' }: MobileBotto
     }
     return pathname.startsWith(path);
   };
+
+  if (isOverlayActive || isOverlayOpen) {
+    return null;
+  }
 
   return (
     <nav className={styles.navBar} aria-label="Mobile Navigation" role="navigation">

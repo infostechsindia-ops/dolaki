@@ -76,7 +76,7 @@ describe('CMD-027 Customer Product Detail Page (PDP)', () => {
     fireEvent.click(zoomBtn);
     expect(onZoomClick).toHaveBeenCalled();
 
-    const thumbnails = screen.getAllByRole('option');
+    const thumbnails = screen.getAllByRole('tab');
     expect(thumbnails.length).toBe(2);
     fireEvent.click(thumbnails[1]);
     expect(onSelectImage).toHaveBeenCalledWith(1);

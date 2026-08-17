@@ -34,14 +34,14 @@ export default function ProductGallery({
       {images.length > 1 && (
         <div
           className={styles.thumbnailStrip}
-          role="listbox"
+          role="tablist"
           aria-label="Product images"
         >
           {images.map((img, idx) => (
             <button
               key={idx}
               type="button"
-              role="option"
+              role="tab"
               aria-selected={idx === selectedIndex}
               className={`${styles.thumbnail} ${idx === selectedIndex ? styles.active : ''}`}
               onClick={() => onSelectImage?.(idx)}

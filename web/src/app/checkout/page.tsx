@@ -114,9 +114,15 @@ function CheckoutContent() {
     // CMD-043: Display validation errors first
     setShowValidation(true);
 
+    const isCod = selectedPaymentId === 'cod' || selectedPaymentId === 'pay-cod' || selectedPaymentId.toLowerCase().includes('cod');
+    const addressPhone = addressProps?.address?.phone || '';
+    const phoneDigits = addressPhone.replace(/\D/g, '');
+    const isCodPhoneInvalid = isCod && phoneDigits.length !== 10;
+
     // Compute validity inline — avoids stale state from useEffect
     const validNow =
       !!addressProps &&
+      !isCodPhoneInvalid &&
       !!(selectedDeliveryId || deliveryMethodsList[0]?.id) &&
       !!selectedPaymentId &&
       (!previewData?.checkoutEligibility || previewData.checkoutEligibility.isEligible);
@@ -312,9 +318,18 @@ function CheckoutContent() {
     !(selectedDeliveryId || deliveryMethodsList[0]?.id);
   const hasNoPayment = !selectedPaymentId;
 
-  const validationErrors = showValidation
+  const isCod = selectedPaymentId === 'cod' || selectedPaymentId === 'pay-cod' || selectedPaymentId.toLowerCase().includes('cod');
+  const addressPhone = addressProps?.address?.phone || '';
+  const phoneDigits = addressPhone.replace(/\D/g, '');
+  const isCodPhoneInvalid = isCod && phoneDigits.length !== 10;
+
+  const validationErrors = (showValidation || isCodPhoneInvalid)
     ? {
-        address: hasNoAddress ? 'Please add a delivery address to continue.' : undefined,
+        address: hasNoAddress
+          ? 'Please add a delivery address to continue.'
+          : isCodPhoneInvalid
+          ? 'Valid 10-digit phone number required for Cash on Delivery orders'
+          : undefined,
         delivery: hasNoDelivery ? 'Please select a delivery method to continue.' : undefined,
         payment: hasNoPayment ? 'Please select a payment method to continue.' : undefined,
       }
